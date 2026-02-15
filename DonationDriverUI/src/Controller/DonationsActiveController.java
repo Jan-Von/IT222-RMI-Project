@@ -35,14 +35,29 @@ public class DonationsActiveController {
 
         try {
             Client client = Client.getDefault();
-            String responseXml = client.readTickets(userId);
-            Client.Response response = Client.parseResponse(responseXml);
+
+            String acceptedResponseXml = client.readTickets(userId, "ACCEPTED");
+            Client.Response acceptedResponse = Client.parseResponse(acceptedResponseXml);
+
+            String pickedUpResponseXml = client.readTickets(userId, "PICKED_UP");
+            Client.Response pickedUpResponse = Client.parseResponse(pickedUpResponseXml);
 
             DefaultListModel<String> model = new DefaultListModel<>();
 
-            if (response != null && response.isOk()) {
-                String ticketsXml = Client.unescapeXml(response.message != null ? response.message : "");
-                List<String> summaries = parseTicketSummaries(ticketsXml);
+            if ((acceptedResponse != null && acceptedResponse.isOk()) || 
+                (pickedUpResponse != null && pickedUpResponse.isOk())) {
+                
+                List<String> summaries = new ArrayList<>();
+
+                if (acceptedResponse != null && acceptedResponse.isOk()) {
+                    String acceptedTicketsXml = Client.unescapeXml(acceptedResponse.message != null ? acceptedResponse.message : "");
+                    summaries.addAll(parseTicketSummaries(acceptedTicketsXml));
+                }
+
+                if (pickedUpResponse != null && pickedUpResponse.isOk()) {
+                    String pickedUpTicketsXml = Client.unescapeXml(pickedUpResponse.message != null ? pickedUpResponse.message : "");
+                    summaries.addAll(parseTicketSummaries(pickedUpTicketsXml));
+                }
 
                 if (summaries.isEmpty()) {
                     model.addElement("You have no active donation tickets yet.");
@@ -52,9 +67,12 @@ public class DonationsActiveController {
                     }
                 }
             } else {
-                String msg = (response != null && response.message != null && !response.message.isEmpty())
-                        ? response.message
-                        : "Failed to load donations.";
+                String msg = "Failed to load active donations.";
+                if (acceptedResponse != null && acceptedResponse.message != null && !acceptedResponse.message.isEmpty()) {
+                    msg = acceptedResponse.message;
+                } else if (pickedUpResponse != null && pickedUpResponse.message != null && !pickedUpResponse.message.isEmpty()) {
+                    msg = pickedUpResponse.message;
+                }
                 model.addElement(msg);
             }
 

@@ -137,7 +137,7 @@ public class DonationsActiveView {
 
         frame.add(sidebar);
 
-        ActiveDeliveryButton = new JButton("Active Delivery");
+        ActiveDeliveryButton = new JButton("In Progress");
         ActiveDeliveryButton.setBounds(225, 100, 120, 40);
         ActiveDeliveryButton.setBorderPainted(false);
         ActiveDeliveryButton.setFocusPainted(false);
