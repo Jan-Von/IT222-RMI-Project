@@ -21,6 +21,7 @@ public class MonetaryDonationView {
     // Exposed to the controller for logging
     public JTextField amountField;
     public JTextField transactionIdField;
+    public JComboBox<String> donationDriveDropdown;
 
     private File selectedPhotoFile;
 
@@ -239,6 +240,19 @@ public class MonetaryDonationView {
         transactionIdField.setForeground(Color.BLACK);
         transactionIdField.setBounds(150, 200, 300, 30);
         monetaryMainCard.add(transactionIdField);
+
+        JLabel donationDriveLabel = new JLabel("Donation Drive");
+        donationDriveLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        donationDriveLabel.setForeground(Color.BLACK);
+        donationDriveLabel.setBounds(150, 235, 300, 30);
+        monetaryMainCard.add(donationDriveLabel);
+
+        String[] drives = {"Select", "Typhoon", "Fire", "Earthquake", "Flood", "General"};
+        donationDriveDropdown = new JComboBox<>(drives);
+        donationDriveDropdown.setFont(new Font("Arial", Font.BOLD, 14));
+        donationDriveDropdown.setBackground(new Color(245, 245, 245));
+        donationDriveDropdown.setBounds(150, 265, 300, 30);
+        monetaryMainCard.add(donationDriveDropdown);
 
         uploadPhotoBtn = new JButton("Upload photo (JPG)");
         uploadPhotoBtn.setFont(new Font("Arial", Font.PLAIN, 12));

@@ -70,6 +70,18 @@ public class MonetaryDonationController {
             return;
         }
 
+        // Validate donation drive selection
+        String selectedDrive = (String) view.donationDriveDropdown.getSelectedItem();
+        if (selectedDrive == null || selectedDrive.equals("Select")) {
+            javax.swing.JOptionPane.showMessageDialog(
+                    view.frame,
+                    "Please select a donation drive.",
+                    "Monetary Donation",
+                    javax.swing.JOptionPane.WARNING_MESSAGE
+            );
+            return;
+        }
+
         // Generate a simple numeric transaction ID (random 9‑digit number)
         String transactionId = String.format("%09d",
                 (int) (Math.random() * 1_000_000_000));
@@ -114,13 +126,15 @@ public class MonetaryDonationController {
                     "",                  // pickupLocation
                     "",                  // photoPath
                     notes,               // details / notes
-                    photoBase64 != null ? photoBase64 : ""
+                    photoBase64 != null ? photoBase64 : "",
+                    selectedDrive,       // donationDrive
+                    ""                   // deliveryDestination (not applicable for monetary)
             );
 
             Client.Response response = Client.parseResponse(responseXml);
             if (response != null && response.isOk()) {
-                // Log locally to Monetary Donations.xml
-                logMonetaryDonation("Super Typhoon Haiyan", amount, transactionId, photoBase64);
+        // Log locally to Monetary Donations.xml
+        logMonetaryDonation(selectedDrive, amount, transactionId, photoBase64);
 
                 javax.swing.JOptionPane.showMessageDialog(
                         view.frame,
