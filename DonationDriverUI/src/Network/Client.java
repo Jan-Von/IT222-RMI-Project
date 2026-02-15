@@ -178,6 +178,22 @@ public class Client {
         return sendRequest(request);
     }
 
+    public String updateTicket(String userId, String ticketId, String status, String qualityStatus, String qualityReason) throws IOException {
+        StringBuilder request = new StringBuilder();
+        request.append("<request><action>UPDATE_TICKET</action>");
+        request.append("<userId>").append(escapeXml(userId)).append("</userId>");
+        request.append("<ticketId>").append(escapeXml(ticketId)).append("</ticketId>");
+        request.append("<status>").append(escapeXml(status)).append("</status>");
+        if (qualityStatus != null && !qualityStatus.trim().isEmpty()) {
+            request.append("<qualityStatus>").append(escapeXml(qualityStatus.trim())).append("</qualityStatus>");
+        }
+        if (qualityReason != null && !qualityReason.trim().isEmpty()) {
+            request.append("<qualityReason>").append(escapeXml(qualityReason.trim())).append("</qualityReason>");
+        }
+        request.append("</request>");
+        return sendRequest(request.toString());
+    }
+
     public String deleteTicket(String userId, String ticketId) throws IOException {
         String request = "<request><action>DELETE_TICKET</action>"
                 + "<userId>" + escapeXml(userId) + "</userId>"

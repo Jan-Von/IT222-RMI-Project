@@ -65,7 +65,7 @@ public class AdminDonationsPanel extends JPanel {
         acceptBtn.addActionListener(e -> updateSelectedTicketStatus("ACCEPTED"));
         pickedUpBtn.addActionListener(e -> updateSelectedTicketStatus("PICKED_UP"));
         deliveredBtn.addActionListener(e -> updateSelectedTicketStatus("DELIVERED"));
-        rejectBtn.addActionListener(e -> updateSelectedTicketStatus("REJECTED"));
+        rejectBtn.addActionListener(e -> showQualityDialog("REJECTED"));
         cancelBtn.addActionListener(e -> cancelSelectedTicket());
 
         panel.add(viewPhotoBtn);
@@ -138,6 +138,84 @@ public class AdminDonationsPanel extends JPanel {
             JOptionPane.showMessageDialog(this,
                     "Unable to contact server.", "Error", JOptionPane.ERROR_MESSAGE);
         }
+    }
+
+    private void showQualityDialog(String newStatus) {
+        int row = donationsTable.getSelectedRow();
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, "Please select a ticket first.");
+            return;
+        }
+        String ticketId = String.valueOf(donationsTableModel.getValueAt(row, 0));
+        String adminUserId = "admin";
+
+        // Create quality dialog
+        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Quality Check", true);
+        dialog.setLayout(new BorderLayout(10, 10));
+        JPanel dialogContent = new JPanel(new BorderLayout(10, 10));
+        dialogContent.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        dialog.add(dialogContent, BorderLayout.CENTER);
+
+        // Quality status panel
+        JPanel qualityPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        qualityPanel.add(new JLabel("Quality Status:"));
+        String[] qualityOptions = {"Not set", "Approved", "Rejected"};
+        JComboBox<String> qualityDropdown = new JComboBox<>(qualityOptions);
+        qualityPanel.add(qualityDropdown);
+
+        // Reason panel
+        JPanel reasonPanel = new JPanel(new BorderLayout(5, 5));
+        reasonPanel.add(new JLabel("Quality Reason:"), BorderLayout.NORTH);
+        JTextArea reasonField = new JTextArea(3, 30);
+        reasonField.setLineWrap(true);
+        reasonField.setWrapStyleWord(true);
+        reasonPanel.add(new JScrollPane(reasonField), BorderLayout.CENTER);
+
+        // Buttons panel
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton okBtn = new JButton("Update");
+        JButton cancelBtn = new JButton("Cancel");
+        buttonPanel.add(okBtn);
+        buttonPanel.add(cancelBtn);
+
+        // Main panel
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        mainPanel.add(qualityPanel, BorderLayout.NORTH);
+        mainPanel.add(reasonPanel, BorderLayout.CENTER);
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+
+        dialogContent.add(mainPanel, BorderLayout.CENTER);
+
+        // Action listeners
+        okBtn.addActionListener(e -> {
+            String qualityStatus = (String) qualityDropdown.getSelectedItem();
+            String qualityReason = reasonField.getText().trim();
+            
+            try {
+                Client client = Client.getDefault();
+                String responseXml = client.updateTicket(adminUserId, ticketId, newStatus, qualityStatus, qualityReason);
+                Client.Response resp = Client.parseResponse(responseXml);
+                if (resp != null && resp.isOk()) {
+                    JOptionPane.showMessageDialog(this, "Status and quality updated: " + newStatus);
+                    refreshData();
+                } else {
+                    String msg = (resp != null && resp.message != null && !resp.message.isEmpty())
+                            ? resp.message : "Failed to update ticket.";
+                    JOptionPane.showMessageDialog(this, msg, "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(this,
+                        "Unable to contact server.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+            dialog.dispose();
+        });
+
+        cancelBtn.addActionListener(e -> dialog.dispose());
+
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
     }
 
     private void styleTable(JTable table) {
