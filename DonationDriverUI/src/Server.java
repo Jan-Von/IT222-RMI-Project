@@ -190,6 +190,18 @@ public class Server {
                         message = result.message;
                         break;
                     }
+                    case "PERMANENT_DELETE_TICKET": {
+                        String ticketId = extractTagValue(requestXml, "ticketId");
+                        OperationResult result = permanentDeleteTicket(userId, ticketId);
+                        if (result.success) {
+                            status = "OK";
+                            dataAffected = "ticket " + ticketId + " permanently deleted";
+                        } else {
+                            dataAffected = "permanent delete failed: " + result.message;
+                        }
+                        message = result.message;
+                        break;
+                    }
                     case "PING":
                         status = "OK";
                         message = "PONG from DonationServer.";
@@ -864,6 +876,33 @@ public class Server {
                 fw.write(sb.toString());
             } catch (IOException e) {
                 e.printStackTrace();
+            }
+        }
+
+        private OperationResult permanentDeleteTicket(String adminUserId, String ticketId) {
+            if (adminUserId == null || adminUserId.trim().isEmpty()) {
+                return new OperationResult(false, "Admin userId is required for permanent deletion.");
+            }
+
+            if (!"admin".equals(adminUserId)) {
+                return new OperationResult(false, "Only admin users can perform permanent deletion.");
+            }
+
+            File dir = new File(TICKETS_DIR);
+            File file = new File(dir, ticketId + ".xml");
+            
+            if (!file.exists()) {
+                return new OperationResult(false, "Ticket " + ticketId + " not found.");
+            }
+
+            try {
+                if (file.delete()) {
+                    return new OperationResult(true, "Ticket " + ticketId + " permanently deleted.");
+                } else {
+                    return new OperationResult(false, "Failed to delete ticket file.");
+                }
+            } catch (SecurityException e) {
+                return new OperationResult(false, "Permission denied: unable to delete ticket file.");
             }
         }
     }

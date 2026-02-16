@@ -60,6 +60,7 @@ public class AdminDonationsPanel extends JPanel {
         JButton deliveredBtn= new JButton("Delivered");
         JButton rejectBtn   = new JButton("Reject");
         JButton cancelBtn   = new JButton("Cancel Request");
+        JButton permanentDeleteBtn = new JButton("Permanent Delete");
 
         viewPhotoBtn.addActionListener(e -> viewSelectedPhoto());
         acceptBtn.addActionListener(e -> updateSelectedTicketStatus("ACCEPTED"));
@@ -67,6 +68,7 @@ public class AdminDonationsPanel extends JPanel {
         deliveredBtn.addActionListener(e -> updateSelectedTicketStatus("DELIVERED"));
         rejectBtn.addActionListener(e -> showQualityDialog("REJECTED"));
         cancelBtn.addActionListener(e -> cancelSelectedTicket());
+        permanentDeleteBtn.addActionListener(e -> showPermanentDeleteDialog());
 
         panel.add(viewPhotoBtn);
         panel.add(acceptBtn);
@@ -74,6 +76,7 @@ public class AdminDonationsPanel extends JPanel {
         panel.add(deliveredBtn);
         panel.add(rejectBtn);
         panel.add(cancelBtn);
+        panel.add(permanentDeleteBtn);
 
         return panel;
     }
@@ -375,5 +378,44 @@ public class AdminDonationsPanel extends JPanel {
             return null;
         }
         return xml.substring(i + open.length(), j).trim();
+    }
+
+    private void showPermanentDeleteDialog() {
+        int row = donationsTable.getSelectedRow();
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, "Please select a ticket first.");
+            return;
+        }
+        String ticketId = String.valueOf(donationsTableModel.getValueAt(row, 0));
+        String adminUserId = "admin";
+
+        // Show confirmation dialog
+        int result = JOptionPane.showConfirmDialog(
+            this,
+            "This will permanently delete ticket " + ticketId + ".\nThis action cannot be undone.\n\nAre you sure you want to continue?",
+            "Permanent Delete Confirmation",
+            JOptionPane.YES_NO_OPTION,
+            JOptionPane.WARNING_MESSAGE
+        );
+
+        if (result == JOptionPane.YES_OPTION) {
+            try {
+                Client client = Client.getDefault();
+                String responseXml = client.permanentDeleteTicket(adminUserId, ticketId);
+                Client.Response resp = Client.parseResponse(responseXml);
+                if (resp != null && resp.isOk()) {
+                    JOptionPane.showMessageDialog(this, "Ticket " + ticketId + " permanently deleted.");
+                    refreshData();
+                } else {
+                    String msg = (resp != null && resp.message != null && !resp.message.isEmpty())
+                            ? resp.message : "Failed to permanently delete ticket.";
+                    JOptionPane.showMessageDialog(this, msg, "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(this,
+                        "Unable to contact server.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        }
     }
 }

@@ -214,6 +214,15 @@ public class Client {
         return sendRequest(request.toString());
     }
 
+    public String permanentDeleteTicket(String adminUserId, String ticketId) throws IOException {
+        StringBuilder request = new StringBuilder();
+        request.append("<request><action>PERMANENT_DELETE_TICKET</action>");
+        request.append("<userId>").append(escapeXml(adminUserId)).append("</userId>");
+        request.append("<ticketId>").append(escapeXml(ticketId)).append("</ticketId>");
+        request.append("</request>");
+        return sendRequest(request.toString());
+    }
+
     public static Response parseResponse(String responseXml) {
         if (responseXml == null || responseXml.isEmpty()) {
             return null;
