@@ -16,7 +16,7 @@ public class RiderAcceptedView {
     public JButton settingsBtn;
 
     public RiderAcceptedView() {
-        frame = new JFrame("DonationDriver - Rider Dashboard");
+        frame = new JFrame("DonationDriver");
         frame.setSize(1400, 800);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);

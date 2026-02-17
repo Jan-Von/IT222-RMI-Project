@@ -20,7 +20,7 @@ public class RejectedSelectedUrgentPickUps {
     public JPanel card3;
 
     public RejectedSelectedUrgentPickUps() {
-        frame = new JFrame("DonationDriver - Rider Dashboard");
+        frame = new JFrame("DonationDriver");
         frame.setSize(1400, 800);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
