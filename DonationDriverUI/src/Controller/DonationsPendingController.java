@@ -21,6 +21,8 @@ public class DonationsPendingController {
         view.DeliveredButton.addActionListener(e -> openDonationsDelivered());
         view.RejectedButton.addActionListener(e -> openDonationsRejected());
         view.DonateBtn.addActionListener(e -> openDonate());
+        view.helpBtn.addActionListener(e -> openHelp());
+
 
         loadPendingTickets();
     }
@@ -169,4 +171,12 @@ public class DonationsPendingController {
         donateView.frame.setVisible(true);
         view.frame.dispose();
     }
+
+    private void openHelp(){
+        HelpView helpView = new HelpView();
+        new HelpController(helpView);
+        helpView.frame.setVisible(true);
+        view.frame.dispose();
+    }
+
 }

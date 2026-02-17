@@ -13,6 +13,7 @@ public class SuccessDonationController {
         view.notifBtn.addActionListener(e -> openNotification());
         view.donationBtn.addActionListener(e ->openDonations());
         view.DonateBtn.addActionListener(e -> openDonate());
+        view.helpBtn.addActionListener(e -> openHelp());
 
 
     }
@@ -42,6 +43,13 @@ public class SuccessDonationController {
         DonateView donateView = new DonateView();
         new DonateController(donateView);
         donateView.frame.setVisible(true);
+        view.frame.dispose();
+    }
+
+    private void openHelp(){
+        HelpView helpView = new HelpView();
+        new HelpController(helpView);
+        helpView.frame.setVisible(true);
         view.frame.dispose();
     }
 }

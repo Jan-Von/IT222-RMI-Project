@@ -35,6 +35,8 @@ public class BoxDonationController {
         view.notifBtn.addActionListener(e -> openNotification());
         view.donationBtn.addActionListener(e -> openDonations());
         view.DonateBtn.addActionListener(e -> openDonate());
+        view.helpBtn.addActionListener(e -> openHelp());
+
     }
 
     private void openDashBoard() {
@@ -296,5 +298,12 @@ public class BoxDonationController {
         Element el = doc.createElement(tagName);
         el.setTextContent(value != null ? value : "");
         parent.appendChild(el);
+    }
+
+    private void openHelp(){
+        HelpView helpView = new HelpView();
+        new HelpController(helpView);
+        helpView.frame.setVisible(true);
+        view.frame.dispose();
     }
 }

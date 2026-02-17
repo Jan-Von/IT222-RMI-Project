@@ -10,9 +10,10 @@ public class NotificationController {
     public NotificationController(NotificationView view) {
         this.view = view;
         view.homeBtn.addActionListener(e -> {openDashboard();});
-        view.notifBtn.addActionListener(e -> openNotificaton());
         view.donationBtn.addActionListener(e ->openDonations());
         view.DonateBtn.addActionListener(e -> openDonate());
+        view.helpBtn.addActionListener(e -> openHelp());
+
 
     }
 
@@ -20,13 +21,6 @@ public class NotificationController {
         DashboardView dashboardview = new DashboardView();
         new DashboardController(dashboardview);
         dashboardview.frame.setVisible(true);
-        view.frame.dispose();
-    }
-
-    private void openNotificaton (){
-        NotificationView notifView = new NotificationView();
-        new NotificationController(notifView);
-        notifView.frame.setVisible(true);
         view.frame.dispose();
     }
 
@@ -41,6 +35,13 @@ public class NotificationController {
         DonateView donateView = new DonateView();
         new DonateController(donateView);
         donateView.frame.setVisible(true);
+        view.frame.dispose();
+    }
+
+    private void openHelp(){
+        HelpView helpView = new HelpView();
+        new HelpController(helpView);
+        helpView.frame.setVisible(true);
         view.frame.dispose();
     }
 

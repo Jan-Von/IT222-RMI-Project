@@ -19,6 +19,8 @@ public class DonateController {
         view.homeBtn.addActionListener(e -> {openDashboard();});
         view.notifBtn.addActionListener(e -> openNotificaton());
         view.donationBtn.addActionListener(e ->openDonations());
+        view.helpBtn.addActionListener(e -> openHelp());
+
 
         setupCardClick(view.card1);
         setupCardClick(view.card2);
@@ -83,6 +85,13 @@ public class DonateController {
         DonationsActiveView donationsView = new DonationsActiveView();
         new DonationsActiveController(donationsView);
         donationsView.frame.setVisible(true);
+        view.frame.dispose();
+    }
+
+    private void openHelp(){
+        HelpView helpView = new HelpView();
+        new HelpController(helpView);
+        helpView.frame.setVisible(true);
         view.frame.dispose();
     }
 
