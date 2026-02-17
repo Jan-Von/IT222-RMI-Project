@@ -289,7 +289,9 @@ public class Server {
             return xml.substring(i + open.length(), j).trim();
         }
 
-        /** Extracts tag content and unwraps CDATA if present (e.g. &lt;![CDATA[base64]]&gt;). */
+        /**
+         * Extracts tag content and unwraps CDATA if present (e.g. &lt;![CDATA[base64]]&gt;).
+         */
         private String extractTagValueOrCData(String xml, String tag) {
             String raw = extractTagValue(xml, tag);
             if (raw == null) return null;
@@ -371,6 +373,47 @@ public class Server {
             return false;
         }
 
+        /**
+         * Returns the role of the given email from users.xml. If the email is missing or unknown, it defaults to "DONOR.
+         * Possible roles include DONOR and RIDER. Admins are handled separately through admin_credentials.xml.
+         */
+        private String getUserRole(String email) {
+            if (email == null || email.trim().isEmpty()) {
+                return "DONOR";
+            }
+            File file = resolveUsersXmlFile();
+            if (!file.exists()) return "DONOR";
+            try {
+                Document doc = loadUsersDocument(file);
+                NodeList users = doc.getElementsByTagName("user");
+                for (int i = 0; i < users.getLength(); i++) {
+                    Element userEl = (Element) users.item(i);
+                    String xmlEmail = getUserField(userEl, "email");
+                    if (xmlEmail != null && xmlEmail.equalsIgnoreCase(email)) {
+                        String role = getUserField(userEl, "role");
+                        return (role != null && !role.isEmpty()) ? role.toUpperCase() : "DONOR";
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return "DONOR";
+        }
+
+        private boolean isAdminUser(String userId) {
+            return userId != null && userId.equals("admin");
+        }
+
+        private boolean isRiderUser(String userId) {
+            String role = getUserRole(userId);
+            return "RIDER".equalsIgnoreCase(role);
+        }
+
+        private boolean isDonorUser(String userId) {
+            String role = getUserRole(userId);
+            return "DONOR".equalsIgnoreCase(role);
+        }
+
         private boolean saveUserToXmlSingleFile(
                 String email,
                 String password,
@@ -410,6 +453,8 @@ public class Server {
                 appendUserField(doc, userEl, "dateOfBirth", dateOfBirth != null ? dateOfBirth : "");
                 appendUserField(doc, userEl, "address", address != null ? address : "");
                 appendUserField(doc, userEl, "phoneNumber", phone != null ? phone : "");
+                // Default role for newly registered users is a DUNOR
+                appendUserField(doc, userEl, "role", "DONOR");
 
                 root.appendChild(userEl);
                 writeUsersDocument(doc, file);
@@ -433,7 +478,9 @@ public class Server {
             return new File(parent != null ? parent : cwd, AVAILABLE_RIDERS_FILE);
         }
 
-        /** Returns true only when at least one rider is marked available. */
+        /**
+         * Returns true only when at least one rider is marked available.
+         */
         private static boolean areRidersAvailable() {
             File file = resolveAvailableRidersFile();
             if (!file.exists()) return false;
@@ -565,31 +612,31 @@ public class Server {
                 File file = new File(dir, ticketId + ".xml");
 
                 StringBuilder sb = new StringBuilder();
-                sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-                sb.append("<ticket>");
-                sb.append("<ticketId>").append(escapeXml(ticketId)).append("</ticketId>");
-                sb.append("<userId>").append(escapeXml(userId)).append("</userId>");
-                sb.append("<status>").append("PENDING").append("</status>");
-                sb.append("<createdAt>").append(escapeXml(
+                sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+                sb.append("<ticket>\n");
+                sb.append("  <ticketId>").append(escapeXml(ticketId)).append("</ticketId>\n");
+                sb.append("  <userId>").append(escapeXml(userId)).append("</userId>\n");
+                sb.append("  <status>").append("PENDING").append("</status>\n");
+                sb.append("  <createdAt>").append(escapeXml(
                         new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())
-                )).append("</createdAt>");
-                sb.append("<itemCategory>").append(escapeXml(itemCategory)).append("</itemCategory>");
-                sb.append("<quantity>").append(escapeXml(quantityStr != null ? quantityStr : "")).append("</quantity>");
-                sb.append("<condition>").append(escapeXml(condition != null ? condition : "")).append("</condition>");
-                sb.append("<expirationDate>").append(escapeXml(expirationDate != null ? expirationDate : ""))
-                        .append("</expirationDate>");
-                sb.append("<pickupDateTime>").append(escapeXml(pickupDateTime != null ? pickupDateTime : ""))
-                        .append("</pickupDateTime>");
-                sb.append("<pickupLocation>").append(escapeXml(pickupLocation != null ? pickupLocation : ""))
-                        .append("</pickupLocation>");
-                sb.append("<photoPath>").append(escapeXml(photoPath != null ? photoPath : "")).append("</photoPath>");
-                sb.append("<notes>").append(escapeXml(notes != null ? notes : "")).append("</notes>");
-                sb.append("<donationDrive>").append(escapeXml(donationDrive != null ? donationDrive : "")).append("</donationDrive>");
-                sb.append("<deliveryDestination>").append(escapeXml(deliveryDestination != null ? deliveryDestination : "")).append("</deliveryDestination>");
+                )).append("</createdAt>\n");
+                sb.append("  <itemCategory>").append(escapeXml(itemCategory)).append("</itemCategory>\n");
+                sb.append("  <quantity>").append(escapeXml(quantityStr != null ? quantityStr : "")).append("</quantity>\n");
+                sb.append("  <condition>").append(escapeXml(condition != null ? condition : "")).append("</condition>\n");
+                sb.append("  <expirationDate>").append(escapeXml(expirationDate != null ? expirationDate : ""))
+                        .append("</expirationDate>\n");
+                sb.append("  <pickupDateTime>").append(escapeXml(pickupDateTime != null ? pickupDateTime : ""))
+                        .append("</pickupDateTime>\n");
+                sb.append("  <pickupLocation>").append(escapeXml(pickupLocation != null ? pickupLocation : ""))
+                        .append("</pickupLocation>\n");
+                sb.append("  <photoPath>").append(escapeXml(photoPath != null ? photoPath : "")).append("</photoPath>\n");
+                sb.append("  <notes>").append(escapeXml(notes != null ? notes : "")).append("</notes>\n");
+                sb.append("  <donationDrive>").append(escapeXml(donationDrive != null ? donationDrive : "")).append("</donationDrive>\n");
+                sb.append("  <deliveryDestination>").append(escapeXml(deliveryDestination != null ? deliveryDestination : "")).append("</deliveryDestination>\n");
                 if (photoBase64 != null && !photoBase64.isEmpty()) {
-                    sb.append("<photoBase64><![CDATA[").append(photoBase64).append("]]></photoBase64>");
+                    sb.append("  <photoBase64><![CDATA[").append(photoBase64).append("]]></photoBase64>\n");
                 }
-                sb.append("</ticket>");
+                sb.append("</ticket>\n");
 
                 try (FileWriter fw = new FileWriter(file, false)) {
                     fw.write(sb.toString());
@@ -707,9 +754,17 @@ public class Server {
             String statusHistory = extractTagValue(xml, "statusHistory");
 
 
-            if (ticketUserId != null && requesterUserId != null
-                    && !requesterUserId.isEmpty()
-                    && requesterUserId.equals(ticketUserId)) {
+            boolean adminUser = isAdminUser(requesterUserId);
+            boolean riderUser = isRiderUser(requesterUserId);
+            boolean donorUser = isDonorUser(requesterUserId);
+
+            // perms: non-admin/non-rider can only modify their own tickets
+            if (!adminUser && !riderUser) {
+                if (requesterUserId == null || requesterUserId.trim().isEmpty()
+                        || ticketUserId == null
+                        || !requesterUserId.equals(ticketUserId)) {
+                    return new OperationResult(false, "You are not allowed to modify this ticket.");
+                }
             }
 
             String nowTs = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
@@ -722,6 +777,11 @@ public class Server {
             if (newStatus != null && !newStatus.trim().isEmpty()) {
                 String oldNormalized = oldStatus != null ? oldStatus.toUpperCase() : "";
                 String newNormalized = newStatus.toUpperCase();
+
+                // Donors are not allowed to change ticket status directly
+                if (donorUser && !oldNormalized.equals(newNormalized)) {
+                    return new OperationResult(false, "Donors cannot change ticket status directly.");
+                }
 
                 boolean allowed = false;
                 if ("PENDING".equals(oldNormalized) && ("ACCEPTED".equals(newNormalized) || "REJECTED".equals(newNormalized))) {
@@ -782,33 +842,33 @@ public class Server {
 
             synchronized (TICKET_LOCK) {
                 StringBuilder sb = new StringBuilder();
-                sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-                sb.append("<ticket>");
-                sb.append("<ticketId>").append(escapeXml(ticketId)).append("</ticketId>");
-                sb.append("<userId>").append(escapeXml(ticketUserId != null ? ticketUserId : "")).append("</userId>");
-                sb.append("<status>").append(escapeXml(finalStatus != null ? finalStatus : "")).append("</status>");
-                sb.append("<createdAt>").append(escapeXml(createdAt != null ? createdAt : "")).append("</createdAt>");
-                sb.append("<lastUpdatedAt>").append(escapeXml(nowTs)).append("</lastUpdatedAt>");
-                sb.append("<itemCategory>").append(escapeXml(itemCategory != null ? itemCategory : "")).append("</itemCategory>");
-                sb.append("<quantity>").append(escapeXml(quantityStr != null ? quantityStr : "")).append("</quantity>");
-                sb.append("<condition>").append(escapeXml(condition != null ? condition : "")).append("</condition>");
-                sb.append("<expirationDate>").append(escapeXml(expirationDate != null ? expirationDate : ""))
-                        .append("</expirationDate>");
-                sb.append("<pickupDateTime>").append(escapeXml(finalPickupTime != null ? finalPickupTime : ""))
-                        .append("</pickupDateTime>");
-                sb.append("<pickupLocation>").append(escapeXml(pickupLocation != null ? pickupLocation : ""))
-                        .append("</pickupLocation>");
-                sb.append("<photoPath>").append(escapeXml(photoPath != null ? photoPath : "")).append("</photoPath>");
-                sb.append("<notes>").append(escapeXml(notes != null ? notes : "")).append("</notes>");
-                sb.append("<donationDrive>").append(escapeXml(donationDrive != null ? donationDrive : "")).append("</donationDrive>");
-                sb.append("<deliveryDestination>").append(escapeXml(deliveryDestination != null ? deliveryDestination : "")).append("</deliveryDestination>");
-                sb.append("<qualityStatus>").append(escapeXml(finalQualityStatus != null ? finalQualityStatus : ""))
-                        .append("</qualityStatus>");
-                sb.append("<qualityReason>").append(escapeXml(finalQualityReason != null ? finalQualityReason : ""))
-                        .append("</qualityReason>");
-                sb.append("<statusHistory>").append(escapeXml(finalHistory != null ? finalHistory : ""))
-                        .append("</statusHistory>");
-                sb.append("</ticket>");
+                sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+                sb.append("<ticket>\n");
+                sb.append("  <ticketId>").append(escapeXml(ticketId)).append("</ticketId>\n");
+                sb.append("  <userId>").append(escapeXml(ticketUserId != null ? ticketUserId : "")).append("</userId>\n");
+                sb.append("  <status>").append(escapeXml(finalStatus != null ? finalStatus : "")).append("</status>\n");
+                sb.append("  <createdAt>").append(escapeXml(createdAt != null ? createdAt : "")).append("</createdAt>\n");
+                sb.append("  <lastUpdatedAt>").append(escapeXml(nowTs)).append("</lastUpdatedAt>\n");
+                sb.append("  <itemCategory>").append(escapeXml(itemCategory != null ? itemCategory : "")).append("</itemCategory>\n");
+                sb.append("  <quantity>").append(escapeXml(quantityStr != null ? quantityStr : "")).append("</quantity>\n");
+                sb.append("  <condition>").append(escapeXml(condition != null ? condition : "")).append("</condition>\n");
+                sb.append("  <expirationDate>").append(escapeXml(expirationDate != null ? expirationDate : ""))
+                        .append("</expirationDate>\n");
+                sb.append("  <pickupDateTime>").append(escapeXml(finalPickupTime != null ? finalPickupTime : ""))
+                        .append("</pickupDateTime>\n");
+                sb.append("  <pickupLocation>").append(escapeXml(pickupLocation != null ? pickupLocation : ""))
+                        .append("</pickupLocation>\n");
+                sb.append("  <photoPath>").append(escapeXml(photoPath != null ? photoPath : "")).append("</photoPath>\n");
+                sb.append("  <notes>").append(escapeXml(notes != null ? notes : "")).append("</notes>\n");
+                sb.append("  <donationDrive>").append(escapeXml(donationDrive != null ? donationDrive : "")).append("</donationDrive>\n");
+                sb.append("  <deliveryDestination>").append(escapeXml(deliveryDestination != null ? deliveryDestination : "")).append("</deliveryDestination>\n");
+                sb.append("  <qualityStatus>").append(escapeXml(finalQualityStatus != null ? finalQualityStatus : ""))
+                        .append("</qualityStatus>\n");
+                sb.append("  <qualityReason>").append(escapeXml(finalQualityReason != null ? finalQualityReason : ""))
+                        .append("</qualityReason>\n");
+                sb.append("  <statusHistory>").append(escapeXml(finalHistory != null ? finalHistory : ""))
+                        .append("</statusHistory>\n");
+                sb.append("</ticket>\n");
 
                 try (FileWriter fw = new FileWriter(file, false)) {
                     fw.write(sb.toString());
@@ -859,6 +919,17 @@ public class Server {
             String deletedAt = extractTagValue(xml, "deletedAt");
             String isDeleted = extractTagValue(xml, "isDeleted");
 
+            boolean adminUser = isAdminUser(requesterUserId);
+
+            // Only the owner of the ticket or admin can cancel or delete a ticket
+            if (!adminUser) {
+                if (requesterUserId == null || requesterUserId.trim().isEmpty()
+                        || ticketUserId == null
+                        || !requesterUserId.equals(ticketUserId)) {
+                    return new OperationResult(false, "You are not allowed to cancel this ticket.");
+                }
+            }
+
             String nowTs = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
 
             String finalStatus = status;
@@ -886,33 +957,33 @@ public class Server {
 
             synchronized (TICKET_LOCK) {
                 StringBuilder sb = new StringBuilder();
-                sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
-                sb.append("<ticket>");
-                sb.append("<ticketId>").append(escapeXml(ticketId)).append("</ticketId>");
-                sb.append("<userId>").append(escapeXml(ticketUserId != null ? ticketUserId : "")).append("</userId>");
-                sb.append("<status>").append(escapeXml(finalStatus)).append("</status>");
-                sb.append("<createdAt>").append(escapeXml(createdAt != null ? createdAt : "")).append("</createdAt>");
-                sb.append("<lastUpdatedAt>").append(escapeXml(nowTs)).append("</lastUpdatedAt>");
-                sb.append("<itemCategory>").append(escapeXml(itemCategory != null ? itemCategory : "")).append("</itemCategory>");
-                sb.append("<quantity>").append(escapeXml(quantityStr != null ? quantityStr : "")).append("</quantity>");
-                sb.append("<condition>").append(escapeXml(condition != null ? condition : "")).append("</condition>");
-                sb.append("<expirationDate>").append(escapeXml(expirationDate != null ? expirationDate : ""))
-                        .append("</expirationDate>");
-                sb.append("<pickupDateTime>").append(escapeXml(pickupDateTime != null ? pickupDateTime : ""))
-                        .append("</pickupDateTime>");
-                sb.append("<pickupLocation>").append(escapeXml(pickupLocation != null ? pickupLocation : ""))
-                        .append("</pickupLocation>");
-                sb.append("<photoPath>").append(escapeXml(photoPath != null ? photoPath : "")).append("</photoPath>");
-                sb.append("<notes>").append(escapeXml(notes != null ? notes : "")).append("</notes>");
-                sb.append("<qualityStatus>").append(escapeXml(qualityStatus != null ? qualityStatus : ""))
-                        .append("</qualityStatus>");
-                sb.append("<qualityReason>").append(escapeXml(qualityReason != null ? qualityReason : ""))
-                        .append("</qualityReason>");
-                sb.append("<statusHistory>").append(escapeXml(finalHistory)).append("</statusHistory>");
-                sb.append("<isDeleted>").append(escapeXml(finalIsDeleted)).append("</isDeleted>");
-                sb.append("<deletedAt>").append(escapeXml(finalDeletedAt)).append("</deletedAt>");
-                sb.append("<deleteReason>").append(escapeXml(finalDeleteReason)).append("</deleteReason>");
-                sb.append("</ticket>");
+                sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+                sb.append("<ticket>\n");
+                sb.append("  <ticketId>").append(escapeXml(ticketId)).append("</ticketId>\n");
+                sb.append("  <userId>").append(escapeXml(ticketUserId != null ? ticketUserId : "")).append("</userId>\n");
+                sb.append("  <status>").append(escapeXml(finalStatus)).append("</status>\n");
+                sb.append("  <createdAt>").append(escapeXml(createdAt != null ? createdAt : "")).append("</createdAt>\n");
+                sb.append("  <lastUpdatedAt>").append(escapeXml(nowTs)).append("</lastUpdatedAt>\n");
+                sb.append("  <itemCategory>").append(escapeXml(itemCategory != null ? itemCategory : "")).append("</itemCategory>\n");
+                sb.append("  <quantity>").append(escapeXml(quantityStr != null ? quantityStr : "")).append("</quantity>\n");
+                sb.append("  <condition>").append(escapeXml(condition != null ? condition : "")).append("</condition>\n");
+                sb.append("  <expirationDate>").append(escapeXml(expirationDate != null ? expirationDate : ""))
+                        .append("</expirationDate>\n");
+                sb.append("  <pickupDateTime>").append(escapeXml(pickupDateTime != null ? pickupDateTime : ""))
+                        .append("</pickupDateTime>\n");
+                sb.append("  <pickupLocation>").append(escapeXml(pickupLocation != null ? pickupLocation : ""))
+                        .append("</pickupLocation>\n");
+                sb.append("  <photoPath>").append(escapeXml(photoPath != null ? photoPath : "")).append("</photoPath>\n");
+                sb.append("  <notes>").append(escapeXml(notes != null ? notes : "")).append("</notes>\n");
+                sb.append("  <qualityStatus>").append(escapeXml(qualityStatus != null ? qualityStatus : ""))
+                        .append("</qualityStatus>\n");
+                sb.append("  <qualityReason>").append(escapeXml(qualityReason != null ? qualityReason : ""))
+                        .append("</qualityReason>\n");
+                sb.append("  <statusHistory>").append(escapeXml(finalHistory)).append("</statusHistory>\n");
+                sb.append("  <isDeleted>").append(escapeXml(finalIsDeleted)).append("</isDeleted>\n");
+                sb.append("  <deletedAt>").append(escapeXml(finalDeletedAt)).append("</deletedAt>\n");
+                sb.append("  <deleteReason>").append(escapeXml(finalDeleteReason)).append("</deleteReason>\n");
+                sb.append("</ticket>\n");
 
                 try (FileWriter fw = new FileWriter(file, false)) {
                     fw.write(sb.toString());
@@ -980,7 +1051,7 @@ public class Server {
 
             File dir = new File(TICKETS_DIR);
             File file = new File(dir, ticketId + ".xml");
-            
+
             if (!file.exists()) {
                 return new OperationResult(false, "Ticket " + ticketId + " not found.");
             }
