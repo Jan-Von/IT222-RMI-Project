@@ -12,6 +12,7 @@ public class DashboardView {
     public JButton notifBtn;
     public JButton donationBtn;
     public JButton DonateBtn;
+    public JButton riderBtn;
     public JButton helpBtn;
     public JButton settingsBtn;
     public JPanel card1;
@@ -109,6 +110,23 @@ public class DashboardView {
         JLabel sidebarDonate = new JLabel(new ImageIcon(scaledImg));
         sidebarDonate.setBounds(30, 195, 25, 25);
         sidebar.add(sidebarDonate);
+
+        riderBtn = new JButton("Rider Mode");
+        riderBtn.setBounds(45, 240, 120, 40);
+        riderBtn.setBorderPainted(false);
+        riderBtn.setFocusPainted(false);
+        riderBtn.setContentAreaFilled(false);
+        sidebar.add(riderBtn);
+
+        try {
+            ImageIcon riderIcon = new ImageIcon("Resources/Images/rider.png");
+            if (riderIcon.getImage() != null) {
+                scaledImg = riderIcon.getImage().getScaledInstance(25, 25, Image.SCALE_SMOOTH);
+                JLabel sidebarRider = new JLabel(new ImageIcon(scaledImg));
+                sidebarRider.setBounds(30, 245, 25, 25);
+                sidebar.add(sidebarRider);
+            }
+        } catch (Exception ignored) { }
 
         helpBtn = new JButton("Help");
         helpBtn.setBounds(45,550,120,40);

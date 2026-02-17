@@ -194,6 +194,22 @@ public class Client {
         return sendRequest(request.toString());
     }
 
+    /**
+     * Update only pickup date and time of a ticket and status is same nyahaha
+     * Format: yyyy-MM-dd HH:mm (e.g. 2026-02-20 14:30)
+     */
+    public String updateTicketPickupTime(String userId, String ticketId, String pickupDateTime) throws IOException {
+        StringBuilder request = new StringBuilder();
+        request.append("<request><action>UPDATE_TICKET</action>");
+        request.append("<userId>").append(escapeXml(userId)).append("</userId>");
+        request.append("<ticketId>").append(escapeXml(ticketId)).append("</ticketId>");
+        if (pickupDateTime != null && !pickupDateTime.trim().isEmpty()) {
+            request.append("<pickupDateTime>").append(escapeXml(pickupDateTime.trim())).append("</pickupDateTime>");
+        }
+        request.append("</request>");
+        return sendRequest(request.toString());
+    }
+
     public String deleteTicket(String userId, String ticketId) throws IOException {
         String request = "<request><action>DELETE_TICKET</action>"
                 + "<userId>" + escapeXml(userId) + "</userId>"
@@ -264,6 +280,20 @@ public class Client {
 
     public String ping() throws IOException {
         return sendRequest("<request><action>PING</action><userId></userId></request>");
+    }
+
+    /** Mark the rider as available (go online). User must be logged in. */
+    public String setRiderAvailable(String userId) throws IOException {
+        String request = "<request><action>RIDER_SET_AVAILABLE</action>"
+                + "<userId>" + escapeXml(userId != null ? userId : "") + "</userId></request>";
+        return sendRequest(request);
+    }
+
+    /** Mark the rider as unavailable (go offline). */
+    public String setRiderUnavailable(String userId) throws IOException {
+        String request = "<request><action>RIDER_SET_UNAVAILABLE</action>"
+                + "<userId>" + escapeXml(userId != null ? userId : "") + "</userId></request>";
+        return sendRequest(request);
     }
 
     public static class Response {

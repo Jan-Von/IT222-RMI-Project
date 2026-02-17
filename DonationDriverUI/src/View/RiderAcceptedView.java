@@ -16,6 +16,10 @@ public class RiderAcceptedView {
     public JButton settingsBtn;
     public JButton rejectBtn;
     public JButton deliveredBtn;
+    public JList<String> ticketsList;
+    public JButton refreshBtn;
+    public JButton markPickedUpBtn;
+    public JButton rejectTicketBtn;
 
     public RiderAcceptedView() {
         frame = new JFrame("DonationDriver");
@@ -237,6 +241,23 @@ public class RiderAcceptedView {
         scrollPane.getViewport().setBackground(new Color(235, 237, 240));
 
         content.add(scrollPane, BorderLayout.CENTER);
+
+        // read and update tickets and actions
+        JPanel ticketsPanel = new JPanel(new BorderLayout(5, 5));
+        ticketsPanel.setOpaque(false);
+        ticketsPanel.add(new JLabel("Accepted pickups (from server):"), BorderLayout.NORTH);
+        ticketsList = new JList<>(new javax.swing.DefaultListModel<>());
+        ticketsList.setFont(new Font("Arial", Font.PLAIN, 12));
+        ticketsPanel.add(new JScrollPane(ticketsList), BorderLayout.CENTER);
+        JPanel ticketActions = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        refreshBtn = new JButton("Refresh");
+        markPickedUpBtn = new JButton("Mark Picked Up");
+        rejectTicketBtn = new JButton("Reject");
+        ticketActions.add(refreshBtn);
+        ticketActions.add(markPickedUpBtn);
+        ticketActions.add(rejectTicketBtn);
+        ticketsPanel.add(ticketActions, BorderLayout.SOUTH);
+        content.add(ticketsPanel, BorderLayout.SOUTH);
 
         mainContentPanel.add(content, BorderLayout.CENTER);
 

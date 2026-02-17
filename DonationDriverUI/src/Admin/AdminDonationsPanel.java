@@ -15,10 +15,12 @@ public class AdminDonationsPanel extends JPanel {
     private static final Color TABLE_HEADER_BG = new Color(240, 240, 240);
     private static final int MAX_PHOTO_DISPLAY_WIDTH = 800;
     private static final int MAX_PHOTO_DISPLAY_HEIGHT = 600;
+    private static final String PICKUP_DATETIME_FORMAT_HINT = "yyyy-MM-dd HH:mm (e.g. 2026-02-20 14:30)";
 
     private DefaultTableModel donationsTableModel;
     private JTable donationsTable;
     private List<String> photoBase64ByRow = new ArrayList<>();
+    private List<String> pickupDateTimeByRow = new ArrayList<>();
 
     public AdminDonationsPanel() {
         setLayout(new BorderLayout(16, 16));
@@ -59,6 +61,7 @@ public class AdminDonationsPanel extends JPanel {
         JButton pickedUpBtn = new JButton("Picked Up");
         JButton deliveredBtn= new JButton("Delivered");
         JButton rejectBtn   = new JButton("Reject");
+        JButton rescheduleBtn = new JButton("Reschedule pickup");
         JButton cancelBtn   = new JButton("Cancel Request");
         JButton permanentDeleteBtn = new JButton("Permanent Delete");
 
@@ -67,6 +70,7 @@ public class AdminDonationsPanel extends JPanel {
         pickedUpBtn.addActionListener(e -> updateSelectedTicketStatus("PICKED_UP"));
         deliveredBtn.addActionListener(e -> updateSelectedTicketStatus("DELIVERED"));
         rejectBtn.addActionListener(e -> showQualityDialog("REJECTED"));
+        rescheduleBtn.addActionListener(e -> showReschedulePickupDialog());
         cancelBtn.addActionListener(e -> cancelSelectedTicket());
         permanentDeleteBtn.addActionListener(e -> showPermanentDeleteDialog());
 
@@ -75,6 +79,7 @@ public class AdminDonationsPanel extends JPanel {
         panel.add(pickedUpBtn);
         panel.add(deliveredBtn);
         panel.add(rejectBtn);
+        panel.add(rescheduleBtn);
         panel.add(cancelBtn);
         panel.add(permanentDeleteBtn);
 
@@ -221,6 +226,77 @@ public class AdminDonationsPanel extends JPanel {
         dialog.setVisible(true);
     }
 
+    private void showReschedulePickupDialog() {
+        int row = donationsTable.getSelectedRow();
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, "Please select a ticket first.");
+            return;
+        }
+        String ticketId = String.valueOf(donationsTableModel.getValueAt(row, 0));
+        if ("-".equals(ticketId) || ticketId == null || ticketId.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No valid ticket selected.");
+            return;
+        }
+        String currentPickup = row < pickupDateTimeByRow.size() ? pickupDateTimeByRow.get(row) : null;
+        if (currentPickup == null) currentPickup = "";
+
+        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Reschedule Pickup", true);
+        dialog.setLayout(new BorderLayout(10, 10));
+        JPanel dialogContent = new JPanel(new BorderLayout(10, 10));
+        dialogContent.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        dialog.add(dialogContent, BorderLayout.CENTER);
+
+        JPanel fieldPanel = new JPanel(new BorderLayout(5, 5));
+        fieldPanel.add(new JLabel("Pickup date/time (" + PICKUP_DATETIME_FORMAT_HINT + "):"), BorderLayout.NORTH);
+        JTextField pickupField = new JTextField(currentPickup, 25);
+        if (currentPickup.isEmpty()) {
+            pickupField.setToolTipText(PICKUP_DATETIME_FORMAT_HINT);
+        }
+        fieldPanel.add(pickupField, BorderLayout.CENTER);
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton okBtn = new JButton("Update pickup time");
+        JButton cancelBtn = new JButton("Cancel");
+        buttonPanel.add(okBtn);
+        buttonPanel.add(cancelBtn);
+
+        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
+        mainPanel.add(fieldPanel, BorderLayout.CENTER);
+        mainPanel.add(buttonPanel, BorderLayout.SOUTH);
+        dialogContent.add(mainPanel, BorderLayout.CENTER);
+
+        okBtn.addActionListener(e -> {
+            String newPickup = pickupField.getText().trim();
+            if (newPickup.isEmpty()) {
+                JOptionPane.showMessageDialog(dialog, "Please enter a pickup date/time.", "Validation", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            try {
+                Client client = Client.getDefault();
+                String responseXml = client.updateTicketPickupTime("admin", ticketId, newPickup);
+                Client.Response resp = Client.parseResponse(responseXml);
+                if (resp != null && resp.isOk()) {
+                    JOptionPane.showMessageDialog(this, "Pickup time updated successfully.");
+                    refreshData();
+                    dialog.dispose();
+                } else {
+                    String msg = (resp != null && resp.message != null && !resp.message.isEmpty())
+                            ? resp.message : "Failed to update pickup time.";
+                    JOptionPane.showMessageDialog(dialog, msg, "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(dialog, "Unable to contact server.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+
+        cancelBtn.addActionListener(e -> dialog.dispose());
+
+        dialog.pack();
+        dialog.setLocationRelativeTo(this);
+        dialog.setVisible(true);
+    }
+
     private void styleTable(JTable table) {
         table.setFillsViewportHeight(true);
         table.setRowHeight(24);
@@ -234,11 +310,13 @@ public class AdminDonationsPanel extends JPanel {
         if (donationsTableModel == null) return;
         donationsTableModel.setRowCount(0);
         photoBase64ByRow.clear();
+        pickupDateTimeByRow.clear();
 
         List<Object[]> rows = loadDonationsFromServer();
         if (rows.isEmpty()) {
             donationsTableModel.addRow(new Object[]{"-", "-", "-", "-", "No data", "-", "-"});
             photoBase64ByRow.add(null);
+            pickupDateTimeByRow.add("");
         } else {
             for (Object[] row : rows) {
                 donationsTableModel.addRow(row);
@@ -279,6 +357,7 @@ public class AdminDonationsPanel extends JPanel {
                 String drive = extractTagValue(ticketXml, "donationDrive");
                 String destination = extractTagValue(ticketXml, "deliveryDestination");
                 String photoBase64 = extractPhotoBase64(ticketXml);
+                String pickupDateTime = extractTagValue(ticketXml, "pickupDateTime");
 
                 String amountOrQty = (quantity != null && !quantity.isEmpty())
                         ? quantity + " boxes"
@@ -303,6 +382,7 @@ public class AdminDonationsPanel extends JPanel {
                         dest
                 });
                 photoBase64ByRow.add(photoBase64);
+                pickupDateTimeByRow.add(pickupDateTime != null ? pickupDateTime : "");
 
                 idx = end + "</ticket>".length();
             }

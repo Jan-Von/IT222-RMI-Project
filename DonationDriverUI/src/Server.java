@@ -1,9 +1,12 @@
 import java.io.*;
 import java.net.Socket;
 import java.net.ServerSocket;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Scanner;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import javax.xml.parsers.DocumentBuilder;
@@ -207,6 +210,31 @@ public class Server {
                         message = "PONG from DonationServer.";
                         dataAffected = "health check";
                         break;
+                    case "RIDER_SET_AVAILABLE": {
+                        if (userId == null || userId.trim().isEmpty()) {
+                            message = "User must be logged in to set rider availability.";
+                        } else if (!userEmailExists(userId.trim())) {
+                            message = "User account not found.";
+                        } else if (addRiderToAvailable(userId.trim())) {
+                            status = "OK";
+                            message = "Rider is now available.";
+                            dataAffected = "rider " + userId + " set available";
+                        } else {
+                            message = "Failed to set rider available.";
+                        }
+                        break;
+                    }
+                    case "RIDER_SET_UNAVAILABLE": {
+                        if (userId == null || userId.trim().isEmpty()) {
+                            message = "User must be logged in.";
+                        } else {
+                            removeRiderFromAvailable(userId.trim());
+                            status = "OK";
+                            message = "Rider is now unavailable.";
+                            dataAffected = "rider " + userId + " set unavailable";
+                        }
+                        break;
+                    }
                     default:
                         message = "Unknown action: " + action;
                         dataAffected = "unknown action: " + action;
@@ -393,12 +421,74 @@ public class Server {
         }
 
         private static final String TICKETS_DIR = "tickets";
+        private static final String AVAILABLE_RIDERS_FILE = "available_riders.txt";
         private static final Object TICKET_LOCK = new Object();
+        private static final Object RIDER_LOCK = new Object();
         private static long nextTicketId = System.currentTimeMillis();
 
-        // Placeholder until rider UI/system exists
+        private static File resolveAvailableRidersFile() {
+            File cwd = new File(System.getProperty("user.dir"));
+            File ticketsDir = new File(cwd, TICKETS_DIR);
+            File parent = ticketsDir.getParentFile();
+            return new File(parent != null ? parent : cwd, AVAILABLE_RIDERS_FILE);
+        }
+
+        /** Returns true only when at least one rider is marked available. */
         private static boolean areRidersAvailable() {
-            return true;
+            File file = resolveAvailableRidersFile();
+            if (!file.exists()) return false;
+            synchronized (RIDER_LOCK) {
+                try {
+                    List<String> lines = Files.readAllLines(file.toPath(), StandardCharsets.UTF_8);
+                    for (String line : lines) {
+                        if (line != null && !line.trim().isEmpty()) {
+                            return true;
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                return false;
+            }
+        }
+
+        private static boolean addRiderToAvailable(String userId) {
+            if (userId == null || userId.trim().isEmpty()) return false;
+            File file = resolveAvailableRidersFile();
+            synchronized (RIDER_LOCK) {
+                try {
+                    Set<String> riders = new HashSet<>();
+                    if (file.exists()) {
+                        riders.addAll(Files.readAllLines(file.toPath(), StandardCharsets.UTF_8));
+                    }
+                    riders.removeIf(s -> s == null || s.trim().isEmpty());
+                    riders.add(userId.trim());
+                    file.getParentFile().mkdirs();
+                    Files.write(file.toPath(), riders, StandardCharsets.UTF_8);
+                    return true;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return false;
+                }
+            }
+        }
+
+        private static boolean removeRiderFromAvailable(String userId) {
+            if (userId == null || userId.trim().isEmpty()) return false;
+            File file = resolveAvailableRidersFile();
+            synchronized (RIDER_LOCK) {
+                try {
+                    if (!file.exists()) return true;
+                    List<String> lines = Files.readAllLines(file.toPath(), StandardCharsets.UTF_8);
+                    String target = userId.trim();
+                    boolean removed = lines.removeIf(s -> s != null && s.trim().equals(target));
+                    Files.write(file.toPath(), lines, StandardCharsets.UTF_8);
+                    return true;
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return false;
+                }
+            }
         }
 
         private static class OperationResult {

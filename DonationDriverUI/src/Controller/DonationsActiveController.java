@@ -3,14 +3,17 @@ package Controller;
 import View.*;
 import Network.Client;
 import javax.swing.*;
+import java.awt.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 public class DonationsActiveController {
 
+    private static final String PICKUP_DATETIME_FORMAT_HINT = "yyyy-MM-dd HH:mm (e.g. 2026-02-20 14:30)";
+
     private DonationsActiveView view;
-    private MonetaryDonationView view1;
+    private List<String> ticketIds = new ArrayList<>();
 
     public DonationsActiveController(DonationsActiveView view) {
         this.view = view;
@@ -22,7 +25,7 @@ public class DonationsActiveController {
         view.DonateBtn.addActionListener(e -> openDonate());
         view.PendingButton.addActionListener(e -> openDonationPending());
         view.helpBtn.addActionListener(e -> openHelp());
-
+        view.changePickupTimeBtn.addActionListener(e -> showReschedulePickupDialog());
 
         loadActiveTickets();
     }
@@ -32,6 +35,7 @@ public class DonationsActiveController {
             DefaultListModel<String> model = new DefaultListModel<>();
             model.addElement("Please log in to see your active donations.");
             view.ticketsList.setModel(model);
+            ticketIds.clear();
             return;
         }
 
@@ -51,6 +55,7 @@ public class DonationsActiveController {
                 
                 List<String> summaries = new ArrayList<>();
 
+                ticketIds.clear();
                 if (acceptedResponse != null && acceptedResponse.isOk()) {
                     String acceptedTicketsXml = Client.unescapeXml(acceptedResponse.message != null ? acceptedResponse.message : "");
                     summaries.addAll(parseTicketSummaries(acceptedTicketsXml));
@@ -69,6 +74,7 @@ public class DonationsActiveController {
                     }
                 }
             } else {
+                ticketIds.clear();
                 String msg = "Failed to load active donations.";
                 if (acceptedResponse != null && acceptedResponse.message != null && !acceptedResponse.message.isEmpty()) {
                     msg = acceptedResponse.message;
@@ -82,6 +88,7 @@ public class DonationsActiveController {
 
         } catch (IOException ex) {
             ex.printStackTrace();
+            ticketIds.clear();
             DefaultListModel<String> model = new DefaultListModel<>();
             model.addElement("Error: Unable to contact server to load donations.");
             view.ticketsList.setModel(model);
@@ -104,6 +111,7 @@ public class DonationsActiveController {
             String ticketXml = ticketsXml.substring(start, end + "</ticket>".length());
 
             String ticketId     = extractTagValue(ticketXml, "ticketId");
+            ticketIds.add(ticketId != null ? ticketId : "");
             String status       = extractTagValue(ticketXml, "status");
             String itemCategory = extractTagValue(ticketXml, "itemCategory");
             String quantity     = extractTagValue(ticketXml, "quantity");
@@ -189,5 +197,74 @@ public class DonationsActiveController {
         new HelpController(helpView);
         helpView.frame.setVisible(true);
         view.frame.dispose();
+    }
+
+    private void showReschedulePickupDialog() {
+        int idx = view.ticketsList.getSelectedIndex();
+        if (idx < 0 || idx >= ticketIds.size()) {
+            JOptionPane.showMessageDialog(view.frame, "Please select a donation first.");
+            return;
+        }
+        String ticketId = ticketIds.get(idx);
+        if (ticketId == null || ticketId.isEmpty()) {
+            JOptionPane.showMessageDialog(view.frame, "No valid ticket selected.");
+            return;
+        }
+        String userId = LoginController.currentUserEmail;
+        if (userId == null || userId.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(view.frame, "Please log in to reschedule.");
+            return;
+        }
+
+        JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(view.frame), "Change Pickup Time", true);
+        dialog.setLayout(new BorderLayout(10, 10));
+        JPanel content = new JPanel(new BorderLayout(10, 10));
+        content.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+        dialog.add(content, BorderLayout.CENTER);
+
+        JPanel fieldPanel = new JPanel(new BorderLayout(5, 5));
+        fieldPanel.add(new JLabel("New pickup date/time (" + PICKUP_DATETIME_FORMAT_HINT + "):"), BorderLayout.NORTH);
+        JTextField pickupField = new JTextField(25);
+        pickupField.setToolTipText(PICKUP_DATETIME_FORMAT_HINT);
+        fieldPanel.add(pickupField, BorderLayout.CENTER);
+
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JButton okBtn = new JButton("Update pickup time");
+        JButton cancelBtn = new JButton("Cancel");
+        buttonPanel.add(okBtn);
+        buttonPanel.add(cancelBtn);
+
+        content.add(fieldPanel, BorderLayout.CENTER);
+        content.add(buttonPanel, BorderLayout.SOUTH);
+
+        okBtn.addActionListener(e -> {
+            String newPickup = pickupField.getText().trim();
+            if (newPickup.isEmpty()) {
+                JOptionPane.showMessageDialog(dialog, "Please enter a pickup date/time.", "Validation", JOptionPane.WARNING_MESSAGE);
+                return;
+            }
+            try {
+                Client client = Client.getDefault();
+                String responseXml = client.updateTicketPickupTime(userId, ticketId, newPickup);
+                Client.Response resp = Client.parseResponse(responseXml);
+                if (resp != null && resp.isOk()) {
+                    JOptionPane.showMessageDialog(view.frame, "Pickup time updated successfully.");
+                    loadActiveTickets();
+                    dialog.dispose();
+                } else {
+                    String msg = (resp != null && resp.message != null && !resp.message.isEmpty())
+                            ? resp.message : "Failed to update pickup time.";
+                    JOptionPane.showMessageDialog(dialog, msg, "Error", JOptionPane.ERROR_MESSAGE);
+                }
+            } catch (IOException ex) {
+                ex.printStackTrace();
+                JOptionPane.showMessageDialog(dialog, "Unable to contact server.", "Error", JOptionPane.ERROR_MESSAGE);
+            }
+        });
+        cancelBtn.addActionListener(e -> dialog.dispose());
+
+        dialog.pack();
+        dialog.setLocationRelativeTo(view.frame);
+        dialog.setVisible(true);
     }
 }

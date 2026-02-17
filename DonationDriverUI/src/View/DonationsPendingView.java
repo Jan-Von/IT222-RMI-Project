@@ -15,6 +15,7 @@ public class DonationsPendingView{
     public JButton DeliveredButton;
     public JButton PendingButton;
     public JButton RejectedButton;
+    public JButton changePickupTimeBtn;
     public JList<String> ticketsList;
 
     public DonationsPendingView() {
@@ -164,6 +165,12 @@ public class DonationsPendingView{
         RejectedButton.setFocusPainted(false);
         RejectedButton.setBackground(new Color(245,245,245));
         frame.add(RejectedButton);
+
+        changePickupTimeBtn = new JButton("Change pickup time");
+        changePickupTimeBtn.setBounds(825, 100, 150, 40);
+        changePickupTimeBtn.setBorderPainted(false);
+        changePickupTimeBtn.setFocusPainted(false);
+        frame.add(changePickupTimeBtn);
 
         DefaultListModel<String> listModel = new DefaultListModel<>();
         ticketsList = new JList<>(listModel);

@@ -1,6 +1,8 @@
 package Controller;
 
 import View.*;
+import Network.Client;
+import java.io.IOException;
 
 public class RiderDeliveredController {
 
@@ -10,7 +12,7 @@ public class RiderDeliveredController {
         this.view = view;
         view.notifBtn.addActionListener(e -> openNotification());
         view.donationBtn.addActionListener(e -> openDonations());
-        view.homeBtn.addActionListener(e-> openHome());
+        view.homeBtn.addActionListener(e -> openHome());
         view.DonateBtn.addActionListener(e -> openDonate());
         view.helpBtn.addActionListener(e -> openHelp());
         view.acceptBtn.addActionListener(e -> openAccepted());
@@ -18,13 +20,14 @@ public class RiderDeliveredController {
     }
 
     private void openDonations() {
-        DonationsActiveView donationsActiveView = new DonationsActiveView();
-        new DonationsActiveController(donationsActiveView);
-        donationsActiveView.frame.setVisible(true);
+        RiderAcceptedView acceptedView = new RiderAcceptedView();
+        new RiderAcceptedController(acceptedView);
+        acceptedView.frame.setVisible(true);
         view.frame.dispose();
     }
 
     private void openHome() {
+        setRiderUnavailable();
         DashboardView dashboardView = new DashboardView();
         new DashboardController(dashboardView);
         dashboardView.frame.setVisible(true);
@@ -32,13 +35,25 @@ public class RiderDeliveredController {
     }
 
     private void openNotification() {
-        NotificationView dashboardView = new NotificationView();
-        new NotificationController(dashboardView);
-        dashboardView.frame.setVisible(true);
+        setRiderUnavailable();
+        NotificationView notificationView = new NotificationView();
+        new NotificationController(notificationView);
+        notificationView.frame.setVisible(true);
         view.frame.dispose();
     }
 
+    private void setRiderUnavailable() {
+        String userId = LoginController.currentUserEmail;
+        if (userId == null || userId.trim().isEmpty()) return;
+        try {
+            Client.getDefault().setRiderUnavailable(userId);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+
     private void openDonate() {
+        setRiderUnavailable();
         DonateView donateView = new DonateView();
         new DonateController(donateView);
         donateView.frame.setVisible(true);
@@ -46,6 +61,7 @@ public class RiderDeliveredController {
     }
 
     private void openHelp() {
+        setRiderUnavailable();
         HelpView helpView = new HelpView();
         new HelpController(helpView);
         helpView.frame.setVisible(true);

@@ -25,7 +25,6 @@ public class BoxDonationController {
     private static final String GOODS_XML_RELATIVE = "DonationDriverUI/Goods Donations.xml";
 
     private BoxDonationView view;
-    private MonetaryDonationView view1;
 
     public BoxDonationController(BoxDonationView view) {
         this.view = view;

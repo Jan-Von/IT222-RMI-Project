@@ -18,8 +18,9 @@ public class DashboardController {
         view.monetaryBtn.addActionListener(e -> openMonetaryDonation());
         view.goodsBtn.addActionListener(e -> openBoxDonation());
         view.notifBtn.addActionListener(e -> openNotification());
-        view.donationBtn.addActionListener(e ->openDonations());
+        view.donationBtn.addActionListener(e -> openDonations());
         view.DonateBtn.addActionListener(e -> openDonate());
+        view.riderBtn.addActionListener(e -> openRiderMode());
         view.helpBtn.addActionListener(e -> openHelp());
 
         setupCardClick(view.card1);
@@ -79,6 +80,21 @@ public class DashboardController {
         DonationsActiveView donationsView = new DonationsActiveView();
         new DonationsActiveController(donationsView);
         donationsView.frame.setVisible(true);
+        view.frame.dispose();
+    }
+
+    private void openRiderMode(){
+        String userId = LoginController.currentUserEmail;
+        if (userId == null || userId.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(view.frame,
+                    "Please log in first to use Rider mode.",
+                    "Login Required",
+                    JOptionPane.INFORMATION_MESSAGE);
+            return;
+        }
+        RiderDashboard riderView = new RiderDashboard();
+        new RiderController(riderView);
+        riderView.frame.setVisible(true);
         view.frame.dispose();
     }
 

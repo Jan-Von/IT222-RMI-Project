@@ -4,7 +4,6 @@ import View.*;
 public class SuccessDonationController {
 
     private SuccessDonationView view;
-    private MonetaryDonationView view1;
 
     public SuccessDonationController(SuccessDonationView view) {
         this.view = view;
