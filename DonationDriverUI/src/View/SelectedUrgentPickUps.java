@@ -20,12 +20,14 @@ public class SelectedUrgentPickUps {
     public JPanel card3;
 
     public SelectedUrgentPickUps() {
-        frame = new JFrame("DonationDriver - Dashboard");
+        frame = new JFrame("DonationDriver - Rider Dashboard");
         frame.setSize(1400, 800);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
         frame.setLayout(null);
         frame.getContentPane().setBackground(Color.WHITE);
+        ImageIcon frameIcon = new ImageIcon("Resources/Images/logoicon.png");
+        frame.setIconImage(frameIcon.getImage());
 
         JPanel header = new JPanel();
         header.setLayout(null);
@@ -36,6 +38,12 @@ public class SelectedUrgentPickUps {
         title.setFont(new Font("Arial", Font.BOLD, 16));
         title.setBounds(80, 18, 200, 20);
         header.add(title);
+
+        ImageIcon logo = new ImageIcon("Resources/Images/logoicon.png");
+        Image logoImg = logo.getImage().getScaledInstance(50, 40, Image.SCALE_SMOOTH);
+        JLabel logoLabel = new JLabel(new ImageIcon(logoImg));
+        logoLabel.setBounds(20, 18, 50, 40);
+        header.add(logoLabel);
 
         JLabel subtitle = new JLabel("Accelerated Giving");
         subtitle.setFont(new Font("Arial", Font.BOLD, 12));
@@ -90,6 +98,7 @@ public class SelectedUrgentPickUps {
         JLabel sidebarNotif = new JLabel(new ImageIcon(scaledImg));
         sidebarNotif.setBounds(30, 95, 25, 25);
         sidebar.add(sidebarNotif);
+
 
         donationBtn = new JButton("Donations");
         donationBtn.setBounds(55, 140, 110, 40);

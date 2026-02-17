@@ -20,17 +20,25 @@ public class RejectedSelectedUrgentPickUps {
     public JPanel card3;
 
     public RejectedSelectedUrgentPickUps() {
-        frame = new JFrame("DonationDriver - Dashboard");
+        frame = new JFrame("DonationDriver - Rider Dashboard");
         frame.setSize(1400, 800);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
         frame.setLayout(null);
         frame.getContentPane().setBackground(Color.WHITE);
+        ImageIcon frameIcon = new ImageIcon("Resources/Images/logoicon.png");
+        frame.setIconImage(frameIcon.getImage());
 
         JPanel header = new JPanel();
         header.setLayout(null);
         header.setBackground(new Color(245, 245, 245));
         header.setBounds(0, 0, 1400, 80);
+
+        ImageIcon logo = new ImageIcon("Resources/Images/logoicon.png");
+        Image logoImg = logo.getImage().getScaledInstance(50, 40, Image.SCALE_SMOOTH);
+        JLabel logoLabel = new JLabel(new ImageIcon(logoImg));
+        logoLabel.setBounds(20, 18, 50, 40);
+        header.add(logoLabel);
 
         JLabel title = new JLabel("DonationDriver");
         title.setFont(new Font("Arial", Font.BOLD, 16));

@@ -16,7 +16,7 @@ public class RiderDeliveredView {
     public JButton settingsBtn;
 
     public RiderDeliveredView() {
-        frame = new JFrame("DonationDriver - Dashboard");
+        frame = new JFrame("DonationDriver - Rider Dashboard");
         frame.setSize(1400, 800);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
@@ -71,7 +71,7 @@ public class RiderDeliveredView {
 
         homeBtn = new JButton("Home");
         homeBtn.setBounds(65, 40, 80, 40);
-        homeBtn.setBackground(Color.lightGray);
+        homeBtn.setContentAreaFilled(false);
         homeBtn.setBorderPainted(false);
         homeBtn.setFocusPainted(false);
         sidebar.add(homeBtn);
@@ -96,10 +96,10 @@ public class RiderDeliveredView {
         sidebar.add(sidebarNotif);
 
         donationBtn = new JButton("Rider");
-        donationBtn.setBounds(45, 140, 120, 40);
+        donationBtn.setBounds(65, 140, 80, 40);
         donationBtn.setBorderPainted(false);
         donationBtn.setFocusPainted(false);
-        donationBtn.setContentAreaFilled(false);
+        donationBtn.setBackground(Color.lightGray);
         sidebar.add(donationBtn);
 
         ImageIcon Rider = new ImageIcon("Resources/Images/rider.png");

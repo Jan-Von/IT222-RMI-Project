@@ -18,7 +18,7 @@ public class RiderDashboard {
     public JPanel card3;
 
     public RiderDashboard() {
-        frame = new JFrame("DonationDriver - Dashboard");
+        frame = new JFrame("DonationDriver - Rider Dashboard");
         frame.setSize(1400, 800);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.setLocationRelativeTo(null);
@@ -98,18 +98,18 @@ public class RiderDashboard {
         sidebarNotif.setBounds(30, 95, 25, 25);
         sidebar.add(sidebarNotif);
 
-        donationBtn = new JButton("Donations");
-        donationBtn.setBounds(55, 140, 110, 40);
+        donationBtn = new JButton("Rider");
+        donationBtn.setBounds(65, 140, 80, 40);
         donationBtn.setBorderPainted(false);
         donationBtn.setFocusPainted(false);
         donationBtn.setContentAreaFilled(false);
         sidebar.add(donationBtn);
 
-        ImageIcon donation = new ImageIcon("Resources/Images/charity.png");
-        scaledImg = donation.getImage().getScaledInstance(25, 25, Image.SCALE_SMOOTH);
-        JLabel sidebarDonation = new JLabel(new ImageIcon(scaledImg));
-        sidebarDonation.setBounds(30, 145, 25, 25);
-        sidebar.add(sidebarDonation);
+        ImageIcon Rider = new ImageIcon("Resources/Images/rider.png");
+        scaledImg = Rider.getImage().getScaledInstance(25, 25, Image.SCALE_SMOOTH);
+        JLabel sidebarRider = new JLabel(new ImageIcon(scaledImg));
+        sidebarRider.setBounds(30, 145, 25, 25);
+        sidebar.add(sidebarRider);
 
         DonateBtn = new JButton("Donate");
         DonateBtn.setBounds(45, 190, 120, 40);
@@ -321,12 +321,6 @@ public class RiderDashboard {
         locLabel.setBounds(10, 25, 250, 100);
         Loc.add(locLabel);
 
-        ImageIcon locphoto = new ImageIcon("Resources/Images/loc.png");
-        scaledImg = locphoto.getImage().getScaledInstance(299, 180, Image.SCALE_SMOOTH);
-        JLabel Locphoto = new JLabel(new ImageIcon(scaledImg));
-        Locphoto.setBounds(40, 40, 299, 180);
-        Loc.add(Locphoto);
-
         JButton locUpdateBtn = new JButton();
         locUpdateBtn.setLayout(null);
         locUpdateBtn.setBounds(20, 105, 90, 70);
@@ -339,6 +333,14 @@ public class RiderDashboard {
         locUpdateText.setFont(new Font("Arial", Font.BOLD, 15));
         locUpdateText.setBounds(14, 25, 80, 20);
         locUpdateBtn.add(locUpdateText);
+
+        ImageIcon locphoto = new ImageIcon("Resources/Images/loc.png");
+        scaledImg = locphoto.getImage().getScaledInstance(299, 180, Image.SCALE_SMOOTH);
+        JLabel Locphoto = new JLabel(new ImageIcon(scaledImg));
+        Locphoto.setBounds(150, 40, 299, 180);
+        Loc.add(Locphoto);
+
+
 
 
 
