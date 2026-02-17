@@ -24,11 +24,20 @@ public class RiderDashboard {
         frame.setLocationRelativeTo(null);
         frame.setLayout(null);
         frame.getContentPane().setBackground(Color.WHITE);
+        ImageIcon frameIcon = new ImageIcon("Resources/Images/logoicon.png");
+        frame.setIconImage(frameIcon.getImage());
+
 
         JPanel header = new JPanel();
         header.setLayout(null);
         header.setBackground(new Color(245, 245, 245));
         header.setBounds(0, 0, 1400, 80);
+
+        ImageIcon logo = new ImageIcon("Resources/Images/logoicon.png");
+        Image logoImg = logo.getImage().getScaledInstance(50, 40, Image.SCALE_SMOOTH);
+        JLabel logoLabel = new JLabel(new ImageIcon(logoImg));
+        logoLabel.setBounds(20, 18, 50, 40);
+        header.add(logoLabel);
 
         JLabel title = new JLabel("DonationDriver");
         title.setFont(new Font("Arial", Font.BOLD, 16));
@@ -162,6 +171,12 @@ public class RiderDashboard {
         card1Title.setFont(new Font("Arial", Font.BOLD, 14));
         card1Title.setBounds(65, 10, 250, 20);
         card1.add(card1Title);
+
+        ImageIcon card1photo = new ImageIcon("Resources/Images/image1.png");
+        scaledImg = card1photo.getImage().getScaledInstance(299, 180, Image.SCALE_SMOOTH);
+        JLabel card1Photo = new JLabel(new ImageIcon(scaledImg));
+        card1Photo.setBounds(0, 40, 299, 180);
+        card1.add(card1Photo);
 
         JTextArea card1Text = new JTextArea("Donation Requests:         21");
         card1Text.setBounds(30, 230, 250, 50);
@@ -308,9 +323,9 @@ public class RiderDashboard {
 
         ImageIcon locphoto = new ImageIcon("Resources/Images/loc.png");
         scaledImg = locphoto.getImage().getScaledInstance(299, 180, Image.SCALE_SMOOTH);
-        JLabel locphoto = new JLabel(new ImageIcon(scaledImg));
-        locphoto.setBounds(40, 40, 299, 180);
-        Loc.add(locphoto);
+        JLabel Locphoto = new JLabel(new ImageIcon(scaledImg));
+        Locphoto.setBounds(40, 40, 299, 180);
+        Loc.add(Locphoto);
 
         JButton locUpdateBtn = new JButton();
         locUpdateBtn.setLayout(null);
