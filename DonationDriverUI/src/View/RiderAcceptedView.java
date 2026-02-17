@@ -14,6 +14,8 @@ public class RiderAcceptedView {
     public JButton DonateBtn;
     public JButton helpBtn;
     public JButton settingsBtn;
+    public JButton rejectBtn;
+    public JButton deliveredBtn;
 
     public RiderAcceptedView() {
         frame = new JFrame("DonationDriver");
@@ -182,22 +184,30 @@ public class RiderAcceptedView {
         JPanel tabPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         tabPanel.setOpaque(false);
 
-        JLabel rejectedTab = new JLabel("Rejected");
-        rejectedTab.setBorder(new EmptyBorder(5, 10, 5, 10));
-        rejectedTab.setForeground(Color.GRAY);
+        rejectBtn = new JButton("Rejected");
+        rejectBtn.setBorder(new EmptyBorder(5, 10, 5, 10));
+        rejectBtn.setForeground(Color.GRAY);
+        rejectBtn.setContentAreaFilled(false);
+        rejectBtn.setFocusPainted(false);
+        rejectBtn.setOpaque(true);
+        rejectBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
         JLabel acceptedTab = new JLabel("Accepted");
         acceptedTab.setBorder(new EmptyBorder(5, 20, 5, 20));
         acceptedTab.setForeground(Color.BLACK);
         acceptedTab.setFont(new Font("Arial", Font.BOLD, 14));
 
-        JLabel deliveredTab = new JLabel("Delivered");
-        deliveredTab.setBorder(new EmptyBorder(5, 20, 5, 20));
-        deliveredTab.setForeground(Color.GRAY);
+        deliveredBtn = new JButton("Delivered");
+        deliveredBtn.setBorder(new EmptyBorder(5, 20, 5, 20));
+        deliveredBtn.setForeground(Color.GRAY);
+        deliveredBtn.setContentAreaFilled(false);
+        deliveredBtn.setFocusPainted(false);
+        deliveredBtn.setOpaque(true);
+        deliveredBtn.setCursor(new Cursor(Cursor.HAND_CURSOR));
 
-        tabPanel.add(rejectedTab);
+        tabPanel.add(rejectBtn);
         tabPanel.add(acceptedTab);
-        tabPanel.add(deliveredTab);
+        tabPanel.add(deliveredBtn);
 
         content.add(tabPanel, BorderLayout.NORTH);
 
