@@ -229,40 +229,29 @@ public class MonetaryDonationView {
         PaymentOptions.setBounds(150,140,300,30);
         monetaryMainCard.add(PaymentOptions);
 
-        JLabel transID = new JLabel("Reference Number");
-        transID.setFont(new Font("Arial", Font.BOLD, 14));
-        transID.setForeground(Color.BLACK);
-        transID.setBounds(150, 170, 300, 30);
-        monetaryMainCard.add(transID);
-
-        transactionIdField = new JTextField();
-        transactionIdField.setFont(new Font("Arial", Font.PLAIN, 14));
-        transactionIdField.setForeground(Color.BLACK);
-        transactionIdField.setBounds(150, 200, 300, 30);
-        monetaryMainCard.add(transactionIdField);
 
         JLabel donationDriveLabel = new JLabel("Donation Drive");
         donationDriveLabel.setFont(new Font("Arial", Font.BOLD, 14));
         donationDriveLabel.setForeground(Color.BLACK);
-        donationDriveLabel.setBounds(150, 235, 300, 30);
+        donationDriveLabel.setBounds(150, 170, 300, 30);
         monetaryMainCard.add(donationDriveLabel);
 
         String[] drives = {"Select", "Typhoon", "Fire", "Earthquake", "Flood", "General"};
         donationDriveDropdown = new JComboBox<>(drives);
         donationDriveDropdown.setFont(new Font("Arial", Font.BOLD, 14));
         donationDriveDropdown.setBackground(new Color(245, 245, 245));
-        donationDriveDropdown.setBounds(150, 265, 300, 30);
+        donationDriveDropdown.setBounds(150, 250, 300, 30);
         monetaryMainCard.add(donationDriveDropdown);
 
         uploadPhotoBtn = new JButton("Upload photo (JPG)");
         uploadPhotoBtn.setFont(new Font("Arial", Font.PLAIN, 12));
-        uploadPhotoBtn.setBounds(150, 235, 180, 28);
+        uploadPhotoBtn.setBounds(150, 200, 180, 28);
         monetaryMainCard.add(uploadPhotoBtn);
 
         photoStatusLabel = new JLabel("No photo selected");
         photoStatusLabel.setFont(new Font("Arial", Font.PLAIN, 12));
         photoStatusLabel.setForeground(Color.GRAY);
-        photoStatusLabel.setBounds(340, 238, 200, 22);
+        photoStatusLabel.setBounds(340, 200, 200, 22);
         monetaryMainCard.add(photoStatusLabel);
 
         uploadPhotoBtn.addActionListener(e -> {
@@ -278,7 +267,7 @@ public class MonetaryDonationView {
         donateNow.setFont(new Font("Arial", Font.BOLD, 14));
         donateNow.setForeground(Color.WHITE);
         donateNow.setBackground(new Color(20, 35, 100));
-        donateNow.setBounds(150, 275, 300, 30);
+        donateNow.setBounds(150, 300, 300, 30);
         monetaryMainCard.add(donateNow);
 
         JLabel instructionText = new JLabel("<html>Note: Please send the monetary donation first and Enter" +

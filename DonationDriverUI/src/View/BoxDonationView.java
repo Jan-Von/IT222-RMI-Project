@@ -212,10 +212,10 @@ public class BoxDonationView{
         String[] drives = {"Select drive", "Typhoon Relief", "Fire Victims", "Earthquake Relief", "Flood Relief", "General Donation"};
         donationDriveCombo = new JComboBox<>(drives);
         donationDriveCombo.setFont(new Font("Arial", Font.PLAIN, 14));
-        donationDriveCombo.setBounds(150, 50, 300, 30);
+        donationDriveCombo.setBounds(230, 50, 300, 30);
         monetaryMainCard.add(donationDriveCombo);
 
-        JLabel destLabel = new JLabel("Deliver to (e.g. school, barangay)");
+        JLabel destLabel = new JLabel("Deliver to (ex. school, church)");
         destLabel.setFont(new Font("Arial", Font.BOLD, 14));
         destLabel.setForeground(Color.BLACK);
         destLabel.setBounds(10, 85, 220, 30);
@@ -223,7 +223,7 @@ public class BoxDonationView{
 
         deliveryDestinationField = new JTextField();
         deliveryDestinationField.setFont(new Font("Arial", Font.PLAIN, 14));
-        deliveryDestinationField.setBounds(150, 85, 300, 30);
+        deliveryDestinationField.setBounds(230, 85, 300, 30);
         monetaryMainCard.add(deliveryDestinationField);
 
         JLabel typeofGoods = new JLabel("Type of Goods");
@@ -235,7 +235,7 @@ public class BoxDonationView{
         typeOfGoodsField = new JTextField();
         typeOfGoodsField.setFont(new Font("Arial", Font.PLAIN, 14));
         typeOfGoodsField.setForeground(Color.BLACK);
-        typeOfGoodsField.setBounds(150, 120, 300, 30);
+        typeOfGoodsField.setBounds(230, 120, 300, 30);
         monetaryMainCard.add(typeOfGoodsField);
 
         JLabel NumberBoxes = new JLabel("Number of Boxes");
@@ -247,7 +247,7 @@ public class BoxDonationView{
         numberOfBoxesField = new JTextField();
         numberOfBoxesField.setFont(new Font("Arial", Font.PLAIN, 14));
         numberOfBoxesField.setForeground(Color.BLACK);
-        numberOfBoxesField.setBounds(150, 155, 300, 30);
+        numberOfBoxesField.setBounds(230, 155, 300, 30);
         monetaryMainCard.add(numberOfBoxesField);
 
         JLabel Location = new JLabel("Your Location");
@@ -259,7 +259,7 @@ public class BoxDonationView{
         locationField = new JTextField();
         locationField.setFont(new Font("Arial", Font.PLAIN, 14));
         locationField.setForeground(Color.BLACK);
-        locationField.setBounds(150, 190, 300, 30);
+        locationField.setBounds(230, 190, 300, 30);
         monetaryMainCard.add(locationField);
 
         uploadPhotoBtn = new JButton("Upload photo (JPG)");
@@ -282,11 +282,6 @@ public class BoxDonationView{
             }
         });
 
-        ImageIcon Maps = new ImageIcon("Resources/Images/Maps.png");
-        Image MapsIcon = Maps.getImage().getScaledInstance(250, 250, Image.SCALE_SMOOTH);
-        JLabel MapsIconLabel = new JLabel(new ImageIcon(MapsIcon));
-        MapsIconLabel.setBounds(175, 268, 250, 250);
-        monetaryMainCard.add(MapsIconLabel);
 
         donateNow = new JButton("Donate Now");
         donateNow.setFont(new Font("Arial", Font.BOLD, 14));
@@ -294,6 +289,12 @@ public class BoxDonationView{
         donateNow.setBackground(new Color(20, 35, 100));
         donateNow.setBounds(150, 468, 300, 30);
         monetaryMainCard.add(donateNow);
+
+        ImageIcon Maps = new ImageIcon("Resources/Images/Maps.png");
+        Image MapsIcon = Maps.getImage().getScaledInstance(250, 250, Image.SCALE_SMOOTH);
+        JLabel MapsIconLabel = new JLabel(new ImageIcon(MapsIcon));
+        MapsIconLabel.setBounds(175, 268, 250, 250);
+        monetaryMainCard.add(MapsIconLabel);
 
         frame.setVisible(true);
     }
