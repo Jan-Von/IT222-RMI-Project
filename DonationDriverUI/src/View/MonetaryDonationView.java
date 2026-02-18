@@ -1,7 +1,6 @@
 package View;
 
 import javax.swing.*;
-import javax.swing.border.LineBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
@@ -17,14 +16,11 @@ public class MonetaryDonationView {
     public JButton donateNow;
     public JButton uploadPhotoBtn;
     public JLabel photoStatusLabel;
-
-    // Exposed to the controller for logging
     public JTextField amountField;
     public JTextField transactionIdField;
     public JComboBox<String> donationDriveDropdown;
 
     private File selectedPhotoFile;
-
 
     public MonetaryDonationView() {
         frame = new JFrame("DonationDriver - Dashboard");
@@ -38,7 +34,7 @@ public class MonetaryDonationView {
 
         JPanel header = new JPanel();
         header.setLayout(null);
-        header.setBackground(new Color( 245, 245, 245));
+        header.setBackground(new Color(245, 245, 245));
         header.setBounds(0, 0, 1400, 80);
 
         ImageIcon logo = new ImageIcon("Resources/Images/logoicon.png");
@@ -119,7 +115,7 @@ public class MonetaryDonationView {
         sidebar.add(sidebarDonate);
 
         helpBtn = new JButton("Help");
-        helpBtn.setBounds(45,550,120,40);
+        helpBtn.setBounds(45, 550, 120, 40);
         helpBtn.setBorderPainted(false);
         helpBtn.setFocusPainted(false);
         helpBtn.setContentAreaFilled(false);
@@ -175,11 +171,10 @@ public class MonetaryDonationView {
         liveIcon.setBounds(5, 50, 25, 25);
         donationPanel.add(liveIcon);
 
-        String fullText =
-                "Super Typhoon Haiyan (locally known as Yolanda) swept across the Philippines, " +
-                        "generating a storm surge of more than 5 meters in places and winds in excess of 190 mph. " +
-                        "Fifteen million people felt the effects of the storm directly. Across the nation, " +
-                        "approximately 4.1 million people were displaced from their homes.";
+        String fullText = "Super Typhoon Haiyan (locally known as Yolanda) swept across the Philippines, " +
+                "generating a storm surge of more than 5 meters in places and winds in excess of 190 mph. " +
+                "Fifteen million people felt the effects of the storm directly. Across the nation, " +
+                "approximately 4.1 million people were displaced from their homes.";
 
         JTextArea donationText = new JTextArea(fullText);
         donationText.setBounds(5, 250, 195, 140);
@@ -216,19 +211,20 @@ public class MonetaryDonationView {
         amountField.setBounds(150, 80, 300, 30);
         monetaryMainCard.add(amountField);
 
+        transactionIdField = new JTextField();
+
         JLabel paymentMethod = new JLabel("Payment Method");
         paymentMethod.setFont(new Font("Arial", Font.BOLD, 14));
         paymentMethod.setForeground(Color.BLACK);
         paymentMethod.setBounds(150, 110, 300, 30);
         monetaryMainCard.add(paymentMethod);
 
-        String[] paymentOptions = {"Select","BDO","BPI", "Paymaya","Gcash", "Gotyme"};
+        String[] paymentOptions = { "Select", "BDO", "BPI", "Paymaya", "Gcash", "Gotyme" };
         JComboBox PaymentOptions = new JComboBox(paymentOptions);
         PaymentOptions.setFont(new Font("Arial", Font.BOLD, 14));
         PaymentOptions.setBackground(new Color(245, 245, 245));
-        PaymentOptions.setBounds(150,140,300,30);
+        PaymentOptions.setBounds(150, 140, 300, 30);
         monetaryMainCard.add(PaymentOptions);
-
 
         JLabel donationDriveLabel = new JLabel("Donation Drive");
         donationDriveLabel.setFont(new Font("Arial", Font.BOLD, 14));
@@ -236,8 +232,8 @@ public class MonetaryDonationView {
         donationDriveLabel.setBounds(150, 170, 300, 30);
         monetaryMainCard.add(donationDriveLabel);
 
-        String[] drives = {"Select", "Typhoon", "Fire", "Earthquake", "Flood", "General"};
-        donationDriveDropdown = new JComboBox<>(drives);
+        donationDriveDropdown = new JComboBox<>();
+        donationDriveDropdown.addItem("Select");
         donationDriveDropdown.setFont(new Font("Arial", Font.BOLD, 14));
         donationDriveDropdown.setBackground(new Color(245, 245, 245));
         donationDriveDropdown.setBounds(150, 250, 300, 30);

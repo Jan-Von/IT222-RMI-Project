@@ -25,10 +25,19 @@ public class MonetaryDonationController {
     private static final String MONETARY_XML_RELATIVE = "DonationDriverUI/Monetary Donations.xml";
 
     private MonetaryDonationView view;
-    private BoxDonationView viewBox;
 
     public MonetaryDonationController(MonetaryDonationView view) {
+        this(view, null);
+    }
+
+    public MonetaryDonationController(MonetaryDonationView view, String driveName) {
         this.view = view;
+
+        populateDriveCombo();
+
+        if (driveName != null && !driveName.isEmpty()) {
+            view.donationDriveDropdown.setSelectedItem(driveName);
+        }
 
         view.homeBtn.addActionListener(e -> openDashBoard());
         view.donateNow.addActionListener(e -> handleDonateNow());
@@ -37,6 +46,54 @@ public class MonetaryDonationController {
         view.DonateBtn.addActionListener(e -> openDonate());
         view.helpBtn.addActionListener(e -> openHelp());
 
+    }
+
+    private static final String[] HARDCODED_DRIVES = {
+            "Super Typhoon Haiyan", "6.9 Magnitude in Cebu", "Fire Hits Supermarket in Quezon"
+    };
+
+    private void populateDriveCombo() {
+        for (String d : HARDCODED_DRIVES) {
+            view.donationDriveDropdown.addItem(d);
+        }
+        try {
+            Client client = Client.getDefault();
+            String responseXml = client.readDonationDrives();
+            Client.Response response = Client.parseResponse(responseXml);
+            if (response != null && response.isOk()) {
+                String drivesXml = Client.unescapeXml(response.message);
+                if (drivesXml != null) {
+                    int idx = 0;
+                    while (true) {
+                        int start = drivesXml.indexOf("<drive>", idx);
+                        if (start < 0)
+                            break;
+                        int end = drivesXml.indexOf("</drive>", start);
+                        if (end < 0)
+                            break;
+                        String driveXml = drivesXml.substring(start, end + "</drive>".length());
+                        String title = extractTagValue(driveXml, "title");
+                        if (title != null && !title.isEmpty()) {
+                            view.donationDriveDropdown.addItem(title);
+                        }
+                        idx = end + "</drive>".length();
+                    }
+                }
+            }
+        } catch (IOException ignored) {
+            /* server not available */ }
+    }
+
+    private String extractTagValue(String xml, String tag) {
+        String open = "<" + tag + ">";
+        String close = "</" + tag + ">";
+        int s = xml.indexOf(open);
+        if (s < 0)
+            return null;
+        int e = xml.indexOf(close, s);
+        if (e < 0)
+            return null;
+        return xml.substring(s + open.length(), e).trim();
     }
 
     /**
@@ -51,8 +108,7 @@ public class MonetaryDonationController {
                     view.frame,
                     "Please enter a donation amount.",
                     "Monetary Donation",
-                    javax.swing.JOptionPane.WARNING_MESSAGE
-            );
+                    javax.swing.JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -67,8 +123,7 @@ public class MonetaryDonationController {
                     view.frame,
                     "Please enter a valid positive number for the amount.",
                     "Monetary Donation",
-                    javax.swing.JOptionPane.WARNING_MESSAGE
-            );
+                    javax.swing.JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -79,8 +134,7 @@ public class MonetaryDonationController {
                     view.frame,
                     "Please select a donation drive.",
                     "Monetary Donation",
-                    javax.swing.JOptionPane.WARNING_MESSAGE
-            );
+                    javax.swing.JOptionPane.WARNING_MESSAGE);
             return;
         }
 
@@ -107,8 +161,7 @@ public class MonetaryDonationController {
                         view.frame,
                         "Could not read the selected photo. Please choose a valid JPG file.",
                         "Monetary Donation",
-                        javax.swing.JOptionPane.WARNING_MESSAGE
-                );
+                        javax.swing.JOptionPane.WARNING_MESSAGE);
                 view.clearSelectedPhoto();
                 return;
             }
@@ -121,29 +174,32 @@ public class MonetaryDonationController {
             String responseXml = client.createTicket(
                     userId,
                     "Monetary donation", // itemCategory
-                    1,                   // quantity (conceptual)
-                    "N/A",               // condition
-                    "",                  // expirationDate
-                    "",                  // pickupDateTime
-                    "",                  // pickupLocation
-                    "",                  // photoPath
-                    notes,               // details / notes
-                    photoBase64 != null ? photoBase64 : "",
-                    selectedDrive,       // donationDrive
-                    ""                   // deliveryDestination (not applicable for monetary)
+                    1, // quantity (conceptual)
+                    "N/A", // condition
+                    "", // expirationDate
+                    "", // pickupDateTime
+                    "", // pickupLocation
+                    "", // photoPath
+                    notes, // details / notes
+                    selectedDrive, // donationDrive
+                    "", // deliveryDestination
+                    photoBase64 != null ? photoBase64 : "" // photoBase64
             );
 
             Client.Response response = Client.parseResponse(responseXml);
             if (response != null && response.isOk()) {
-        // Log locally to Monetary Donations.xml
-        logMonetaryDonation(selectedDrive, amount, transactionId, photoBase64);
+                try {
+                    client.updateDriveAmount(selectedDrive, amount);
+                } catch (IOException ignored) {
+                    /* non-critical */ }
+
+                logMonetaryDonation(selectedDrive, amount, transactionId, photoBase64);
 
                 javax.swing.JOptionPane.showMessageDialog(
                         view.frame,
                         "Monetary donation ticket created!\n" + response.message,
                         "Monetary Donation",
-                        javax.swing.JOptionPane.INFORMATION_MESSAGE
-                );
+                        javax.swing.JOptionPane.INFORMATION_MESSAGE);
                 openSuccessDonation();
             } else {
                 String msg = (response != null && response.message != null && !response.message.isEmpty())
@@ -153,8 +209,7 @@ public class MonetaryDonationController {
                         view.frame,
                         msg,
                         "Monetary Donation",
-                        javax.swing.JOptionPane.ERROR_MESSAGE
-                );
+                        javax.swing.JOptionPane.ERROR_MESSAGE);
             }
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -162,8 +217,7 @@ public class MonetaryDonationController {
                     view.frame,
                     "Unable to contact server. Please try again.",
                     "Monetary Donation",
-                    javax.swing.JOptionPane.ERROR_MESSAGE
-            );
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -209,16 +263,15 @@ public class MonetaryDonationController {
         view.frame.dispose();
     }
 
-    /**
-     * Resolve the Monetary Donations.xml file so that it points to the project's DonationDriverUI folder.
-     */
     private static File getMonetaryXmlFile() {
         File cwd = new File(System.getProperty("user.dir"));
         for (File dir = cwd; dir != null; dir = dir.getParentFile()) {
             File candidate = new File(dir, MONETARY_XML_RELATIVE);
-            if (candidate.exists()) return candidate;
+            if (candidate.exists())
+                return candidate;
             File donationDriverDir = new File(dir, "DonationDriverUI");
-            if (donationDriverDir.isDirectory()) return new File(donationDriverDir, "Monetary Donations.xml");
+            if (donationDriverDir.isDirectory())
+                return new File(donationDriverDir, "Monetary Donations.xml");
         }
         return new File(cwd, MONETARY_XML_RELATIVE);
     }
@@ -322,7 +375,7 @@ public class MonetaryDonationController {
         parent.appendChild(el);
     }
 
-    private void openHelp(){
+    private void openHelp() {
         HelpView helpView = new HelpView();
         new HelpController(helpView);
         helpView.frame.setVisible(true);

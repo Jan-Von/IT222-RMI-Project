@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ticket>
+  <ticketId>1771428705405</ticketId>
+  <userId>clayemail</userId>
+  <status>PENDING</status>
+  <createdAt>2026-02-18 23:32:46</createdAt>
+  <itemCategory>faahhhhh</itemCategory>
+  <quantity>2</quantity>
+  <condition>good condition</condition>
+  <expirationDate></expirationDate>
+  <pickupDateTime></pickupDateTime>
+  <pickupLocation>camp7</pickupLocation>
+  <photoPath></photoPath>
+  <notes>Goods donation – Fire Hits Supermarket in Quezon | Deliver to: university</notes>
+  <donationDrive>Fire Hits Supermarket in Quezon</donationDrive>
+  <deliveryDestination>university</deliveryDestination>
+  <riderId></riderId>
+</ticket>

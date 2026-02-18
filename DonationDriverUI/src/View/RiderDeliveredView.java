@@ -10,8 +10,7 @@ public class RiderDeliveredView {
     public JFrame frame;
     public JButton homeBtn;
     public JButton notifBtn;
-    public JButton donationBtn;
-    public JButton DonateBtn;
+    public JButton myPickupsBtn;
     public JButton helpBtn;
     public JButton settingsBtn;
     public JButton acceptBtn;
@@ -100,12 +99,12 @@ public class RiderDeliveredView {
         sidebarNotif.setBounds(30, 95, 25, 25);
         sidebar.add(sidebarNotif);
 
-        donationBtn = new JButton("Rider");
-        donationBtn.setBounds(65, 140, 80, 40);
-        donationBtn.setBorderPainted(false);
-        donationBtn.setFocusPainted(false);
-        donationBtn.setBackground(Color.lightGray);
-        sidebar.add(donationBtn);
+        myPickupsBtn = new JButton("My Pickups");
+        myPickupsBtn.setBounds(55, 140, 110, 40);
+        myPickupsBtn.setBorderPainted(false);
+        myPickupsBtn.setFocusPainted(false);
+        myPickupsBtn.setBackground(Color.lightGray);
+        sidebar.add(myPickupsBtn);
 
         ImageIcon Rider = new ImageIcon("Resources/Images/rider.png");
         scaledImg = Rider.getImage().getScaledInstance(25, 25, Image.SCALE_SMOOTH);
@@ -113,18 +112,6 @@ public class RiderDeliveredView {
         sidebarRider.setBounds(30, 145, 25, 25);
         sidebar.add(sidebarRider);
 
-        DonateBtn = new JButton("Donate");
-        DonateBtn.setBounds(45, 190, 120, 40);
-        DonateBtn.setBorderPainted(false);
-        DonateBtn.setFocusPainted(false);
-        DonateBtn.setContentAreaFilled(false);
-        sidebar.add(DonateBtn);
-
-        ImageIcon donate = new ImageIcon("Resources/Images/heart.png");
-        scaledImg = donate.getImage().getScaledInstance(25, 25, Image.SCALE_SMOOTH);
-        JLabel sidebarDonate = new JLabel(new ImageIcon(scaledImg));
-        sidebarDonate.setBounds(30, 195, 25, 25);
-        sidebar.add(sidebarDonate);
 
         helpBtn = new JButton("Help");
         helpBtn.setBounds(45, 550, 120, 40);
@@ -165,14 +152,14 @@ public class RiderDeliveredView {
         topBar.setBackground(new Color(235, 237, 240));
         topBar.setBorder(new EmptyBorder(10, 300, 10, 300));
 
-        JLabel newsFlash = new JLabel(" News Flash                    Super Typhoon Haiyan as the storm plowed across the...                                     ❗");
+        JLabel newsFlash = new JLabel(
+                " News Flash                    Super Typhoon Haiyan as the storm plowed across the...                                     ❗");
         newsFlash.setOpaque(true);
         newsFlash.setBackground(new Color(40, 60, 120));
         newsFlash.setForeground(Color.WHITE);
         newsFlash.setBorder(new CompoundBorder(
                 new LineBorder(new Color(220, 220, 220), 1, true),
-                new EmptyBorder(5, 10, 5, 10)
-        ));
+                new EmptyBorder(5, 10, 5, 10)));
 
         topBar.add(newsFlash, BorderLayout.CENTER);
 
@@ -265,16 +252,14 @@ public class RiderDeliveredView {
         frame.setVisible(true);
     }
 
-    // ================= CREATE DONATION CARD (FROM RIDERDELIVEREDEDVIEW) =================
     private JPanel createDonationCard(String name, String mobile, String boxes,
-                                      String pickup, String dropoff, String imagePath) {
+            String pickup, String dropoff, String imagePath) {
 
         JPanel card = new JPanel(new BorderLayout());
         card.setBackground(Color.WHITE);
         card.setBorder(new CompoundBorder(
                 new LineBorder(new Color(220, 220, 220), 1, true),
-                new EmptyBorder(15, 20, 15, 20)
-        ));
+                new EmptyBorder(15, 20, 15, 20)));
         card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 220));
 
         JPanel infoPanel = new JPanel();

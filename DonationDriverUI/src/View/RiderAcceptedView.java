@@ -10,8 +10,7 @@ public class RiderAcceptedView {
     public JFrame frame;
     public JButton homeBtn;
     public JButton notifBtn;
-    public JButton donationBtn;
-    public JButton DonateBtn;
+    public JButton myPickupsBtn;
     public JButton helpBtn;
     public JButton settingsBtn;
     public JButton rejectBtn;
@@ -101,12 +100,12 @@ public class RiderAcceptedView {
         sidebarNotif.setBounds(30, 95, 25, 25);
         sidebar.add(sidebarNotif);
 
-        donationBtn = new JButton("Rider");
-        donationBtn.setBounds(65, 140, 80, 40);
-        donationBtn.setBorderPainted(false);
-        donationBtn.setFocusPainted(false);
-        donationBtn.setBackground(Color.lightGray);
-        sidebar.add(donationBtn);
+        myPickupsBtn = new JButton("My Pickups");
+        myPickupsBtn.setBounds(55, 140, 110, 40);
+        myPickupsBtn.setBorderPainted(false);
+        myPickupsBtn.setFocusPainted(false);
+        myPickupsBtn.setBackground(Color.lightGray);
+        sidebar.add(myPickupsBtn);
 
         ImageIcon Rider = new ImageIcon("Resources/Images/rider.png");
         scaledImg = Rider.getImage().getScaledInstance(25, 25, Image.SCALE_SMOOTH);
@@ -114,18 +113,6 @@ public class RiderAcceptedView {
         sidebarRider.setBounds(30, 145, 25, 25);
         sidebar.add(sidebarRider);
 
-        DonateBtn = new JButton("Donate");
-        DonateBtn.setBounds(45, 190, 120, 40);
-        DonateBtn.setBorderPainted(false);
-        DonateBtn.setFocusPainted(false);
-        DonateBtn.setContentAreaFilled(false);
-        sidebar.add(DonateBtn);
-
-        ImageIcon donate = new ImageIcon("Resources/Images/heart.png");
-        scaledImg = donate.getImage().getScaledInstance(25, 25, Image.SCALE_SMOOTH);
-        JLabel sidebarDonate = new JLabel(new ImageIcon(scaledImg));
-        sidebarDonate.setBounds(30, 195, 25, 25);
-        sidebar.add(sidebarDonate);
 
         helpBtn = new JButton("Help");
         helpBtn.setBounds(45, 550, 120, 40);
@@ -166,14 +153,14 @@ public class RiderAcceptedView {
         topBar.setBackground(new Color(235, 237, 240));
         topBar.setBorder(new EmptyBorder(10, 300, 10, 300));
 
-        JLabel newsFlash = new JLabel(" News Flash                    Super Typhoon Haiyan as the storm plowed across the...                                     ❗");
+        JLabel newsFlash = new JLabel(
+                " News Flash                    Super Typhoon Haiyan as the storm plowed across the...                                     ❗");
         newsFlash.setOpaque(true);
         newsFlash.setBackground(new Color(40, 60, 120));
         newsFlash.setForeground(Color.WHITE);
         newsFlash.setBorder(new CompoundBorder(
                 new LineBorder(new Color(220, 220, 220), 1, true),
-                new EmptyBorder(5, 10, 5, 10)
-        ));
+                new EmptyBorder(5, 10, 5, 10)));
 
         topBar.add(newsFlash, BorderLayout.CENTER);
 
@@ -215,39 +202,15 @@ public class RiderAcceptedView {
 
         content.add(tabPanel, BorderLayout.NORTH);
 
-        // Cards container
-        JPanel cardsContainer = new JPanel();
-        cardsContainer.setLayout(new BoxLayout(cardsContainer, BoxLayout.Y_AXIS));
-        cardsContainer.setOpaque(false);
-
-        cardsContainer.add(createDonationCard(
-                "Dela Cruz, Juan",
-                "09984567123",
-                "8",
-                "DSWD Field Office IV-A, Alabang, Muntinlupa City",
-                "Barangay Bayanan Hall, Muntinlupa City"));
-
-        cardsContainer.add(Box.createVerticalStrut(15));
-
-        cardsContainer.add(createDonationCard(
-                "Gapuz, John Paul",
-                "0919239876",
-                "15",
-                "Philippine Red Cross Warehouse, Subic, Zambales",
-                "Castillejos National High School, Castillejos, Zambales"));
-
-        JScrollPane scrollPane = new JScrollPane(cardsContainer);
-        scrollPane.setBorder(null);
-        scrollPane.getViewport().setBackground(new Color(235, 237, 240));
-
-        content.add(scrollPane, BorderLayout.CENTER);
-
         // read and update tickets and actions
         JPanel ticketsPanel = new JPanel(new BorderLayout(5, 5));
         ticketsPanel.setOpaque(false);
         ticketsPanel.add(new JLabel("Accepted pickups (from server):"), BorderLayout.NORTH);
         ticketsList = new JList<>(new javax.swing.DefaultListModel<>());
-        ticketsList.setFont(new Font("Arial", Font.PLAIN, 12));
+        ticketsList.setFont(new Font("Arial", Font.PLAIN, 14));
+        // Add padding to list
+        ticketsList.setBorder(new EmptyBorder(10, 10, 10, 10));
+
         ticketsPanel.add(new JScrollPane(ticketsList), BorderLayout.CENTER);
         JPanel ticketActions = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
         refreshBtn = new JButton("Refresh");
@@ -257,76 +220,13 @@ public class RiderAcceptedView {
         ticketActions.add(markPickedUpBtn);
         ticketActions.add(rejectTicketBtn);
         ticketsPanel.add(ticketActions, BorderLayout.SOUTH);
-        content.add(ticketsPanel, BorderLayout.SOUTH);
+
+        content.add(ticketsPanel, BorderLayout.CENTER);
 
         mainContentPanel.add(content, BorderLayout.CENTER);
 
         frame.add(mainContentPanel);
 
-        frame.setVisible(true);
-    }
-
-    // ================= CREATE DONATION CARD (FROM RIDERREJECTEDVIEW) =================
-    private JPanel createDonationCard(String name, String mobile, String boxes,
-                                      String pickup, String dropoff) {
-
-        JPanel card = new JPanel(new BorderLayout());
-        card.setBackground(Color.WHITE);
-        card.setBorder(new CompoundBorder(
-                new LineBorder(new Color(220, 220, 220), 1, true),
-                new EmptyBorder(15, 20, 15, 20)
-        ));
-        card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 220));
-
-        JPanel infoPanel = new JPanel();
-        infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
-        infoPanel.setOpaque(false);
-
-        infoPanel.add(new JLabel("Name: " + name));
-        infoPanel.add(new JLabel("Mobile Number: " + mobile));
-        infoPanel.add(new JLabel("Boxes: " + boxes));
-        infoPanel.add(Box.createVerticalStrut(10));
-        infoPanel.add(new JLabel("PICK UP LOCATION:"));
-        infoPanel.add(new JLabel(pickup));
-        infoPanel.add(Box.createVerticalStrut(10));
-        infoPanel.add(new JLabel("DROP-OFF:"));
-        infoPanel.add(new JLabel(dropoff));
-
-        JPanel rightPanel = new JPanel();
-        rightPanel.setOpaque(false);
-        rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
-
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        buttonPanel.setOpaque(false);
-
-        JButton callBtn = new JButton("📞");
-        callBtn.setBackground(new Color(46, 204, 113));
-        callBtn.setForeground(Color.WHITE);
-        callBtn.setFocusPainted(false);
-        callBtn.setBorderPainted(false);
-
-        JButton msgBtn = new JButton("💬");
-        msgBtn.setBackground(new Color(120, 140, 255));
-        msgBtn.setForeground(Color.WHITE);
-        msgBtn.setFocusPainted(false);
-        msgBtn.setBorderPainted(false);
-
-        buttonPanel.add(callBtn);
-        buttonPanel.add(msgBtn);
-
-        JLabel status = new JLabel("Accepted");
-        status.setOpaque(true);
-        status.setBackground(new Color(46, 204, 113));
-        status.setBorder(new EmptyBorder(5, 10, 5, 10));
-
-        rightPanel.add(buttonPanel);
-        rightPanel.add(Box.createVerticalGlue());
-        rightPanel.add(status);
-
-        card.add(infoPanel, BorderLayout.CENTER);
-        card.add(rightPanel, BorderLayout.EAST);
-
-        return card;
     }
 
     // ================= MAIN METHOD =================

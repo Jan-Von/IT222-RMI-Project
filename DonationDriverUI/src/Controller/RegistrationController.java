@@ -1,6 +1,5 @@
 package Controller;
 
-import Model.UserModel;
 import View.LoginView;
 import View.RegistrationView;
 import javax.swing.*;
@@ -15,6 +14,13 @@ public class RegistrationController {
     public RegistrationController(RegistrationView view) {
         this.view = view;
         this.view.finishButton.addActionListener(e -> register());
+        this.view.backButton.addActionListener(e -> goBack());
+    }
+
+    private void goBack() {
+        LoginView loginView = new LoginView();
+        new LoginController(loginView);
+        view.frame.dispose();
     }
 
     private void register() {
@@ -28,6 +34,9 @@ public class RegistrationController {
         String password = view.passwordField.getText().trim();
         String confirm = view.confirmPasswordField.getText().trim();
         boolean termsAccepted = view.termsCheck.isSelected();
+        String role = (String) view.roleBox.getSelectedItem();
+        if (role == null)
+            role = "Donor";
 
         // Basic validation (fields you already have in the GUI)
         if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty()
@@ -65,8 +74,8 @@ public class RegistrationController {
                     address,
                     phone,
                     email,
-                    password
-            );
+                    password,
+                    role.toUpperCase());
             Client.Response response = Client.parseResponse(responseXml);
 
             if (response != null && response.isOk()) {

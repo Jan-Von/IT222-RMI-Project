@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ticket>
+  <ticketId>1771428002810</ticketId>
+  <userId>clayemail</userId>
+  <status>PENDING</status>
+  <createdAt>2026-02-18 23:23:20</createdAt>
+  <itemCategory>damit</itemCategory>
+  <quantity>10</quantity>
+  <condition>good condition</condition>
+  <expirationDate></expirationDate>
+  <pickupDateTime></pickupDateTime>
+  <pickupLocation>bakakeng</pickupLocation>
+  <photoPath></photoPath>
+  <notes>Goods donation – Earthquake Relief | Deliver to: iskowl</notes>
+  <donationDrive>Super Typhoon Haiyan</donationDrive>
+  <deliveryDestination>iskowl</deliveryDestination>
+  <riderId></riderId>
+</ticket>

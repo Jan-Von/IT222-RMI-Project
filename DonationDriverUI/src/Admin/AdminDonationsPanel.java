@@ -11,6 +11,7 @@ import java.util.Base64;
 import java.util.List;
 import java.util.regex.Pattern;
 import Network.Client;
+import Controller.LoginController;
 import java.io.IOException;
 
 public class AdminDonationsPanel extends JPanel {
@@ -50,9 +51,11 @@ public class AdminDonationsPanel extends JPanel {
         add(titlePanel, BorderLayout.NORTH);
 
         donationsTableModel = new DefaultTableModel(
-                new Object[]{"ID", "Type", "Donor", "Amount/Quantity", "Status", "Date", "Destination"}, 0) {
+                new Object[] { "ID", "Type", "Donor", "Amount/Quantity", "Status", "Date", "Destination" }, 0) {
             @Override
-            public boolean isCellEditable(int row, int column) { return false; }
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
         };
         donationsTable = new JTable(donationsTableModel);
         tableSorter = new TableRowSorter<>(donationsTableModel);
@@ -93,11 +96,19 @@ public class AdminDonationsPanel extends JPanel {
         searchField.setToolTipText("Type to filter by ticket ID or donor email");
         searchField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
             @Override
-            public void insertUpdate(javax.swing.event.DocumentEvent e) { applyTableFilter(); }
+            public void insertUpdate(javax.swing.event.DocumentEvent e) {
+                applyTableFilter();
+            }
+
             @Override
-            public void removeUpdate(javax.swing.event.DocumentEvent e) { applyTableFilter(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e) {
+                applyTableFilter();
+            }
+
             @Override
-            public void changedUpdate(javax.swing.event.DocumentEvent e) { applyTableFilter(); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) {
+                applyTableFilter();
+            }
         });
         panel.add(searchField);
 
@@ -113,7 +124,8 @@ public class AdminDonationsPanel extends JPanel {
     }
 
     private void applyTableFilter() {
-        if (tableSorter == null) return;
+        if (tableSorter == null)
+            return;
         List<RowFilter<Object, Object>> filters = new ArrayList<>();
         String status = (String) statusFilterCombo.getSelectedItem();
         if (status != null && !FILTER_STATUS_ALL.equals(status)) {
@@ -135,18 +147,14 @@ public class AdminDonationsPanel extends JPanel {
         JPanel panel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 8));
 
         JButton viewPhotoBtn = new JButton("View photo");
-        JButton acceptBtn   = new JButton("Accept");
-        JButton pickedUpBtn = new JButton("Picked Up");
-        JButton deliveredBtn= new JButton("Delivered");
-        JButton rejectBtn   = new JButton("Reject");
+        JButton acceptBtn = new JButton("Accept");
+        JButton rejectBtn = new JButton("Reject");
         JButton rescheduleBtn = new JButton("Reschedule pickup");
-        JButton cancelBtn   = new JButton("Cancel Request");
+        JButton cancelBtn = new JButton("Cancel Request");
         JButton permanentDeleteBtn = new JButton("Permanent Delete");
 
         viewPhotoBtn.addActionListener(e -> viewSelectedPhoto());
         acceptBtn.addActionListener(e -> updateSelectedTicketStatus("ACCEPTED"));
-        pickedUpBtn.addActionListener(e -> updateSelectedTicketStatus("PICKED_UP"));
-        deliveredBtn.addActionListener(e -> updateSelectedTicketStatus("DELIVERED"));
         rejectBtn.addActionListener(e -> showQualityDialog("REJECTED"));
         rescheduleBtn.addActionListener(e -> showReschedulePickupDialog());
         cancelBtn.addActionListener(e -> cancelSelectedTicket());
@@ -154,8 +162,6 @@ public class AdminDonationsPanel extends JPanel {
 
         panel.add(viewPhotoBtn);
         panel.add(acceptBtn);
-        panel.add(pickedUpBtn);
-        panel.add(deliveredBtn);
         panel.add(rejectBtn);
         panel.add(rescheduleBtn);
         panel.add(cancelBtn);
@@ -183,7 +189,8 @@ public class AdminDonationsPanel extends JPanel {
                 refreshData();
             } else {
                 String msg = (resp != null && resp.message != null && !resp.message.isEmpty())
-                        ? resp.message : "Failed to update ticket.";
+                        ? resp.message
+                        : "Failed to update ticket.";
                 JOptionPane.showMessageDialog(this, msg, "Error", JOptionPane.ERROR_MESSAGE);
             }
         } catch (IOException ex) {
@@ -218,7 +225,8 @@ public class AdminDonationsPanel extends JPanel {
                 refreshData();
             } else {
                 String msg = (resp != null && resp.message != null && !resp.message.isEmpty())
-                        ? resp.message : "Failed to cancel ticket.";
+                        ? resp.message
+                        : "Failed to cancel ticket.";
                 JOptionPane.showMessageDialog(this, msg, "Error", JOptionPane.ERROR_MESSAGE);
             }
         } catch (IOException ex) {
@@ -248,7 +256,7 @@ public class AdminDonationsPanel extends JPanel {
         // Quality status panel
         JPanel qualityPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         qualityPanel.add(new JLabel("Quality Status:"));
-        String[] qualityOptions = {"Not set", "Approved", "Rejected"};
+        String[] qualityOptions = { "Not set", "Approved", "Rejected" };
         JComboBox<String> qualityDropdown = new JComboBox<>(qualityOptions);
         qualityPanel.add(qualityDropdown);
 
@@ -279,17 +287,19 @@ public class AdminDonationsPanel extends JPanel {
         okBtn.addActionListener(e -> {
             String qualityStatus = (String) qualityDropdown.getSelectedItem();
             String qualityReason = reasonField.getText().trim();
-            
+
             try {
                 Client client = Client.getDefault();
-                String responseXml = client.updateTicket(adminUserId, ticketId, newStatus, qualityStatus, qualityReason);
+                String responseXml = client.updateTicket(adminUserId, ticketId, newStatus, qualityStatus,
+                        qualityReason);
                 Client.Response resp = Client.parseResponse(responseXml);
                 if (resp != null && resp.isOk()) {
                     JOptionPane.showMessageDialog(this, "Status and quality updated: " + newStatus);
                     refreshData();
                 } else {
                     String msg = (resp != null && resp.message != null && !resp.message.isEmpty())
-                            ? resp.message : "Failed to update ticket.";
+                            ? resp.message
+                            : "Failed to update ticket.";
                     JOptionPane.showMessageDialog(this, msg, "Error", JOptionPane.ERROR_MESSAGE);
                 }
             } catch (IOException ex) {
@@ -320,7 +330,8 @@ public class AdminDonationsPanel extends JPanel {
             return;
         }
         String currentPickup = modelRow < pickupDateTimeByRow.size() ? pickupDateTimeByRow.get(modelRow) : null;
-        if (currentPickup == null) currentPickup = "";
+        if (currentPickup == null)
+            currentPickup = "";
 
         JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Reschedule Pickup", true);
         dialog.setLayout(new BorderLayout(10, 10));
@@ -350,7 +361,8 @@ public class AdminDonationsPanel extends JPanel {
         okBtn.addActionListener(e -> {
             String newPickup = pickupField.getText().trim();
             if (newPickup.isEmpty()) {
-                JOptionPane.showMessageDialog(dialog, "Please enter a pickup date/time.", "Validation", JOptionPane.WARNING_MESSAGE);
+                JOptionPane.showMessageDialog(dialog, "Please enter a pickup date/time.", "Validation",
+                        JOptionPane.WARNING_MESSAGE);
                 return;
             }
             try {
@@ -363,7 +375,8 @@ public class AdminDonationsPanel extends JPanel {
                     dialog.dispose();
                 } else {
                     String msg = (resp != null && resp.message != null && !resp.message.isEmpty())
-                            ? resp.message : "Failed to update pickup time.";
+                            ? resp.message
+                            : "Failed to update pickup time.";
                     JOptionPane.showMessageDialog(dialog, msg, "Error", JOptionPane.ERROR_MESSAGE);
                 }
             } catch (IOException ex) {
@@ -389,14 +402,15 @@ public class AdminDonationsPanel extends JPanel {
     }
 
     public void refreshData() {
-        if (donationsTableModel == null) return;
+        if (donationsTableModel == null)
+            return;
         donationsTableModel.setRowCount(0);
         photoBase64ByRow.clear();
         pickupDateTimeByRow.clear();
 
         List<Object[]> rows = loadDonationsFromServer();
         if (rows.isEmpty()) {
-            donationsTableModel.addRow(new Object[]{"-", "-", "-", "-", "No data", "-", "-"});
+            donationsTableModel.addRow(new Object[] { "-", "-", "-", "-", "No data", "-", "-" });
             photoBase64ByRow.add(null);
             pickupDateTimeByRow.add("");
         } else {
@@ -411,7 +425,11 @@ public class AdminDonationsPanel extends JPanel {
         List<Object[]> rows = new ArrayList<>();
         try {
             Client client = Client.getDefault();
-            String responseXml = client.readTickets("", null);
+            String userId = LoginController.currentUserEmail;
+            if (userId == null || userId.isEmpty()) {
+                userId = "admin"; // Fallback to ensure admin view if login context is missing during dev
+            }
+            String responseXml = client.readTickets(userId, null);
             Client.Response response = Client.parseResponse(responseXml);
             if (response == null || !response.isOk()) {
                 return rows;
@@ -425,9 +443,11 @@ public class AdminDonationsPanel extends JPanel {
             int idx = 0;
             while (true) {
                 int start = ticketsXml.indexOf("<ticket>", idx);
-                if (start < 0) break;
+                if (start < 0)
+                    break;
                 int end = ticketsXml.indexOf("</ticket>", start);
-                if (end < 0) break;
+                if (end < 0)
+                    break;
 
                 String ticketXml = ticketsXml.substring(start, end + "</ticket>".length());
 
@@ -455,7 +475,7 @@ public class AdminDonationsPanel extends JPanel {
                     dest = drive;
                 }
 
-                rows.add(new Object[]{
+                rows.add(new Object[] {
                         id != null ? id : "-",
                         type != null ? type : "Goods",
                         donor != null ? donor : "-",
@@ -478,7 +498,8 @@ public class AdminDonationsPanel extends JPanel {
     /** Extract photoBase64 from ticket XML, stripping CDATA if present. */
     private String extractPhotoBase64(String ticketXml) {
         String raw = extractTagValue(ticketXml, "photoBase64");
-        if (raw == null || raw.isEmpty()) return null;
+        if (raw == null || raw.isEmpty())
+            return null;
         if (raw.startsWith("<![CDATA[") && raw.endsWith("]]>")) {
             return raw.substring(9, raw.length() - 3);
         }
@@ -529,7 +550,8 @@ public class AdminDonationsPanel extends JPanel {
             dialog.setLocationRelativeTo(this);
             dialog.setVisible(true);
         } catch (IllegalArgumentException e) {
-            JOptionPane.showMessageDialog(this, "Could not display photo (invalid image data).", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Could not display photo (invalid image data).", "Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 
@@ -556,12 +578,12 @@ public class AdminDonationsPanel extends JPanel {
 
         // Show confirmation dialog
         int result = JOptionPane.showConfirmDialog(
-            this,
-            "This will permanently delete ticket " + ticketId + ".\nThis action cannot be undone.\n\nAre you sure you want to continue?",
-            "Permanent Delete Confirmation",
-            JOptionPane.YES_NO_OPTION,
-            JOptionPane.WARNING_MESSAGE
-        );
+                this,
+                "This will permanently delete ticket " + ticketId
+                        + ".\nThis action cannot be undone.\n\nAre you sure you want to continue?",
+                "Permanent Delete Confirmation",
+                JOptionPane.YES_NO_OPTION,
+                JOptionPane.WARNING_MESSAGE);
 
         if (result == JOptionPane.YES_OPTION) {
             try {
@@ -573,7 +595,8 @@ public class AdminDonationsPanel extends JPanel {
                     refreshData();
                 } else {
                     String msg = (resp != null && resp.message != null && !resp.message.isEmpty())
-                            ? resp.message : "Failed to permanently delete ticket.";
+                            ? resp.message
+                            : "Failed to permanently delete ticket.";
                     JOptionPane.showMessageDialog(this, msg, "Error", JOptionPane.ERROR_MESSAGE);
                 }
             } catch (IOException ex) {

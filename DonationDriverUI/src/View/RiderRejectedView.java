@@ -10,12 +10,13 @@ public class RiderRejectedView {
     public JFrame frame;
     public JButton homeBtn;
     public JButton notifBtn;
-    public JButton donationBtn;
-    public JButton DonateBtn;
+    public JButton myPickupsBtn;
     public JButton helpBtn;
     public JButton settingsBtn;
     public JButton acceptBtn;
     public JButton deliveredBtn;
+    public JList<String> ticketsList;
+    public JButton refreshBtn;
 
     public RiderRejectedView() {
         frame = new JFrame("DonationDriver");
@@ -27,7 +28,6 @@ public class RiderRejectedView {
         ImageIcon frameIcon = new ImageIcon("Resources/Images/logoicon.png");
         frame.setIconImage(frameIcon.getImage());
 
-        // ================= HEADER (FROM ORIGINAL DASHBOARDVIEW) =================
         JPanel header = new JPanel();
         header.setLayout(null);
         header.setBackground(new Color(245, 245, 245));
@@ -50,7 +50,6 @@ public class RiderRejectedView {
         subtitle.setBounds(80, 38, 200, 20);
         header.add(subtitle);
 
-        // Search and Profile icons on top right
         ImageIcon searchImg = new ImageIcon("Resources/Images/search.png");
         Image scaledSearch = searchImg.getImage().getScaledInstance(25, 25, Image.SCALE_SMOOTH);
         JLabel searchIcon = new JLabel(new ImageIcon(scaledSearch));
@@ -65,7 +64,6 @@ public class RiderRejectedView {
 
         frame.add(header);
 
-        // ================= SIDEBAR (FROM ORIGINAL DASHBOARDVIEW) =================
         JPanel sidebar = new JPanel();
         sidebar.setLayout(null);
         sidebar.setBackground(new Color(245, 245, 245));
@@ -97,31 +95,18 @@ public class RiderRejectedView {
         sidebarNotif.setBounds(30, 95, 25, 25);
         sidebar.add(sidebarNotif);
 
-        donationBtn = new JButton("Rider");
-        donationBtn.setBounds(65, 140, 80, 40);
-        donationBtn.setBorderPainted(false);
-        donationBtn.setFocusPainted(false);
-        donationBtn.setBackground(Color.lightGray);
-        sidebar.add(donationBtn);
+        myPickupsBtn = new JButton("My Pickups");
+        myPickupsBtn.setBounds(55, 140, 110, 40);
+        myPickupsBtn.setBorderPainted(false);
+        myPickupsBtn.setFocusPainted(false);
+        myPickupsBtn.setBackground(Color.lightGray);
+        sidebar.add(myPickupsBtn);
 
         ImageIcon Rider = new ImageIcon("Resources/Images/rider.png");
         scaledImg = Rider.getImage().getScaledInstance(25, 25, Image.SCALE_SMOOTH);
         JLabel sidebarRider = new JLabel(new ImageIcon(scaledImg));
         sidebarRider.setBounds(30, 145, 25, 25);
         sidebar.add(sidebarRider);
-
-        DonateBtn = new JButton("Donate");
-        DonateBtn.setBounds(45, 190, 120, 40);
-        DonateBtn.setBorderPainted(false);
-        DonateBtn.setFocusPainted(false);
-        DonateBtn.setContentAreaFilled(false);
-        sidebar.add(DonateBtn);
-
-        ImageIcon donate = new ImageIcon("Resources/Images/heart.png");
-        scaledImg = donate.getImage().getScaledInstance(25, 25, Image.SCALE_SMOOTH);
-        JLabel sidebarDonate = new JLabel(new ImageIcon(scaledImg));
-        sidebarDonate.setBounds(30, 195, 25, 25);
-        sidebar.add(sidebarDonate);
 
         helpBtn = new JButton("Help");
         helpBtn.setBounds(45, 550, 120, 40);
@@ -151,31 +136,26 @@ public class RiderRejectedView {
 
         frame.add(sidebar);
 
-        // ================= CENTER CONTENT (FROM RIDERREJECTEDVIEW) =================
-        // Create main panel for center content
         JPanel mainContentPanel = new JPanel(new BorderLayout());
         mainContentPanel.setBounds(200, 80, 1200, 720);
         mainContentPanel.setBackground(new Color(235, 237, 240));
 
-        // Top bar with News Flash
         JPanel topBar = new JPanel(new BorderLayout());
         topBar.setBackground(new Color(235, 237, 240));
         topBar.setBorder(new EmptyBorder(10, 300, 10, 300));
 
-        JLabel newsFlash = new JLabel(" News Flash                    Super Typhoon Haiyan as the storm plowed across the...                                     ❗");
+        JLabel newsFlash = new JLabel(
+                " News Flash                    Super Typhoon Haiyan as the storm plowed across the...                                     ❗");
         newsFlash.setOpaque(true);
         newsFlash.setBackground(new Color(40, 60, 120));
         newsFlash.setForeground(Color.WHITE);
         newsFlash.setBorder(new CompoundBorder(
                 new LineBorder(new Color(220, 220, 220), 1, true),
-                new EmptyBorder(5, 10, 5, 10)
-        ));
+                new EmptyBorder(5, 10, 5, 10)));
 
         topBar.add(newsFlash, BorderLayout.CENTER);
-
         mainContentPanel.add(topBar, BorderLayout.NORTH);
 
-        // Content panel with tabs and cards
         JPanel content = new JPanel(new BorderLayout());
         content.setBackground(new Color(235, 237, 240));
         content.setBorder(new EmptyBorder(20, 300, 20, 300));
@@ -211,36 +191,21 @@ public class RiderRejectedView {
 
         content.add(tabPanel, BorderLayout.NORTH);
 
-        // Cards container
-        JPanel cardsContainer = new JPanel();
-        cardsContainer.setLayout(new BoxLayout(cardsContainer, BoxLayout.Y_AXIS));
-        cardsContainer.setOpaque(false);
+        JPanel ticketsPanel = new JPanel(new BorderLayout(5, 5));
+        ticketsPanel.setOpaque(false);
+        ticketsPanel.add(new JLabel("Rejected pickups (from server):"), BorderLayout.NORTH);
+        ticketsList = new JList<>(new javax.swing.DefaultListModel<>());
+        ticketsList.setFont(new Font("Arial", Font.PLAIN, 14));
+        ticketsList.setBorder(new EmptyBorder(10, 10, 10, 10));
 
-        cardsContainer.add(createDonationCard(
-                "Dela Cruz, Juan",
-                "09984567123",
-                "8",
-                "DSWD Field Office IV-A, Alabang, Muntinlupa City",
-                "Barangay Bayanan Hall, Muntinlupa City",
-                "Damaged/Broken Goods"
-        ));
+        ticketsPanel.add(new JScrollPane(ticketsList), BorderLayout.CENTER);
 
-        cardsContainer.add(Box.createVerticalStrut(15));
+        JPanel ticketActions = new JPanel(new FlowLayout(FlowLayout.LEFT, 5, 5));
+        refreshBtn = new JButton("Refresh");
+        ticketActions.add(refreshBtn);
+        ticketsPanel.add(ticketActions, BorderLayout.SOUTH);
 
-        cardsContainer.add(createDonationCard(
-                "Gapuz, John Paul",
-                "0919239876",
-                "15",
-                "Philippine Red Cross Warehouse, Subic, Zambales",
-                "Castillejos National High School, Castillejos, Zambales",
-                "Dirty Items"
-        ));
-
-        JScrollPane scrollPane = new JScrollPane(cardsContainer);
-        scrollPane.setBorder(null);
-        scrollPane.getViewport().setBackground(new Color(235, 237, 240));
-
-        content.add(scrollPane, BorderLayout.CENTER);
+        content.add(ticketsPanel, BorderLayout.CENTER);
 
         mainContentPanel.add(content, BorderLayout.CENTER);
 
@@ -249,78 +214,7 @@ public class RiderRejectedView {
         frame.setVisible(true);
     }
 
-    // ================= CREATE DONATION CARD (FROM RIDERREJECTEDVIEW) =================
-    private JPanel createDonationCard(String name, String mobile, String boxes,
-                                      String pickup, String dropoff, String reason) {
-
-        JPanel card = new JPanel(new BorderLayout());
-        card.setBackground(Color.WHITE);
-        card.setBorder(new CompoundBorder(
-                new LineBorder(new Color(220, 220, 220), 1, true),
-                new EmptyBorder(15, 20, 15, 20)
-        ));
-        card.setMaximumSize(new Dimension(Integer.MAX_VALUE, 220));
-
-        JPanel infoPanel = new JPanel();
-        infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
-        infoPanel.setOpaque(false);
-
-        infoPanel.add(new JLabel("Name: " + name));
-        infoPanel.add(new JLabel("Mobile Number: " + mobile));
-        infoPanel.add(new JLabel("Boxes: " + boxes));
-        infoPanel.add(Box.createVerticalStrut(10));
-        infoPanel.add(new JLabel("PICK UP LOCATION:"));
-        infoPanel.add(new JLabel(pickup));
-        infoPanel.add(Box.createVerticalStrut(10));
-        infoPanel.add(new JLabel("DROP-OFF:"));
-        infoPanel.add(new JLabel(dropoff));
-        infoPanel.add(Box.createVerticalStrut(35));
-        infoPanel.add(new JLabel("Reason: " + reason));
-
-        JPanel rightPanel = new JPanel();
-        rightPanel.setOpaque(false);
-        rightPanel.setLayout(new BoxLayout(rightPanel, BoxLayout.Y_AXIS));
-
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
-        buttonPanel.setOpaque(false);
-
-        JButton callBtn = new JButton("📞");
-        callBtn.setBackground(new Color(46, 204, 113));
-        callBtn.setForeground(Color.WHITE);
-        callBtn.setFocusPainted(false);
-        callBtn.setBorderPainted(false);
-
-        JButton msgBtn = new JButton("💬");
-        msgBtn.setBackground(new Color(120, 140, 255));
-        msgBtn.setForeground(Color.WHITE);
-        msgBtn.setFocusPainted(false);
-        msgBtn.setBorderPainted(false);
-
-        buttonPanel.add(callBtn);
-        buttonPanel.add(msgBtn);
-
-        JLabel status = new JLabel("Rejected");
-        status.setOpaque(true);
-        status.setBackground(new Color(255, 200, 200));
-        status.setBorder(new EmptyBorder(5, 10, 5, 10));
-
-        rightPanel.add(buttonPanel);
-        rightPanel.add(Box.createVerticalGlue());
-        rightPanel.add(status);
-
-        card.add(infoPanel, BorderLayout.CENTER);
-        card.add(rightPanel, BorderLayout.EAST);
-
-        return card;
-    }
-
-    // ================= MAIN METHOD =================
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                new RiderRejectedView();
-            }
-        });
+        SwingUtilities.invokeLater(() -> new RiderRejectedView());
     }
 }

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ticket>
+  <ticketId>1771428002811</ticketId>
+  <userId>clayemail</userId>
+  <status>PENDING</status>
+  <createdAt>2026-02-18 23:23:49</createdAt>
+  <itemCategory>ballpen</itemCategory>
+  <quantity>10</quantity>
+  <condition>good condition</condition>
+  <expirationDate></expirationDate>
+  <pickupDateTime></pickupDateTime>
+  <pickupLocation>camp7</pickupLocation>
+  <photoPath></photoPath>
+  <notes>Goods donation – Earthquake Relief | Deliver to: univ</notes>
+  <donationDrive>Super Typhoon Haiyan</donationDrive>
+  <deliveryDestination>univ</deliveryDestination>
+  <riderId></riderId>
+</ticket>

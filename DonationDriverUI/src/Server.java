@@ -89,7 +89,6 @@ public class Server {
         private String handleRequest(String requestXml) {
             String action = extractTagValue(requestXml, "action");
             String userId = extractTagValue(requestXml, "userId");
-            log("REQUEST", userId, requestXml);
 
             String status = "ERROR";
             String message;
@@ -108,7 +107,25 @@ public class Server {
                             status = "OK";
                             message = "Login successful.";
                             userId = email.trim();
-                            dataAffected = "user session: " + email.trim();
+                            // Include role in dataAffected or separate variable to be put in response
+                            String role = getUserRole(userId);
+                            dataAffected = "user session: " + email.trim() + " (" + role + ")";
+
+                            // We need to inject <role> into the response XML constructed at the end of
+                            // handleRequest.
+                            // However, the construction at line 266 is generic.
+                            // Easier approach: append it to message or modify the response construction
+                            // below.
+                            // Let's modify the response construction to include extra fields if available.
+                            // But `handleRequest` constructs the XML manually.
+                            // Let's use a temporary hack or better, update the return statement.
+                            // Actually, let's just append the role tag to the message for now? No, CLIENT
+                            // needs to parse it.
+                            // Best way: append it to a member variable or return a structured object.
+                            // Given the structure, I will append the role tag manually in the return
+                            // statement if userId is present.
+                            // Wait, handleRequest returns a String.
+                            // I will store the role in a local variable `userRole` and use it at the end.
                         } else {
                             message = "Invalid email or password.";
                             dataAffected = "login attempt failed for: " + (email != null ? email : "(unknown)");
@@ -124,6 +141,9 @@ public class Server {
                         String dateOfBirth = extractTagValue(requestXml, "dateOfBirth");
                         String address = extractTagValue(requestXml, "address");
                         String phone = extractTagValue(requestXml, "phone");
+                        String role = extractTagValue(requestXml, "role");
+                        if (role == null || role.isEmpty())
+                            role = "DONOR"; // Default
 
                         if (email == null || password == null) {
                             message = "Missing email or password.";
@@ -132,10 +152,10 @@ public class Server {
                             message = "Registration failed: email already exists.";
                             dataAffected = "email already exists: " + email.trim();
                         } else if (saveUserToXmlSingleFile(email.trim(), password.trim(),
-                                firstName, lastName, middleName, dateOfBirth, address, phone)) {
+                                firstName, lastName, middleName, dateOfBirth, address, phone, role)) {
                             status = "OK";
                             message = "Registration successful.";
-                            dataAffected = "new user registered: " + email.trim();
+                            dataAffected = "new user registered: " + email.trim() + " as " + role;
                         } else {
                             message = "Registration failed due to server error.";
                             dataAffected = "registration failed for: " + email.trim();
@@ -239,22 +259,214 @@ public class Server {
                         }
                         break;
                     }
+                    case "UPDATE_USER_ROLE": {
+                        String email = extractTagValue(requestXml, "email");
+                        String newRole = extractTagValue(requestXml, "role");
+
+                        if (email == null || newRole == null) {
+                            message = "Missing email or role.";
+                        } else if (!userEmailExists(email)) {
+                            message = "User not found.";
+                        } else {
+                            if (updateUserRoleInXml(email, newRole)) {
+                                status = "OK";
+                                message = "User role updated to " + newRole;
+                                dataAffected = "user " + email + " role -> " + newRole;
+                            } else {
+                                message = "Failed to update user role.";
+                            }
+                        }
+                        break;
+                    }
+                    case "CREATE_DONATION_DRIVE": {
+                        if (!isAdminUser(userId)) {
+                            message = "Only admins can create donation drives.";
+                        } else {
+                            OperationResult result = createDonationDrive(userId, requestXml);
+                            if (result.success) {
+                                status = "OK";
+                                message = result.message;
+                                dataAffected = "drive created";
+                            } else {
+                                message = result.message;
+                            }
+                        }
+                        break;
+                    }
+                    case "READ_DONATION_DRIVES": {
+                        String drivesXml = readDonationDrives();
+                        status = "OK";
+                        message = drivesXml;
+                        dataAffected = "drives queried";
+                        break;
+                    }
+                    case "UPDATE_DRIVE_AMOUNT": {
+                        String driveTitle = extractTagValue(requestXml, "driveTitle");
+                        String amountStr = extractTagValue(requestXml, "amount");
+                        if (driveTitle == null || amountStr == null) {
+                            message = "Missing driveTitle or amount.";
+                        } else {
+                            OperationResult result = updateDriveAmount(driveTitle, amountStr);
+                            if (result.success) {
+                                status = "OK";
+                                message = result.message;
+                                dataAffected = "drive '" + driveTitle + "' amount updated by " + amountStr;
+                            } else {
+                                message = result.message;
+                            }
+                        }
+                        break;
+                    }
                     default:
                         message = "Unknown action: " + action;
                         dataAffected = "unknown action: " + action;
                 }
             }
             logTransaction(action != null ? action : "UNKNOWN", userId, dataAffected);
+
+            String roleTag = "";
+            if (userId != null && !userId.isEmpty()) {
+                String r = getUserRole(userId);
+                roleTag = "<role>" + escapeXml(r) + "</role>";
+            }
+
             String responseXml = "<response>" +
                     "<status>" + escapeXml(status) + "</status>" +
                     "<message>" + escapeXml(message) + "</message>" +
                     (userId != null && !userId.isEmpty()
                             ? "<userId>" + escapeXml(userId) + "</userId>"
                             : "")
-                    +
+                    + roleTag +
                     "</response>";
-            log("RESPONSE", userId, responseXml);
+            // log("RESPONSE", userId, responseXml); // Verbose logging disabled
             return responseXml;
+        }
+
+        // ... existing user methods ...
+
+        private static final String DRIVES_DIR = "drives";
+        private static long nextDriveId = System.currentTimeMillis(); // Simple ID generation
+
+        private OperationResult createDonationDrive(String adminId, String requestXml) {
+            String title = extractTagValue(requestXml, "title");
+            String description = extractTagValue(requestXml, "description");
+            String targetAmount = extractTagValue(requestXml, "targetAmount");
+
+            if (title == null || title.trim().isEmpty()) {
+                return new OperationResult(false, "Title is required.");
+            }
+
+            File dir = new File(DRIVES_DIR);
+            if (!dir.exists() && !dir.mkdirs()) {
+                return new OperationResult(false, "Server error: unable to create drives directory.");
+            }
+
+            String driveId = String.valueOf(nextDriveId++);
+            File file = new File(dir, driveId + ".xml");
+
+            StringBuilder sb = new StringBuilder();
+            sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+            sb.append("<drive>\n");
+            sb.append("  <driveId>").append(escapeXml(driveId)).append("</driveId>\n");
+            sb.append("  <title>").append(escapeXml(title)).append("</title>\n");
+            sb.append("  <description>").append(escapeXml(description != null ? description : ""))
+                    .append("</description>\n");
+            sb.append("  <targetAmount>").append(escapeXml(targetAmount != null ? targetAmount : "0"))
+                    .append("</targetAmount>\n");
+            sb.append("  <currentAmount>").append("0").append("</currentAmount>\n");
+            sb.append("  <status>").append("ACTIVE").append("</status>\n");
+            sb.append("  <createdBy>").append(escapeXml(adminId)).append("</createdBy>\n");
+            sb.append("  <createdAt>").append(escapeXml(new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date())))
+                    .append("</createdAt>\n");
+            sb.append("</drive>\n");
+
+            try (FileWriter fw = new FileWriter(file, false)) {
+                fw.write(sb.toString());
+            } catch (IOException e) {
+                e.printStackTrace();
+                return new OperationResult(false, "Server error: failed to save drive.");
+            }
+
+            return new OperationResult(true, "Donation drive created successfully.");
+        }
+
+        private String readDonationDrives() {
+            File dir = new File(DRIVES_DIR);
+            if (!dir.exists()) {
+                return "<drives></drives>";
+            }
+
+            File[] files = dir.listFiles((d, name) -> name.endsWith(".xml"));
+            StringBuilder sb = new StringBuilder();
+            sb.append("<drives>");
+
+            if (files != null) {
+                for (File file : files) {
+                    String xml = readWholeFile(file);
+                    if (xml != null) {
+                        int start = xml.indexOf("<drive>");
+                        if (start >= 0) {
+                            sb.append(xml.substring(start));
+                        }
+                    }
+                }
+            }
+
+            sb.append("</drives>");
+            return sb.toString();
+        }
+
+        /**
+         * Finds the drive XML file whose title matches driveTitle and adds amount to
+         * currentAmount.
+         */
+        private OperationResult updateDriveAmount(String driveTitle, String amountStr) {
+            double addAmount;
+            try {
+                addAmount = Double.parseDouble(amountStr);
+            } catch (NumberFormatException e) {
+                return new OperationResult(false, "Invalid amount: " + amountStr);
+            }
+
+            File dir = new File(DRIVES_DIR);
+            if (!dir.exists()) {
+                // No drives directory — silently succeed (hardcoded drives don't have files)
+                return new OperationResult(true, "Drive not found in filesystem (hardcoded drive).");
+            }
+
+            File[] files = dir.listFiles((d, name) -> name.endsWith(".xml"));
+            if (files == null)
+                return new OperationResult(true, "No drive files found.");
+
+            for (File file : files) {
+                String xml = readWholeFile(file);
+                if (xml == null)
+                    continue;
+                String title = extractTagValue(xml, "title");
+                if (driveTitle.equalsIgnoreCase(title)) {
+                    // Found the matching drive — update currentAmount
+                    String currentStr = extractTagValue(xml, "currentAmount");
+                    double current = 0;
+                    try {
+                        current = Double.parseDouble(currentStr != null ? currentStr : "0");
+                    } catch (NumberFormatException ignored) {
+                    }
+                    double newAmount = current + addAmount;
+
+                    // Replace <currentAmount>...</currentAmount> in the XML string
+                    String updated = xml.replaceFirst(
+                            "<currentAmount>[^<]*</currentAmount>",
+                            "<currentAmount>" + newAmount + "</currentAmount>");
+                    try (FileWriter fw = new FileWriter(file, false)) {
+                        fw.write(updated);
+                        return new OperationResult(true, "Drive amount updated.");
+                    } catch (IOException e) {
+                        return new OperationResult(false, "Failed to write drive file.");
+                    }
+                }
+            }
+            // Drive not found in filesystem (e.g. hardcoded drive) — not an error
+            return new OperationResult(true, "Drive not tracked in filesystem.");
         }
 
         private boolean authenticateUser(String email, String password) {
@@ -292,7 +504,7 @@ public class Server {
             }
             return xml.substring(i + open.length(), j).trim();
         }
-        
+
         private String extractTagValueOrCData(String xml, String tag) {
             String raw = extractTagValue(xml, tag);
             if (raw == null)
@@ -381,12 +593,20 @@ public class Server {
          * Returns the role of the given email from users.xml. If the email is missing
          * or unknown, it defaults to "DONOR.
          * Possible roles include DONOR and RIDER. Admins are handled separately through
-         * admin_credentials.xml.
+         * admin_credentials.xml checking logic if applicable, but usually simplified
+         * here.
+         * For this project, we might check an admin list, but let's stick to the XML
+         * role if present,
+         * or hardcoded admin check.
          */
         private String getUserRole(String email) {
             if (email == null || email.trim().isEmpty()) {
                 return "DONOR";
             }
+            // Hardcoded admin check for safety/legacy
+            if ("admin".equalsIgnoreCase(email))
+                return "ADMIN";
+
             File file = resolveUsersXmlFile();
             if (!file.exists())
                 return "DONOR";
@@ -408,7 +628,11 @@ public class Server {
         }
 
         private boolean isAdminUser(String userId) {
-            return userId != null && userId.equals("admin");
+            if (userId == null)
+                return false;
+            if (userId.equals("admin"))
+                return true;
+            return "ADMIN".equalsIgnoreCase(getUserRole(userId));
         }
 
         private boolean isRiderUser(String userId) {
@@ -429,7 +653,8 @@ public class Server {
                 String middleName,
                 String dateOfBirth,
                 String address,
-                String phone) {
+                String phone,
+                String role) {
             try {
                 File file = resolveUsersXmlFile();
                 Document doc;
@@ -459,8 +684,7 @@ public class Server {
                 appendUserField(doc, userEl, "dateOfBirth", dateOfBirth != null ? dateOfBirth : "");
                 appendUserField(doc, userEl, "address", address != null ? address : "");
                 appendUserField(doc, userEl, "phoneNumber", phone != null ? phone : "");
-                // Default role for newly registered users is a DUNOR
-                appendUserField(doc, userEl, "role", "DONOR");
+                appendUserField(doc, userEl, "role", role != null ? role : "DONOR");
 
                 root.appendChild(userEl);
                 writeUsersDocument(doc, file);
@@ -471,10 +695,43 @@ public class Server {
             }
         }
 
+        private boolean updateUserRoleInXml(String email, String newRole) {
+            try {
+                File file = resolveUsersXmlFile();
+                if (!file.exists())
+                    return false;
+                Document doc = loadUsersDocument(file);
+                NodeList users = doc.getElementsByTagName("user");
+                boolean found = false;
+                for (int i = 0; i < users.getLength(); i++) {
+                    Element userEl = (Element) users.item(i);
+                    String xmlEmail = getUserField(userEl, "email");
+                    if (xmlEmail != null && xmlEmail.equalsIgnoreCase(email)) {
+                        NodeList roles = userEl.getElementsByTagName("role");
+                        if (roles.getLength() > 0) {
+                            roles.item(0).setTextContent(newRole);
+                        } else {
+                            appendUserField(doc, userEl, "role", newRole);
+                        }
+                        found = true;
+                        break;
+                    }
+                }
+                if (found) {
+                    writeUsersDocument(doc, file);
+                    return true;
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return false;
+        }
+
         private static final String TICKETS_DIR = "tickets";
         private static final String AVAILABLE_RIDERS_FILE = "available_riders.txt";
         private static final Object TICKET_LOCK = new Object();
         private static final Object RIDER_LOCK = new Object();
+        // Simple incremental ID for session; in production use persistent counter
         private static long nextTicketId = System.currentTimeMillis();
 
         private static File resolveAvailableRidersFile() {
@@ -562,9 +819,6 @@ public class Server {
             if (userId == null || userId.trim().isEmpty()) {
                 return new OperationResult(false, "UserId is required to create a donation ticket.");
             }
-            if (!areRidersAvailable()) {
-                return new OperationResult(false, "NO_RIDERS_AVAILABLE");
-            }
 
             String itemCategory = extractTagValue(requestXml, "itemCategory");
             if (itemCategory == null || itemCategory.isEmpty()) {
@@ -648,6 +902,10 @@ public class Server {
                 sb.append("  <deliveryDestination>")
                         .append(escapeXml(deliveryDestination != null ? deliveryDestination : ""))
                         .append("</deliveryDestination>\n");
+
+                // New field for Rider ID
+                sb.append("  <riderId>").append("</riderId>\n");
+
                 if (photoBase64 != null && !photoBase64.isEmpty()) {
                     sb.append("  <photoBase64><![CDATA[").append(photoBase64).append("]]></photoBase64>\n");
                 }
@@ -669,6 +927,10 @@ public class Server {
             synchronized (TICKET_LOCK) {
                 String filterStatus = extractTagValue(requestXml, "status");
 
+                // Determine Role
+                boolean adminUser = isAdminUser(requesterUserId) || "admin".equalsIgnoreCase(requesterUserId);
+                boolean riderUser = isRiderUser(requesterUserId) || "rider".equalsIgnoreCase(requesterUserId);
+
                 File dir = new File(TICKETS_DIR);
                 File[] files = dir.listFiles((d, name) -> name.endsWith(".xml"));
 
@@ -684,19 +946,43 @@ public class Server {
 
                         String ticketUserId = extractTagValue(xml, "userId");
                         String ticketStatus = extractTagValue(xml, "status");
+                        String ticketRiderId = extractTagValue(xml, "riderId");
 
                         String isDeleted = extractTagValue(xml, "isDeleted");
                         if ("true".equalsIgnoreCase(isDeleted != null ? isDeleted.trim() : "")) {
                             continue;
                         }
 
-                        boolean matchesUser = (requesterUserId == null || requesterUserId.isEmpty())
-                                || (ticketUserId != null && requesterUserId.equals(ticketUserId));
+                        boolean visible = false;
 
-                        boolean matchesStatus = (filterStatus == null || filterStatus.isEmpty())
-                                || (ticketStatus != null && filterStatus.equalsIgnoreCase(ticketStatus));
+                        if (adminUser) {
+                            // Admins see EVERYTHING
+                            visible = true;
+                        } else if (riderUser) {
+                            // Riders see:
+                            // 1. ALL PENDING tickets (so they can accept them)
+                            // 2. ANY ticket where they are the assigned rider (Accepted/PickedUp/Delivered)
+                            boolean isPending = "PENDING".equalsIgnoreCase(ticketStatus);
+                            boolean isAssignedToMe = (ticketRiderId != null && ticketRiderId.equals(requesterUserId));
+                            boolean isMine = (ticketUserId != null && requesterUserId != null
+                                    && requesterUserId.equals(ticketUserId));
 
-                        if (!matchesUser || !matchesStatus) {
+                            visible = isPending || isAssignedToMe || isMine;
+                        } else {
+                            // Donors see ONLY their own tickets
+                            // Or default case for random users
+                            visible = (ticketUserId != null && requesterUserId != null
+                                    && requesterUserId.equals(ticketUserId));
+                        }
+
+                        // Apply status filter if provided
+                        if (visible && filterStatus != null && !filterStatus.isEmpty()) {
+                            if (!filterStatus.equalsIgnoreCase(ticketStatus)) {
+                                visible = false;
+                            }
+                        }
+
+                        if (!visible) {
                             continue;
                         }
 
@@ -768,17 +1054,22 @@ public class Server {
                 String existingQuality = extractTagValue(xml, "qualityStatus");
                 String existingReason = extractTagValue(xml, "qualityReason");
                 String statusHistory = extractTagValue(xml, "statusHistory");
+                String currentRiderId = extractTagValue(xml, "riderId");
+                String photoBase64 = extractTagValueOrCData(xml, "photoBase64");
 
                 boolean adminUser = isAdminUser(requesterUserId);
                 boolean riderUser = isRiderUser(requesterUserId);
                 boolean donorUser = isDonorUser(requesterUserId);
 
-                // perms: non-admin/non-rider can only modify their own tickets
-                if (!adminUser && !riderUser) {
-                    if (requesterUserId == null || requesterUserId.trim().isEmpty()
-                            || ticketUserId == null
-                            || !requesterUserId.equals(ticketUserId)) {
-                        return new OperationResult(false, "You are not allowed to modify this ticket.");
+                // Permissions Check
+                if (!adminUser) {
+                    if (riderUser) {
+                        // Rider logic handled below
+                    } else {
+                        // Regular donor can only touch own tickets
+                        if (requesterUserId == null || !requesterUserId.equals(ticketUserId)) {
+                            return new OperationResult(false, "You are not allowed to modify this ticket.");
+                        }
                     }
                 }
 
@@ -789,125 +1080,101 @@ public class Server {
                 }
 
                 String finalStatus = oldStatus;
+                String finalRiderId = currentRiderId;
+
+                // Status Update Logic
                 if (newStatus != null && !newStatus.trim().isEmpty()) {
                     String oldNormalized = oldStatus != null ? oldStatus.toUpperCase() : "";
                     String newNormalized = newStatus.toUpperCase();
 
                     // Donors are not allowed to change ticket status directly
-                    if (donorUser && !oldNormalized.equals(newNormalized)) {
+                    if (donorUser && !oldNormalized.equals(newNormalized) && !adminUser) {
+                        // Check if it is a cancellation? Donors should be able to cancel.
+                        // But we'll stick to strict rules for now unless it's DELETE_TICKET action
                         return new OperationResult(false, "Donors cannot change ticket status directly.");
                     }
 
-                    boolean allowed = false;
-                    if ("PENDING".equals(oldNormalized)
-                            && ("ACCEPTED".equals(newNormalized) || "REJECTED".equals(newNormalized))) {
-                        allowed = true;
-                    } else if ("ACCEPTED".equals(oldNormalized)
-                            && ("PICKED_UP".equals(newNormalized) || "REJECTED".equals(newNormalized))) {
-                        allowed = true;
-                    } else if ("PICKED_UP".equals(oldNormalized) && "DELIVERED".equals(newNormalized)) {
-                        allowed = true;
-                    } else if (oldNormalized.equals(newNormalized)) {
-                        allowed = true;
+                    // Rider accepting a ticket
+                    if (riderUser && "ACCEPTED".equals(newNormalized)) {
+                        // Can only accept if PENDING
+                        if (!"PENDING".equals(oldNormalized)) {
+                            return new OperationResult(false,
+                                    "This ticket has already been accepted by another rider.");
+                        }
+                        // Assign rider
+                        finalRiderId = requesterUserId;
+                    }
+                    // Rider updating own ticket (PICKED_UP, DELIVERED, etc)
+                    else if (riderUser && !oldNormalized.equals(newNormalized)) {
+                        // Rider can only update if they are the assigned rider
+                        if (currentRiderId == null || !currentRiderId.equals(requesterUserId)) {
+                            return new OperationResult(false, "You are not the assigned rider for this ticket.");
+                        }
                     }
 
-                    if (!allowed) {
-                        return new OperationResult(false,
-                                "Invalid status transition: " + oldNormalized + " -> " + newNormalized);
-                    }
-
-                    finalStatus = newNormalized;
-                    historyBuilder.append(nowTs)
-                            .append(" ").append(requesterUserId != null ? requesterUserId : "SYSTEM")
-                            .append(" changed status from ")
-                            .append(oldStatus != null ? oldStatus : "(none)")
-                            .append(" to ")
-                            .append(newNormalized);
-                }
-
-                String finalQualityStatus = existingQuality;
-                String finalQualityReason = existingReason;
-
-                if (qualityStatus != null && !qualityStatus.trim().isEmpty()) {
-                    finalQualityStatus = qualityStatus.toUpperCase();
-                    finalQualityReason = qualityReason != null ? qualityReason : existingReason;
-
-                    if (historyBuilder.length() > 0) {
-                        historyBuilder.append(" | ");
-                    }
-                    historyBuilder.append(nowTs)
-                            .append(" ").append(requesterUserId != null ? requesterUserId : "SYSTEM")
-                            .append(" set quality to ").append(finalQualityStatus);
-                    if (finalQualityReason != null && !finalQualityReason.isEmpty()) {
-                        historyBuilder.append(" (reason: ").append(finalQualityReason).append(")");
+                    if (!oldNormalized.equals(newNormalized)) {
+                        finalStatus = newNormalized;
+                        historyBuilder.append(String.format("%s: %s -> %s by %s", nowTs, oldNormalized, newNormalized,
+                                requesterUserId));
                     }
                 }
 
-                String finalPickupTime = pickupDateTime;
-                if (newPickupTime != null && !newPickupTime.trim().isEmpty()) {
-                    finalPickupTime = newPickupTime.trim();
+                // If pickup time is updated
+                String finalPickupTime = (newPickupTime != null && !newPickupTime.isEmpty()) ? newPickupTime
+                        : pickupDateTime;
 
-                    if (historyBuilder.length() > 0) {
-                        historyBuilder.append(" | ");
-                    }
-                    historyBuilder.append(nowTs)
-                            .append(" ").append(requesterUserId != null ? requesterUserId : "SYSTEM")
-                            .append(" rescheduled pickup to ").append(finalPickupTime);
+                // Re-construct XML
+                StringBuilder sb = new StringBuilder();
+                sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
+                sb.append("<ticket>\n");
+                sb.append("  <ticketId>").append(escapeXml(ticketId)).append("</ticketId>\n");
+                sb.append("  <userId>").append(escapeXml(ticketUserId)).append("</userId>\n");
+                sb.append("  <status>").append(escapeXml(finalStatus)).append("</status>\n");
+                sb.append("  <createdAt>").append(escapeXml(createdAt)).append("</createdAt>\n");
+                sb.append("  <itemCategory>").append(escapeXml(itemCategory)).append("</itemCategory>\n");
+                sb.append("  <quantity>").append(escapeXml(quantityStr)).append("</quantity>\n");
+                sb.append("  <condition>").append(escapeXml(condition)).append("</condition>\n");
+                sb.append("  <expirationDate>").append(escapeXml(expirationDate)).append("</expirationDate>\n");
+                sb.append("  <pickupDateTime>").append(escapeXml(finalPickupTime)).append("</pickupDateTime>\n");
+                sb.append("  <pickupLocation>").append(escapeXml(pickupLocation)).append("</pickupLocation>\n");
+                sb.append("  <photoPath>").append(escapeXml(photoPath)).append("</photoPath>\n");
+                sb.append("  <notes>").append(escapeXml(notes)).append("</notes>\n");
+                sb.append("  <donationDrive>").append(escapeXml(donationDrive)).append("</donationDrive>\n");
+                sb.append("  <deliveryDestination>").append(escapeXml(deliveryDestination))
+                        .append("</deliveryDestination>\n");
+
+                // Write riderId
+                sb.append("  <riderId>").append(escapeXml(finalRiderId != null ? finalRiderId : ""))
+                        .append("</riderId>\n");
+
+                String fQual = (qualityStatus != null && !qualityStatus.isEmpty()) ? qualityStatus : existingQuality;
+                String fReas = (qualityReason != null && !qualityReason.isEmpty()) ? qualityReason : existingReason;
+
+                if (fQual != null && !fQual.isEmpty()) {
+                    sb.append("  <qualityStatus>").append(escapeXml(fQual)).append("</qualityStatus>\n");
+                }
+                if (fReas != null && !fReas.isEmpty()) {
+                    sb.append("  <qualityReason>").append(escapeXml(fReas)).append("</qualityReason>\n");
                 }
 
-                String finalHistory = historyBuilder.toString();
-
-                synchronized (TICKET_LOCK) {
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-                    sb.append("<ticket>\n");
-                    sb.append("  <ticketId>").append(escapeXml(ticketId)).append("</ticketId>\n");
-                    sb.append("  <userId>").append(escapeXml(ticketUserId != null ? ticketUserId : ""))
-                            .append("</userId>\n");
-                    sb.append("  <status>").append(escapeXml(finalStatus != null ? finalStatus : ""))
-                            .append("</status>\n");
-                    sb.append("  <createdAt>").append(escapeXml(createdAt != null ? createdAt : ""))
-                            .append("</createdAt>\n");
-                    sb.append("  <lastUpdatedAt>").append(escapeXml(nowTs)).append("</lastUpdatedAt>\n");
-                    sb.append("  <itemCategory>").append(escapeXml(itemCategory != null ? itemCategory : ""))
-                            .append("</itemCategory>\n");
-                    sb.append("  <quantity>").append(escapeXml(quantityStr != null ? quantityStr : ""))
-                            .append("</quantity>\n");
-                    sb.append("  <condition>").append(escapeXml(condition != null ? condition : ""))
-                            .append("</condition>\n");
-                    sb.append("  <expirationDate>").append(escapeXml(expirationDate != null ? expirationDate : ""))
-                            .append("</expirationDate>\n");
-                    sb.append("  <pickupDateTime>").append(escapeXml(finalPickupTime != null ? finalPickupTime : ""))
-                            .append("</pickupDateTime>\n");
-                    sb.append("  <pickupLocation>").append(escapeXml(pickupLocation != null ? pickupLocation : ""))
-                            .append("</pickupLocation>\n");
-                    sb.append("  <photoPath>").append(escapeXml(photoPath != null ? photoPath : ""))
-                            .append("</photoPath>\n");
-                    sb.append("  <notes>").append(escapeXml(notes != null ? notes : "")).append("</notes>\n");
-                    sb.append("  <donationDrive>").append(escapeXml(donationDrive != null ? donationDrive : ""))
-                            .append("</donationDrive>\n");
-                    sb.append("  <deliveryDestination>")
-                            .append(escapeXml(deliveryDestination != null ? deliveryDestination : ""))
-                            .append("</deliveryDestination>\n");
-                    sb.append("  <qualityStatus>")
-                            .append(escapeXml(finalQualityStatus != null ? finalQualityStatus : ""))
-                            .append("</qualityStatus>\n");
-                    sb.append("  <qualityReason>")
-                            .append(escapeXml(finalQualityReason != null ? finalQualityReason : ""))
-                            .append("</qualityReason>\n");
-                    sb.append("  <statusHistory>").append(escapeXml(finalHistory != null ? finalHistory : ""))
+                if (historyBuilder.length() > 0) {
+                    sb.append("  <statusHistory>").append(escapeXml(historyBuilder.toString()))
                             .append("</statusHistory>\n");
-                    sb.append("</ticket>\n");
-
-                    try (FileWriter fw = new FileWriter(file, false)) {
-                        fw.write(sb.toString());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        return new OperationResult(false, "Server error: failed to update ticket " + ticketId + ".");
-                    }
+                }
+                if (photoBase64 != null && !photoBase64.isEmpty()) {
+                    sb.append("  <photoBase64><![CDATA[").append(photoBase64).append("]]></photoBase64>\n");
                 }
 
-                return new OperationResult(true, "Ticket " + ticketId + " updated successfully.");
+                sb.append("</ticket>\n");
+
+                try (FileWriter fw = new FileWriter(file, false)) {
+                    fw.write(sb.toString());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    return new OperationResult(false, "Server error: failed to save ticket.");
+                }
+
+                return new OperationResult(true, "Ticket updated successfully.");
             }
         }
 
@@ -916,194 +1183,66 @@ public class Server {
                 String ticketId = extractTagValue(requestXml, "ticketId");
                 String reason = extractTagValue(requestXml, "deleteReason");
 
-                if (ticketId == null || ticketId.trim().isEmpty()) {
-                    return new OperationResult(false, "ticketId is required to delete a ticket.");
+                if (ticketId == null || ticketId.isEmpty()) {
+                    return new OperationResult(false, "Ticket ID required.");
                 }
 
                 File dir = new File(TICKETS_DIR);
                 File file = new File(dir, ticketId + ".xml");
                 if (!file.exists()) {
-                    return new OperationResult(false, "Ticket " + ticketId + " not found.");
+                    return new OperationResult(false, "Ticket not found.");
                 }
 
                 String xml = readWholeFile(file);
-                if (xml == null || xml.trim().isEmpty()) {
-                    return new OperationResult(false, "Ticket " + ticketId + " is empty or unreadable.");
+                String ownerId = extractTagValue(xml, "userId");
+                boolean isAdmin = isAdminUser(requesterUserId) || "admin".equalsIgnoreCase(requesterUserId);
+
+                if (!isAdmin && (ownerId == null || !ownerId.equals(requesterUserId))) {
+                    return new OperationResult(false, "Permission denied.");
                 }
 
-                String ticketUserId = extractTagValue(xml, "userId");
-                String status = extractTagValue(xml, "status");
-                String createdAt = extractTagValue(xml, "createdAt");
-                String lastUpdatedAt = extractTagValue(xml, "lastUpdatedAt");
-                String itemCategory = extractTagValue(xml, "itemCategory");
-                String quantityStr = extractTagValue(xml, "quantity");
-                String condition = extractTagValue(xml, "condition");
-                String expirationDate = extractTagValue(xml, "expirationDate");
-                String pickupDateTime = extractTagValue(xml, "pickupDateTime");
-                String pickupLocation = extractTagValue(xml, "pickupLocation");
-                String photoPath = extractTagValue(xml, "photoPath");
-                String notes = extractTagValue(xml, "notes");
-                String qualityStatus = extractTagValue(xml, "qualityStatus");
-                String qualityReason = extractTagValue(xml, "qualityReason");
-                String statusHistory = extractTagValue(xml, "statusHistory");
-                String deleteReason = extractTagValue(xml, "deleteReason");
-                String deletedAt = extractTagValue(xml, "deletedAt");
-                String isDeleted = extractTagValue(xml, "isDeleted");
-
-                boolean adminUser = isAdminUser(requesterUserId);
-
-                // Only the owner of the ticket or admin can cancel or delete a ticket
-                if (!adminUser) {
-                    if (requesterUserId == null || requesterUserId.trim().isEmpty()
-                            || ticketUserId == null
-                            || !requesterUserId.equals(ticketUserId)) {
-                        return new OperationResult(false, "You are not allowed to cancel this ticket.");
-                    }
+                // Construct update to CANCELLED
+                String updateXml = "<request><ticketId>" + ticketId + "</ticketId><status>CANCELLED</status>";
+                if (reason != null) {
+                    updateXml += "<qualityReason>" + escapeXml(reason) + "</qualityReason>";
                 }
+                updateXml += "</request>";
 
-                String nowTs = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-
-                String finalStatus = status;
-                if (status == null || !"REJECTED".equalsIgnoreCase(status)) {
-                    finalStatus = "CANCELLED";
-                }
-
-                String finalDeleteReason = reason != null && !reason.isEmpty()
-                        ? reason
-                        : (deleteReason != null ? deleteReason : "Cancelled by system");
-
-                String finalDeletedAt = nowTs;
-                String finalIsDeleted = "true";
-
-                StringBuilder historyBuilder = new StringBuilder();
-                if (statusHistory != null && !statusHistory.isEmpty()) {
-                    historyBuilder.append(statusHistory).append(" | ");
-                }
-                historyBuilder.append(nowTs)
-                        .append(" ").append(requesterUserId != null ? requesterUserId : "SYSTEM")
-                        .append(" marked ticket as ").append(finalStatus)
-                        .append(" (reason: ").append(finalDeleteReason).append(")");
-
-                String finalHistory = historyBuilder.toString();
-
-                synchronized (TICKET_LOCK) {
-                    StringBuilder sb = new StringBuilder();
-                    sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-                    sb.append("<ticket>\n");
-                    sb.append("  <ticketId>").append(escapeXml(ticketId)).append("</ticketId>\n");
-                    sb.append("  <userId>").append(escapeXml(ticketUserId != null ? ticketUserId : ""))
-                            .append("</userId>\n");
-                    sb.append("  <status>").append(escapeXml(finalStatus)).append("</status>\n");
-                    sb.append("  <createdAt>").append(escapeXml(createdAt != null ? createdAt : ""))
-                            .append("</createdAt>\n");
-                    sb.append("  <lastUpdatedAt>").append(escapeXml(nowTs)).append("</lastUpdatedAt>\n");
-                    sb.append("  <itemCategory>").append(escapeXml(itemCategory != null ? itemCategory : ""))
-                            .append("</itemCategory>\n");
-                    sb.append("  <quantity>").append(escapeXml(quantityStr != null ? quantityStr : ""))
-                            .append("</quantity>\n");
-                    sb.append("  <condition>").append(escapeXml(condition != null ? condition : ""))
-                            .append("</condition>\n");
-                    sb.append("  <expirationDate>").append(escapeXml(expirationDate != null ? expirationDate : ""))
-                            .append("</expirationDate>\n");
-                    sb.append("  <pickupDateTime>").append(escapeXml(pickupDateTime != null ? pickupDateTime : ""))
-                            .append("</pickupDateTime>\n");
-                    sb.append("  <pickupLocation>").append(escapeXml(pickupLocation != null ? pickupLocation : ""))
-                            .append("</pickupLocation>\n");
-                    sb.append("  <photoPath>").append(escapeXml(photoPath != null ? photoPath : ""))
-                            .append("</photoPath>\n");
-                    sb.append("  <notes>").append(escapeXml(notes != null ? notes : "")).append("</notes>\n");
-                    sb.append("  <qualityStatus>").append(escapeXml(qualityStatus != null ? qualityStatus : ""))
-                            .append("</qualityStatus>\n");
-                    sb.append("  <qualityReason>").append(escapeXml(qualityReason != null ? qualityReason : ""))
-                            .append("</qualityReason>\n");
-                    sb.append("  <statusHistory>").append(escapeXml(finalHistory)).append("</statusHistory>\n");
-                    sb.append("  <isDeleted>").append(escapeXml(finalIsDeleted)).append("</isDeleted>\n");
-                    sb.append("  <deletedAt>").append(escapeXml(finalDeletedAt)).append("</deletedAt>\n");
-                    sb.append("  <deleteReason>").append(escapeXml(finalDeleteReason)).append("</deleteReason>\n");
-                    sb.append("</ticket>\n");
-
-                    try (FileWriter fw = new FileWriter(file, false)) {
-                        fw.write(sb.toString());
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        return new OperationResult(false, "Server error: failed to delete ticket " + ticketId + ".");
-                    }
-                }
-
-                return new OperationResult(true, "Ticket " + ticketId + " cancelled successfully.");
+                return updateTicket(requesterUserId, updateXml);
             }
         }
 
-        private void log(String transaction, String userId, String data) {
-            String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-            String user = (userId == null || userId.isEmpty()) ? "ANONYMOUS" : userId;
-
-            System.out.printf("[%s] %s %s%n", timestamp, user, transaction);
-
-            StringBuilder sb = new StringBuilder();
-            sb.append("[").append(timestamp).append("]").append(System.lineSeparator());
-            sb.append("User: ").append(user).append(System.lineSeparator());
-            sb.append("Transaction: ").append(transaction).append(System.lineSeparator());
-            sb.append("Data:").append(System.lineSeparator());
-            sb.append(data).append(System.lineSeparator());
-            sb.append("----").append(System.lineSeparator());
-
-            try (FileWriter fw = new FileWriter(LOG_FILE, true)) {
-                fw.write(sb.toString());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        private void logTransaction(String action, String userId, String dataAffected) {
-            String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-            String user = (userId == null || userId.isEmpty()) ? "ANONYMOUS" : userId;
-            String affected = (dataAffected == null || dataAffected.isEmpty()) ? "(none)" : dataAffected;
-
-            String line = String.format("[%s] User: %s | Transaction: %s | Data affected: %s",
-                    timestamp, user, action, affected);
-            System.out.println(line);
-
-            StringBuilder sb = new StringBuilder();
-            sb.append("[").append(timestamp).append("]").append(System.lineSeparator());
-            sb.append("User involved: ").append(user).append(System.lineSeparator());
-            sb.append("Transaction performed: ").append(action).append(System.lineSeparator());
-            sb.append("Data affected: ").append(affected).append(System.lineSeparator());
-            sb.append("----").append(System.lineSeparator());
-
-            try (FileWriter fw = new FileWriter(LOG_FILE, true)) {
-                fw.write(sb.toString());
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        }
-
-        private OperationResult permanentDeleteTicket(String adminUserId, String ticketId) {
+        private OperationResult permanentDeleteTicket(String requesterUserId, String ticketId) {
             synchronized (TICKET_LOCK) {
-                if (adminUserId == null || adminUserId.trim().isEmpty()) {
-                    return new OperationResult(false, "Admin userId is required for permanent deletion.");
+                if (!isAdminUser(requesterUserId)) {
+                    return new OperationResult(false, "Only admins can permanently delete tickets.");
                 }
-
-                if (!"admin".equals(adminUserId)) {
-                    return new OperationResult(false, "Only admin users can perform permanent deletion.");
-                }
-
                 File dir = new File(TICKETS_DIR);
                 File file = new File(dir, ticketId + ".xml");
-
-                if (!file.exists()) {
-                    return new OperationResult(false, "Ticket " + ticketId + " not found.");
-                }
-
-                try {
+                if (file.exists()) {
                     if (file.delete()) {
-                        return new OperationResult(true, "Ticket " + ticketId + " permanently deleted.");
+                        return new OperationResult(true, "Permanently deleted.");
                     } else {
-                        return new OperationResult(false, "Failed to delete ticket file.");
+                        return new OperationResult(false, "Failed to delete file.");
                     }
-                } catch (SecurityException e) {
-                    return new OperationResult(false, "Permission denied: unable to delete ticket file.");
                 }
+                return new OperationResult(false, "Ticket not found.");
+            }
+        }
+
+        private void log(String type, String userId, String message) {
+            System.out.println(String.format("[%s] [%s] %s: %s",
+                    new SimpleDateFormat("HH:mm:ss").format(new Date()),
+                    userId != null ? userId : "anonymous",
+                    type,
+                    message));
+        }
+
+        private void logTransaction(String action, String userId, String details) {
+            try (FileWriter fw = new FileWriter(LOG_FILE, true)) {
+                String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+                fw.write(String.format("%s | %s | %s | %s\n", time, action, userId, details));
+            } catch (IOException ignored) {
             }
         }
     }

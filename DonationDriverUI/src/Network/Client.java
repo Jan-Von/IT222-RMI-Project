@@ -48,7 +48,6 @@ public class Client {
         }
     }
 
-
     public String login(String email, String password) throws IOException {
         String request = "<request><action>LOGIN</action><userId></userId>"
                 + "<email>" + escapeXml(email) + "</email>"
@@ -64,18 +63,20 @@ public class Client {
     }
 
     public String register(String firstName, String lastName, String middleName,
-                           String dateOfBirth, String address, String phone,
-                           String email, String password) throws IOException {
+            String dateOfBirth, String address, String phone,
+            String email, String password, String role) throws IOException {
         StringBuilder request = new StringBuilder();
         request.append("<request><action>REGISTER</action><userId></userId>");
         request.append("<firstName>").append(escapeXml(firstName)).append("</firstName>");
         request.append("<lastName>").append(escapeXml(lastName)).append("</lastName>");
         request.append("<middleName>").append(escapeXml(middleName != null ? middleName : "")).append("</middleName>");
-        request.append("<dateOfBirth>").append(escapeXml(dateOfBirth != null ? dateOfBirth : "")).append("</dateOfBirth>");
+        request.append("<dateOfBirth>").append(escapeXml(dateOfBirth != null ? dateOfBirth : ""))
+                .append("</dateOfBirth>");
         request.append("<address>").append(escapeXml(address != null ? address : "")).append("</address>");
         request.append("<phone>").append(escapeXml(phone != null ? phone : "")).append("</phone>");
         request.append("<email>").append(escapeXml(email)).append("</email>");
         request.append("<password>").append(escapeXml(password)).append("</password>");
+        request.append("<role>").append(escapeXml(role)).append("</role>");
         request.append("</request>");
         return sendRequest(request.toString());
     }
@@ -98,17 +99,19 @@ public class Client {
             String pickupLocation,
             String photoPath,
             String notes,
-            String photoBase64
-    ) throws IOException {
+            String photoBase64) throws IOException {
         StringBuilder request = new StringBuilder();
         request.append("<request><action>CREATE_TICKET</action>");
         request.append("<userId>").append(escapeXml(userId)).append("</userId>");
         request.append("<itemCategory>").append(escapeXml(itemCategory)).append("</itemCategory>");
         request.append("<quantity>").append(quantity).append("</quantity>");
         request.append("<condition>").append(escapeXml(condition != null ? condition : "")).append("</condition>");
-        request.append("<expirationDate>").append(escapeXml(expirationDate != null ? expirationDate : "")).append("</expirationDate>");
-        request.append("<pickupDateTime>").append(escapeXml(pickupDateTime != null ? pickupDateTime : "")).append("</pickupDateTime>");
-        request.append("<pickupLocation>").append(escapeXml(pickupLocation != null ? pickupLocation : "")).append("</pickupLocation>");
+        request.append("<expirationDate>").append(escapeXml(expirationDate != null ? expirationDate : ""))
+                .append("</expirationDate>");
+        request.append("<pickupDateTime>").append(escapeXml(pickupDateTime != null ? pickupDateTime : ""))
+                .append("</pickupDateTime>");
+        request.append("<pickupLocation>").append(escapeXml(pickupLocation != null ? pickupLocation : ""))
+                .append("</pickupLocation>");
         request.append("<photoPath>").append(escapeXml(photoPath != null ? photoPath : "")).append("</photoPath>");
         request.append("<details>").append(escapeXml(notes != null ? notes : "")).append("</details>");
         if (photoBase64 != null && !photoBase64.isEmpty()) {
@@ -130,30 +133,41 @@ public class Client {
             String notes,
             String donationDrive,
             String deliveryDestination,
-            String photoBase64
-    ) throws IOException {
+            String photoBase64) throws IOException {
         StringBuilder request = new StringBuilder();
         request.append("<request><action>CREATE_TICKET</action>");
         request.append("<userId>").append(escapeXml(userId)).append("</userId>");
         request.append("<itemCategory>").append(escapeXml(itemCategory)).append("</itemCategory>");
         request.append("<quantity>").append(quantity).append("</quantity>");
         request.append("<condition>").append(escapeXml(condition != null ? condition : "")).append("</condition>");
-        request.append("<expirationDate>").append(escapeXml(expirationDate != null ? expirationDate : "")).append("</expirationDate>");
-        request.append("<pickupDateTime>").append(escapeXml(pickupDateTime != null ? pickupDateTime : "")).append("</pickupDateTime>");
-        request.append("<pickupLocation>").append(escapeXml(pickupLocation != null ? pickupLocation : "")).append("</pickupLocation>");
+        request.append("<expirationDate>").append(escapeXml(expirationDate != null ? expirationDate : ""))
+                .append("</expirationDate>");
+        request.append("<pickupDateTime>").append(escapeXml(pickupDateTime != null ? pickupDateTime : ""))
+                .append("</pickupDateTime>");
+        request.append("<pickupLocation>").append(escapeXml(pickupLocation != null ? pickupLocation : ""))
+                .append("</pickupLocation>");
         request.append("<photoPath>").append(escapeXml(photoPath != null ? photoPath : "")).append("</photoPath>");
         request.append("<details>").append(escapeXml(notes != null ? notes : "")).append("</details>");
         if (donationDrive != null && !donationDrive.isEmpty()) {
             request.append("<donationDrive>").append(escapeXml(donationDrive)).append("</donationDrive>");
         }
         if (deliveryDestination != null && !deliveryDestination.isEmpty()) {
-            request.append("<deliveryDestination>").append(escapeXml(deliveryDestination)).append("</deliveryDestination>");
+            request.append("<deliveryDestination>").append(escapeXml(deliveryDestination))
+                    .append("</deliveryDestination>");
         }
         if (photoBase64 != null && !photoBase64.isEmpty()) {
             request.append("<photoBase64><![CDATA[").append(photoBase64).append("]]></photoBase64>");
         }
         request.append("</request>");
         return sendRequest(request.toString());
+    }
+
+    public String updateUserRole(String email, String newRole) throws IOException {
+        String msg = "<request><action>UPDATE_USER_ROLE</action>" +
+                "<email>" + escapeXml(email) + "</email>" +
+                "<role>" + escapeXml(newRole) + "</role>" +
+                "</request>";
+        return sendRequest(msg);
     }
 
     public String readTickets(String userId) throws IOException {
@@ -178,7 +192,8 @@ public class Client {
         return sendRequest(request);
     }
 
-    public String updateTicket(String userId, String ticketId, String status, String qualityStatus, String qualityReason) throws IOException {
+    public String updateTicket(String userId, String ticketId, String status, String qualityStatus,
+            String qualityReason) throws IOException {
         StringBuilder request = new StringBuilder();
         request.append("<request><action>UPDATE_TICKET</action>");
         request.append("<userId>").append(escapeXml(userId)).append("</userId>");
@@ -217,7 +232,7 @@ public class Client {
         return sendRequest(request);
     }
 
-    //Overload method for optional reason from client when cancelling a ticket
+    // Overload method for optional reason from client when cancelling a ticket
     public String deleteTicket(String userId, String ticketId, String reason) throws IOException {
         StringBuilder request = new StringBuilder();
         request.append("<request><action>DELETE_TICKET</action>");
@@ -239,13 +254,40 @@ public class Client {
         return sendRequest(request.toString());
     }
 
+    public String createDonationDrive(String userId, String title, String description, String targetAmount)
+            throws IOException {
+        StringBuilder request = new StringBuilder();
+        request.append("<request><action>CREATE_DONATION_DRIVE</action>");
+        request.append("<userId>").append(escapeXml(userId)).append("</userId>");
+        request.append("<title>").append(escapeXml(title)).append("</title>");
+        request.append("<description>").append(escapeXml(description != null ? description : ""))
+                .append("</description>");
+        request.append("<targetAmount>").append(escapeXml(targetAmount)).append("</targetAmount>");
+        request.append("</request>");
+        return sendRequest(request.toString());
+    }
+
+    public String readDonationDrives() throws IOException {
+        return sendRequest("<request><action>READ_DONATION_DRIVES</action><userId></userId></request>");
+    }
+
+    public String updateDriveAmount(String driveTitle, double amount) throws IOException {
+        StringBuilder request = new StringBuilder();
+        request.append("<request><action>UPDATE_DRIVE_AMOUNT</action>");
+        request.append("<driveTitle>").append(escapeXml(driveTitle)).append("</driveTitle>");
+        request.append("<amount>").append(amount).append("</amount>");
+        request.append("</request>");
+        return sendRequest(request.toString());
+    }
+
     public static Response parseResponse(String responseXml) {
         if (responseXml == null || responseXml.isEmpty()) {
             return null;
         }
         String status = extractTagValue(responseXml, "status");
         String message = extractTagValue(responseXml, "message");
-        return new Response(status != null ? status : "", message != null ? message : "");
+        String role = extractTagValue(responseXml, "role");
+        return new Response(status != null ? status : "", message != null ? message : "", role != null ? role : "");
     }
 
     private static String extractTagValue(String xml, String tag) {
@@ -260,7 +302,8 @@ public class Client {
     }
 
     public static String escapeXml(String s) {
-        if (s == null) return "";
+        if (s == null)
+            return "";
         return s.replace("&", "&amp;")
                 .replace("<", "&lt;")
                 .replace(">", "&gt;")
@@ -270,7 +313,8 @@ public class Client {
 
     /** Reverse of escapeXml so XML embedded in a response message can be parsed. */
     public static String unescapeXml(String s) {
-        if (s == null) return "";
+        if (s == null)
+            return "";
         return s.replace("&lt;", "<")
                 .replace("&gt;", ">")
                 .replace("&quot;", "\"")
@@ -299,10 +343,16 @@ public class Client {
     public static class Response {
         public final String status;
         public final String message;
+        public final String role;
 
         public Response(String status, String message) {
+            this(status, message, "");
+        }
+
+        public Response(String status, String message, String role) {
             this.status = status != null ? status : "";
             this.message = message != null ? message : "";
+            this.role = role != null ? role : "";
         }
 
         public boolean isOk() {
@@ -333,4 +383,3 @@ public class Client {
         }
     }
 }
-

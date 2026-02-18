@@ -10,7 +10,7 @@ public class RegistrationView {
     public JTextField emailField;
     public JTextField passwordField;
     public JButton finishButton;
-
+    public JButton backButton;
     public JTextField firstNameField;
     public JTextField lastNameField;
     public JTextField middleNameField;
@@ -102,7 +102,6 @@ public class RegistrationView {
         dateOfBirthField.setBorder(new LineBorder(new Color(230, 230, 230), 1));
         frame.add(dateOfBirthField);
 
-
         JLabel addressLabel = new JLabel("Address");
         addressLabel.setFont(new Font("Arial", Font.BOLD, 14));
         addressLabel.setBounds(180, 420, 380, 45);
@@ -165,19 +164,38 @@ public class RegistrationView {
 
         termsCheck = new JCheckBox("I Agree to Terms and Agreements");
         termsCheck.setFont(new Font("Arial", Font.BOLD, 12));
-        termsCheck.setBounds(780, 450, 250, 45);
+        termsCheck.setBounds(780, 500, 250, 45);
         termsCheck.setBorderPainted(false);
         termsCheck.setContentAreaFilled(false);
         frame.add(termsCheck);
 
         finishButton = new JButton("Finish");
         finishButton.setFont(new Font("Arial", Font.BOLD, 12));
-        finishButton.setBounds(1060, 450, 100, 45);
+        finishButton.setBounds(1060, 560, 100, 45);
         finishButton.setForeground(Color.WHITE);
         finishButton.setBackground(new Color(20, 35, 100));
         frame.add(finishButton);
 
+        backButton = new JButton("Back");
+        backButton.setFont(new Font("Arial", Font.BOLD, 12));
+        backButton.setBounds(940, 560, 100, 45);
+        backButton.setForeground(Color.WHITE);
+        backButton.setBackground(Color.GRAY);
+        frame.add(backButton);
+
+        JLabel roleLabel = new JLabel("I am a:");
+        roleLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        roleLabel.setBounds(780, 450, 100, 30);
+        frame.add(roleLabel);
+
+        String[] roles = { "Donor", "Rider" };
+        roleBox = new JComboBox<>(roles);
+        roleBox.setBounds(840, 450, 150, 30);
+        frame.add(roleBox);
+
         frame.add(Header);
         frame.setVisible(true);
     }
+
+    public JComboBox<String> roleBox;
 }

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ticket>
+  <ticketId>1771419039035</ticketId>
+  <userId>nov@gmail.com</userId>
+  <status>PENDING</status>
+  <createdAt>2026-02-18 20:51:05</createdAt>
+  <itemCategory>apples</itemCategory>
+  <quantity>10</quantity>
+  <condition>good condition</condition>
+  <expirationDate></expirationDate>
+  <pickupDateTime></pickupDateTime>
+  <pickupLocation>camp siben</pickupLocation>
+  <photoPath></photoPath>
+  <notes>Goods donation – Typhoon Relief | Deliver to: Skull</notes>
+  <donationDrive>Typhoon Relief</donationDrive>
+  <deliveryDestination>Skull</deliveryDestination>
+  <riderId></riderId>
+</ticket>

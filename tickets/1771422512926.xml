@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ticket>
+  <ticketId>1771422512926</ticketId>
+  <userId>clayemail</userId>
+  <status>PENDING</status>
+  <createdAt>2026-02-18 21:48:48</createdAt>
+  <itemCategory>Monetary donation</itemCategory>
+  <quantity>1</quantity>
+  <condition>N/A</condition>
+  <expirationDate></expirationDate>
+  <pickupDateTime></pickupDateTime>
+  <pickupLocation></pickupLocation>
+  <photoPath></photoPath>
+  <notes>Monetary donation to Super Typhoon Haiyan; Amount=60000.0; TransactionId=965916671</notes>
+  <donationDrive>Super Typhoon Haiyan</donationDrive>
+  <deliveryDestination></deliveryDestination>
+  <riderId></riderId>
+</ticket>

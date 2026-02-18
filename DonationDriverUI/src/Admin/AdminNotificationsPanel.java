@@ -1,141 +1,233 @@
 package Admin;
 
+import Network.Client;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
+import javax.swing.table.JTableHeader;
 import java.awt.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AdminNotificationsPanel extends JPanel {
 
+    private JTable monetaryTable;
     private DefaultTableModel monetaryTableModel;
+    private JTable donationBoxesTable;
     private DefaultTableModel donationBoxesTableModel;
 
     public AdminNotificationsPanel() {
-        setLayout(new BorderLayout(16, 16));
-        setBackground(Color.WHITE);
-        setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        setLayout(null);
+        setBackground(new Color(240, 242, 245));
 
-        add(buildHeader(), BorderLayout.NORTH);
-        add(buildTablesPanel(), BorderLayout.CENTER);
+        // Title
+        JLabel titleLabel = new JLabel("Notifications");
+        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 24));
+        titleLabel.setBounds(30, 20, 300, 30);
+        add(titleLabel);
+
+        JLabel subtitleLabel = new JLabel("Manage user requests");
+        subtitleLabel.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        subtitleLabel.setForeground(Color.GRAY);
+        subtitleLabel.setBounds(30, 50, 300, 20);
+        add(subtitleLabel);
+
+        JLabel monetaryLabel = new JLabel("Monetary Donations");
+        monetaryLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
+        monetaryLabel.setBounds(30, 90, 200, 25);
+        add(monetaryLabel);
+
+        String[] monetaryColumns = { "Name", "Amount", "Reference No.", "Mode of Payment", "Date" };
+        monetaryTableModel = new DefaultTableModel(monetaryColumns, 0) {
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        monetaryTable = createStyledTable(monetaryTableModel);
+        JScrollPane monetaryScrollPane = new JScrollPane(monetaryTable);
+        monetaryScrollPane.setBounds(30, 120, 800, 150);
+        add(monetaryScrollPane);
+
+        JLabel boxesLabel = new JLabel("Donation Boxes");
+        boxesLabel.setFont(new Font("SansSerif", Font.BOLD, 16));
+        boxesLabel.setBounds(30, 300, 200, 25);
+        add(boxesLabel);
+
+        String[] boxesColumns = { "Name", "Boxes", "Reference No.", "Location", "Date" };
+        donationBoxesTableModel = new DefaultTableModel(boxesColumns, 0) {
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+
+        donationBoxesTable = createStyledTable(donationBoxesTableModel);
+        JScrollPane boxesScrollPane = new JScrollPane(donationBoxesTable);
+        boxesScrollPane.setBounds(30, 330, 800, 150);
+        add(boxesScrollPane);
 
         refreshData();
     }
 
-    private JPanel buildHeader() {
-        JPanel header = new JPanel(new BorderLayout());
-        header.setOpaque(false);
-
-        JLabel title = new JLabel("Notifications");
-        title.setFont(new Font("Arial", Font.BOLD, 20));
-        title.setForeground(new Color(20, 35, 100));
-
-        JLabel subtitle = new JLabel("Monetary donations and donation box activity");
-        subtitle.setFont(new Font("Arial", Font.PLAIN, 12));
-        subtitle.setForeground(new Color(90, 90, 90));
-
-        JPanel textPanel = new JPanel();
-        textPanel.setOpaque(false);
-        textPanel.setLayout(new BoxLayout(textPanel, BoxLayout.Y_AXIS));
-        textPanel.add(title);
-        textPanel.add(Box.createVerticalStrut(4));
-        textPanel.add(subtitle);
-
-        header.add(textPanel, BorderLayout.WEST);
-
-        return header;
-    }
-
-    private JPanel buildTablesPanel() {
-        JPanel container = new JPanel();
-        container.setOpaque(false);
-        container.setLayout(new GridLayout(2, 1, 0, 16));
-
-        container.add(buildMonetaryDonationsSection());
-        container.add(buildDonationBoxesSection());
-
-        return container;
-    }
-
-    private JPanel buildMonetaryDonationsSection() {
-        JPanel panel = new JPanel(new BorderLayout(8, 8));
-        panel.setBackground(new Color(250, 250, 255));
-        panel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
-
-        JLabel title = new JLabel("Monetary Donations");
-        title.setFont(new Font("Arial", Font.BOLD, 14));
-        title.setForeground(new Color(20, 35, 100));
-        panel.add(title, BorderLayout.NORTH);
-
-        monetaryTableModel = new DefaultTableModel(
-                new Object[]{"Name", "Amount", "Reference no.", "Payment Method", "Date"}, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-
-        JTable table = new JTable(monetaryTableModel);
-        styleTable(table);
-
-        JScrollPane scrollPane = new JScrollPane(table);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder());
-
-        panel.add(scrollPane, BorderLayout.CENTER);
-
-        return panel;
-    }
-
-    private JPanel buildDonationBoxesSection() {
-        JPanel panel = new JPanel(new BorderLayout(8, 8));
-        panel.setBackground(new Color(248, 249, 252));
-        panel.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
-
-        JLabel title = new JLabel("Donation Boxes");
-        title.setFont(new Font("Arial", Font.BOLD, 14));
-        title.setForeground(new Color(20, 35, 100));
-        panel.add(title, BorderLayout.NORTH);
-
-        donationBoxesTableModel = new DefaultTableModel(
-                new Object[]{"Name", "Quantity", "Reference no.", "Municipality", "Date"}, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false;
-            }
-        };
-
-        JTable table = new JTable(donationBoxesTableModel);
-        styleTable(table);
-
-        JScrollPane scrollPane = new JScrollPane(table);
-        scrollPane.setBorder(BorderFactory.createEmptyBorder());
-
-        panel.add(scrollPane, BorderLayout.CENTER);
-
-        return panel;
-    }
-
-    private static final Color TABLE_HEADER_BG = new Color(240, 240, 240);
-
-    private void styleTable(JTable table) {
-        table.setFillsViewportHeight(true);
-        table.setRowHeight(24);
-        table.setShowHorizontalLines(false);
+    private JTable createStyledTable(DefaultTableModel model) {
+        JTable table = new JTable(model);
+        table.setRowHeight(30);
+        table.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        table.setSelectionBackground(new Color(232, 240, 254));
+        table.setSelectionForeground(Color.BLACK);
         table.setShowVerticalLines(false);
-        table.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        table.setFont(new Font("Arial", Font.PLAIN, 12));
-        table.getTableHeader().setFont(new Font("Arial", Font.BOLD, 12));
-        table.getTableHeader().setBackground(TABLE_HEADER_BG);
-        table.getTableHeader().setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220)));
+        table.setIntercellSpacing(new Dimension(0, 0));
+
+        JTableHeader header = table.getTableHeader();
+        header.setFont(new Font("SansSerif", Font.BOLD, 13));
+        header.setBackground(Color.WHITE);
+        header.setForeground(Color.BLACK);
+        header.setPreferredSize(new Dimension(0, 35));
+        ((DefaultTableCellRenderer) header.getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
+
+        return table;
     }
 
+    // fetch data and populate
     public void refreshData() {
         monetaryTableModel.setRowCount(0);
-        monetaryTableModel.addRow(new Object[]{"James, LeBron", 10000, "76423964337482798", "Bank", "11/28/2013"});
-        monetaryTableModel.addRow(new Object[]{"Curry, Stephen Wardell", 6000, "42341567678845657", "Bank", "11/28/2013"});
-        monetaryTableModel.addRow(new Object[]{"Paul, Chris", 13000, "385675327360453878", "Bank", "11/28/2013"});
-
         donationBoxesTableModel.setRowCount(0);
-        donationBoxesTableModel.addRow(new Object[]{"Abdul, Hahaha", 100, "76423964337482798", "La Trinidad", "11/28/2013"});
-        donationBoxesTableModel.addRow(new Object[]{"Gina, Kai-In", 20, "42341567678845657", "Baguio", "11/28/2013"});
-        donationBoxesTableModel.addRow(new Object[]{"Aquino, Tan La", 60, "385675327360453878", "Nueva Ecija", "11/28/2013"});
+
+        List<Ticket> tickets = loadTicketsFromServer();
+
+        boolean hasMonetary = false;
+        boolean hasBoxes = false;
+
+        for (Ticket t : tickets) {
+            String name = t.userId;
+            if (name == null)
+                name = "Unknown";
+            if (name.contains("@")) {
+                name = name.split("@")[0];
+            }
+
+            String date = t.createdAt;
+            if (date != null && date.length() > 10)
+                date = date.substring(0, 10);
+
+            if (t.itemCategory != null && t.itemCategory.toLowerCase().contains("monetary")) {
+                hasMonetary = true;
+                String amount = "N/A";
+                String transactionId = t.ticketId;
+
+                String text = t.notes;
+                if (text != null) {
+                    int amtIdx = text.indexOf("Amount=");
+                    if (amtIdx >= 0) {
+                        int end = text.indexOf(";", amtIdx);
+                        if (end < 0)
+                            end = text.length();
+                        amount = text.substring(amtIdx + 7, end).trim();
+                    }
+                    int txnIdx = text.indexOf("TransactionId=");
+                    if (txnIdx >= 0) {
+                        int end = text.indexOf(";", txnIdx);
+                        if (end < 0)
+                            end = text.length();
+                        transactionId = text.substring(txnIdx + 14, end).trim();
+                    }
+                }
+
+                monetaryTableModel.addRow(new Object[] {
+                        name,
+                        amount,
+                        transactionId,
+                        t.donationDrive != null ? t.donationDrive : "N/A",
+                        date
+                });
+            } else {
+                hasBoxes = true;
+                // Donation Boxes
+                donationBoxesTableModel.addRow(new Object[] {
+                        name,
+                        t.quantity != null ? t.quantity : "1",
+                        t.ticketId,
+                        t.pickupLocation != null ? t.pickupLocation : "N/A",
+                        date
+                });
+            }
+        }
+
+        if (!hasMonetary) {
+            monetaryTableModel.addRow(new Object[] { "-", "-", "-", "-", "-" });
+        }
+        if (!hasBoxes) {
+            donationBoxesTableModel.addRow(new Object[] { "-", "-", "-", "-", "-" });
+        }
+    }
+
+    private List<Ticket> loadTicketsFromServer() {
+        List<Ticket> list = new ArrayList<>();
+        try {
+            Client client = Client.getDefault();
+            // Client.readTickets uses the currently logged in user context
+            String userId = Controller.LoginController.currentUserEmail;
+            if (userId == null || userId.isEmpty()) {
+                userId = "admin";
+            }
+            String responseXml = client.readTickets(userId, null);
+            Client.Response response = Client.parseResponse(responseXml);
+            if (response == null || !response.isOk()) {
+                return list;
+            }
+
+            String ticketsXml = Client.unescapeXml(response.message);
+            if (ticketsXml == null || ticketsXml.isEmpty())
+                return list;
+
+            int idx = 0;
+            while (true) {
+                int start = ticketsXml.indexOf("<ticket>", idx);
+                if (start < 0)
+                    break;
+                int end = ticketsXml.indexOf("</ticket>", start);
+                if (end < 0)
+                    break;
+
+                String ticketXml = ticketsXml.substring(start, end + "</ticket>".length());
+                Ticket t = new Ticket();
+                t.ticketId = extract(ticketXml, "ticketId");
+                t.userId = extract(ticketXml, "userId");
+                t.itemCategory = extract(ticketXml, "itemCategory");
+                t.quantity = extract(ticketXml, "quantity");
+                t.notes = extract(ticketXml, "notes");
+                t.createdAt = extract(ticketXml, "createdAt");
+                t.pickupLocation = extract(ticketXml, "pickupLocation");
+                t.donationDrive = extract(ticketXml, "donationDrive");
+                list.add(t);
+
+                idx = end + "</ticket>".length();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return list;
+    }
+
+    private String extract(String xml, String tag) {
+        String open = "<" + tag + ">";
+        String close = "</" + tag + ">";
+        int i = xml.indexOf(open);
+        int j = xml.indexOf(close);
+        if (i < 0 || j <= i)
+            return null;
+        return xml.substring(i + open.length(), j).trim();
+    }
+
+    private static class Ticket {
+        String ticketId;
+        String userId;
+        String itemCategory;
+        String quantity;
+        String notes;
+        String createdAt;
+        String pickupLocation;
+        String donationDrive;
     }
 }

@@ -5,9 +5,7 @@ import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-
 import Network.Client;
-
 import java.io.IOException;
 
 public class AdminHomePanel extends JPanel {
@@ -15,7 +13,7 @@ public class AdminHomePanel extends JPanel {
     private JLabel shippedValueLabel;
     private JLabel ridersOnlineValueLabel;
     private JLabel ongoingShipmentValueLabel;
-
+    private JPanel urgentCardsPanel; //rebuild on refresh
 
     private Runnable onShowNotifications;
     private Runnable onShowDonations;
@@ -56,12 +54,12 @@ public class AdminHomePanel extends JPanel {
         JPanel bar = new JPanel(new GridLayout(1, 3, GAP, 0));
         bar.setOpaque(false);
 
-        shippedValueLabel = new JLabel("204,118");
-        ridersOnlineValueLabel = new JLabel("512");
-        ongoingShipmentValueLabel = new JLabel("1,084");
+        shippedValueLabel = new JLabel("0");
+        ridersOnlineValueLabel = new JLabel("0");
+        ongoingShipmentValueLabel = new JLabel("0");
 
         JPanel c1 = buildMetricCard("Shipped Donations", shippedValueLabel, new Color(234, 248, 255));
-        JPanel c2 = buildMetricCard("Riders Online", ridersOnlineValueLabel, new Color(238, 247, 239));
+        JPanel c2 = buildMetricCard("Pending Requests", ridersOnlineValueLabel, new Color(238, 247, 239));
         JPanel c3 = buildMetricCard("Ongoing Shipment", ongoingShipmentValueLabel, new Color(253, 244, 230));
         c1.setMinimumSize(new Dimension(180, 80));
         c2.setMinimumSize(new Dimension(180, 80));
@@ -86,6 +84,84 @@ public class AdminHomePanel extends JPanel {
         return card;
     }
 
+    public void refreshData() {
+        Metrics m = loadMetricsFromServer();
+
+        if (shippedValueLabel != null) {
+            shippedValueLabel.setText(String.valueOf(m.deliveredCount));
+        }
+        if (ridersOnlineValueLabel != null) {
+            ridersOnlineValueLabel.setText(String.valueOf(m.pendingCount));
+        }
+        if (ongoingShipmentValueLabel != null) {
+            ongoingShipmentValueLabel.setText(String.valueOf(m.activeCount));
+        }
+
+        if (urgentCardsPanel != null) {
+            urgentCardsPanel.removeAll();
+            populateUrgentCards(urgentCardsPanel);
+            urgentCardsPanel.revalidate();
+            urgentCardsPanel.repaint();
+        }
+    }
+
+    private static class Metrics {
+        int pendingCount;
+        int deliveredCount;
+        int activeCount;
+    }
+
+    private Metrics loadMetricsFromServer() {
+        Metrics m = new Metrics();
+        try {
+            Client client = Client.getDefault();
+            // Use "admin" to ensure we get all data
+            String responseXml = client.readTickets("admin", null);
+            Client.Response response = Client.parseResponse(responseXml);
+            if (response == null || !response.isOk()) {
+                return m;
+            }
+
+            String ticketsXml = response.message;
+            if (ticketsXml == null || ticketsXml.isEmpty()) {
+                return m;
+            }
+            ticketsXml = Client.unescapeXml(ticketsXml);
+
+            int idx = 0;
+            while (true) {
+                int start = ticketsXml.indexOf("<ticket>", idx);
+                if (start < 0)
+                    break;
+                int end = ticketsXml.indexOf("</ticket>", start);
+                if (end < 0)
+                    break;
+
+                String ticketXml = ticketsXml.substring(start, end + "</ticket>".length());
+
+                String status = extractTagValue(ticketXml, "status");
+                String isDeleted = extractTagValue(ticketXml, "isDeleted");
+                String st = status != null ? status.toUpperCase() : "";
+                boolean deleted = "true".equalsIgnoreCase(isDeleted);
+
+                if (deleted || "CANCELLED".equals(st) || "REJECTED".equals(st)) {
+                    // Ignore
+                } else if ("DELIVERED".equals(st)) {
+                    m.deliveredCount++;
+                } else if ("PENDING".equals(st)) {
+                    m.pendingCount++;
+                } else if ("ACCEPTED".equals(st) || "PICKED_UP".equals(st)) {
+                    m.activeCount++;
+                }
+
+                idx = end + "</ticket>".length();
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+        return m;
+    }
+
     private JPanel buildUrgentDonations() {
         JPanel panel = new JPanel(new BorderLayout(8, 8));
         panel.setOpaque(false);
@@ -95,15 +171,36 @@ public class AdminHomePanel extends JPanel {
         header.setForeground(new Color(20, 35, 100));
         panel.add(header, BorderLayout.NORTH);
 
-        JPanel cards = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 8));
-        cards.setOpaque(false);
+        urgentCardsPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 8));
+        urgentCardsPanel.setOpaque(false);
+        populateUrgentCards(urgentCardsPanel);
 
+        panel.add(urgentCardsPanel, BorderLayout.CENTER);
+        return panel;
+    }
+
+    private void populateUrgentCards(JPanel cards) {
         cards.add(buildUrgentCard("Super Typhoon Halyan", "443,721.00", "1,432", "287", 65,
                 "Donations are being collected and routed to affected areas. Relief packs are being assembled."));
         cards.add(buildUrgentCard("6.9-Magnitude in Cebu Ear...", "320,500.00", "890", "156", 58,
                 "Monetary and in-kind donations are flowing in. Distribution to evacuation centers is in progress."));
         cards.add(buildUrgentCard("Fire Hits Supermarket in Qu...", "180,200.00", "420", "98", 48,
                 "Emergency supplies and cash aid are being coordinated with local responders."));
+
+        java.util.List<Drive> drives = loadDrivesFromServer();
+        for (Drive d : drives) {
+            int percentage = 0;
+            if (d.targetAmount > 0) {
+                percentage = (int) ((d.currentAmount / d.targetAmount) * 100);
+            }
+            cards.add(buildUrgentCard(d.title,
+                    String.format("%,.2f", d.currentAmount),
+                    String.valueOf(percentage),
+                    "-",
+                    percentage,
+                    d.description));
+        }
+
         JButton addNew = new JButton("+");
         addNew.setPreferredSize(new Dimension(120, 140));
         addNew.setBackground(new Color(20, 35, 100));
@@ -111,14 +208,71 @@ public class AdminHomePanel extends JPanel {
         addNew.setFont(new Font("Arial", Font.PLAIN, 36));
         addNew.setFocusPainted(false);
         addNew.setToolTipText("Add new urgent donation campaign");
+        addNew.addActionListener(e -> {
+            AddDonationDriveView addView = new AddDonationDriveView((JFrame) SwingUtilities.getWindowAncestor(this));
+            new AddDonationDriveController(addView, this::refreshData);
+            addView.frame.setVisible(true);
+        });
         cards.add(addNew);
+    }
 
-        panel.add(cards, BorderLayout.CENTER);
-        return panel;
+    private static class Drive {
+        String title;
+        String description;
+        double targetAmount;
+        double currentAmount;
+    }
+
+    private java.util.List<Drive> loadDrivesFromServer() {
+        java.util.List<Drive> list = new java.util.ArrayList<>();
+        try {
+            Client client = Client.getDefault();
+            String xml = client.readDonationDrives();
+            if (xml == null || xml.isEmpty())
+                return list; // Empty or error
+
+            xml = Client.unescapeXml(xml);
+
+            Client.Response resp = Client.parseResponse(xml);
+            if (resp == null || !resp.isOk())
+                return list;
+
+            String drivesXml = resp.message;
+            if (drivesXml == null)
+                return list;
+
+            int idx = 0;
+            while (true) {
+                int start = drivesXml.indexOf("<drive>", idx);
+                if (start < 0)
+                    break;
+                int end = drivesXml.indexOf("</drive>", start);
+                if (end < 0)
+                    break;
+
+                String driveXml = drivesXml.substring(start, end + "</drive>".length());
+                Drive d = new Drive();
+                d.title = extractTagValue(driveXml, "title");
+                d.description = extractTagValue(driveXml, "description");
+                String tAmt = extractTagValue(driveXml, "targetAmount");
+                String cAmt = extractTagValue(driveXml, "currentAmount");
+                try {
+                    d.targetAmount = Double.parseDouble(tAmt != null ? tAmt : "0");
+                    d.currentAmount = Double.parseDouble(cAmt != null ? cAmt : "0");
+                } catch (NumberFormatException ignored) {
+                }
+
+                list.add(d);
+                idx = end + "</drive>".length();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return list;
     }
 
     private JPanel buildUrgentCard(String title, String monetary, String current, String incoming,
-                                   int progressPercent, String whatsHappening) {
+            int progressPercent, String whatsHappening) {
         Color cardBg = new Color(246, 249, 255);
         Color borderColor = new Color(200, 210, 230);
         Color hoverBg = new Color(235, 242, 252);
@@ -136,9 +290,7 @@ public class AdminHomePanel extends JPanel {
         t.setForeground(new Color(20, 35, 100));
         card.add(t);
         card.add(Box.createVerticalStrut(4));
-        card.add(new JLabel("Monetary Donations: " + monetary));
-        card.add(new JLabel("Current Donations: " + current));
-        card.add(new JLabel("Incoming Donations: " + incoming));
+        card.add(new JLabel("Collected: " + monetary));
         JProgressBar bar = new JProgressBar(0, 100);
         bar.setValue(progressPercent);
         bar.setPreferredSize(new Dimension(200, 6));
@@ -171,7 +323,7 @@ public class AdminHomePanel extends JPanel {
     }
 
     private void showUrgentDetailDialog(String title, String monetary, String current, String incoming,
-                                        int progressPercent, String whatsHappening) {
+            int progressPercent, String whatsHappening) {
         JPanel content = new JPanel();
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
         content.setBorder(BorderFactory.createEmptyBorder(16, 20, 16, 20));
@@ -347,74 +499,6 @@ public class AdminHomePanel extends JPanel {
         m.setForeground(new Color(120, 120, 120));
         row.add(m, BorderLayout.SOUTH);
         return row;
-    }
-
-    public void refreshData() {
-        Metrics m = loadMetricsFromServer();
-
-        if (shippedValueLabel != null) {
-            shippedValueLabel.setText(String.valueOf(m.deliveredCount));
-        }
-        if (ridersOnlineValueLabel != null) {
-            ridersOnlineValueLabel.setText(String.valueOf(m.totalCount));
-        }
-        if (ongoingShipmentValueLabel != null) {
-            ongoingShipmentValueLabel.setText(String.valueOf(m.activeCount));
-        }
-    }
-
-    private static class Metrics {
-        int totalCount;
-        int deliveredCount;
-        int activeCount;
-        int rejectedCount;
-    }
-
-    private Metrics loadMetricsFromServer() {
-        Metrics m = new Metrics();
-        try {
-            Client client = Client.getDefault();
-            String responseXml = client.readTickets("", null);
-            Client.Response response = Client.parseResponse(responseXml);
-            if (response == null || !response.isOk()) {
-                return m;
-            }
-
-            String ticketsXml = response.message;
-            if (ticketsXml == null || ticketsXml.isEmpty()) {
-                return m;
-            }
-            ticketsXml = Client.unescapeXml(ticketsXml);
-
-            int idx = 0;
-            while (true) {
-                int start = ticketsXml.indexOf("<ticket>", idx);
-                if (start < 0) break;
-                int end = ticketsXml.indexOf("</ticket>", start);
-                if (end < 0) break;
-
-                String ticketXml = ticketsXml.substring(start, end + "</ticket>".length());
-                m.totalCount++;
-
-                String status = extractTagValue(ticketXml, "status");
-                String isDeleted = extractTagValue(ticketXml, "isDeleted");
-                String st = status != null ? status.toUpperCase() : "";
-                boolean deleted = "true".equalsIgnoreCase(isDeleted);
-
-                if ("DELIVERED".equals(st)) {
-                    m.deliveredCount++;
-                } else if ("REJECTED".equals(st) || "CANCELLED".equals(st) || deleted) {
-                    m.rejectedCount++;
-                } else {
-                    m.activeCount++;
-                }
-
-                idx = end + "</ticket>".length();
-            }
-        } catch (IOException ex) {
-            ex.printStackTrace();
-        }
-        return m;
     }
 
     private String extractTagValue(String xml, String tag) {

@@ -27,7 +27,17 @@ public class BoxDonationController {
     private BoxDonationView view;
 
     public BoxDonationController(BoxDonationView view) {
+        this(view, null);
+    }
+
+    public BoxDonationController(BoxDonationView view, String driveName) {
         this.view = view;
+
+        populateDriveCombo();
+
+        if (driveName != null && !driveName.isEmpty()) {
+            view.donationDriveCombo.setSelectedItem(driveName);
+        }
 
         view.homeBtn.addActionListener(e -> openDashBoard());
         view.donateNow.addActionListener(e -> handleDonateNow());
@@ -36,6 +46,55 @@ public class BoxDonationController {
         view.DonateBtn.addActionListener(e -> openDonate());
         view.helpBtn.addActionListener(e -> openHelp());
 
+    }
+
+    private static final String[] HARDCODED_DRIVES = {
+            "Super Typhoon Haiyan", "6.9 Magnitude in Cebu", "Fire Hits Supermarket in Quezon"
+    };
+
+    private void populateDriveCombo() {
+        for (String d : HARDCODED_DRIVES) {
+            view.donationDriveCombo.addItem(d);
+        }
+        try {
+            Client client = Client.getDefault();
+            String responseXml = client.readDonationDrives();
+            Client.Response response = Client.parseResponse(responseXml);
+            if (response != null && response.isOk()) {
+                String drivesXml = Client.unescapeXml(response.message);
+                if (drivesXml != null) {
+                    int idx = 0;
+                    while (true) {
+                        int start = drivesXml.indexOf("<drive>", idx);
+                        if (start < 0)
+                            break;
+                        int end = drivesXml.indexOf("</drive>", start);
+                        if (end < 0)
+                            break;
+                        String driveXml = drivesXml.substring(start, end + "</drive>".length());
+                        String title = extractTagValue(driveXml, "title");
+                        if (title != null && !title.isEmpty()) {
+                            view.donationDriveCombo.addItem(title);
+                        }
+                        idx = end + "</drive>".length();
+                    }
+                }
+            }
+        } catch (IOException ignored) {
+            /* server not available */
+        }
+    }
+
+    private String extractTagValue(String xml, String tag) {
+        String open = "<" + tag + ">";
+        String close = "</" + tag + ">";
+        int s = xml.indexOf(open);
+        if (s < 0)
+            return null;
+        int e = xml.indexOf(close, s);
+        if (e < 0)
+            return null;
+        return xml.substring(s + open.length(), e).trim();
     }
 
     private void openDashBoard() {
@@ -123,35 +182,34 @@ public class BoxDonationController {
             }
         }
 
-        String notes = "Goods donation – " + (drive != null ? drive : "") + (destination != null && !destination.isEmpty() ? " | Deliver to: " + destination : "");
+        String notes = "Goods donation – " + (drive != null ? drive : "")
+                + (destination != null && !destination.isEmpty() ? " | Deliver to: " + destination : "");
         try {
             Client client = Client.getDefault();
 
             String responseXml = client.createTicket(
                     userId,
-                    goods,                  // itemCategory
-                    quantity,               // quantity
-                    "good condition",       // condition
-                    "",                     // expirationDate
-                    "",                     // pickupDateTime
-                    location,               // pickupLocation
-                    "",                     // photoPath
+                    goods, // itemCategory
+                    quantity, // quantity
+                    "good condition", // condition
+                    "", // expirationDate
+                    "", // pickupDateTime
+                    location, // pickupLocation
+                    "", // photoPath
                     notes,
-                    drive,                  // donationDrive – sent to server for tracking
-                    destination,            // deliveryDestination – e.g. public school, barangay
-                    photoBase64 != null ? photoBase64 : ""
-            );
+                    drive, // donationDrive – sent to server for tracking
+                    destination, // deliveryDestination – e.g. public school, barangay
+                    photoBase64 != null ? photoBase64 : "");
 
             Client.Response response = Client.parseResponse(responseXml);
-            if (response != null && "NO_RIDERS".equals(response.status)) {
-                JOptionPane.showMessageDialog(view.frame,
-                        "No available riders at the moment. Please wait or try again later.",
-                        "No Riders Available",
-                        JOptionPane.WARNING_MESSAGE);
-                return;
-            }
             if (response != null && response.isOk()) {
-                // Log into Goods Donations.xml (including running total of boxes)
+                if (drive != null && !drive.isEmpty()) {
+                    try {
+                        client.updateDriveAmount(drive, quantity);
+                    } catch (Exception ignored) {
+                    }
+                }
+
                 logGoodsDonation(userId, goods, quantity, location, photoBase64);
 
                 JOptionPane.showMessageDialog(view.frame,
@@ -198,16 +256,15 @@ public class BoxDonationController {
         view.frame.dispose();
     }
 
-    /**
-     * Resolve the Goods Donations.xml file so that it points to the project's DonationDriverUI folder.
-     */
     private static File getGoodsXmlFile() {
         File cwd = new File(System.getProperty("user.dir"));
         for (File dir = cwd; dir != null; dir = dir.getParentFile()) {
             File candidate = new File(dir, GOODS_XML_RELATIVE);
-            if (candidate.exists()) return candidate;
+            if (candidate.exists())
+                return candidate;
             File donationDriverDir = new File(dir, "DonationDriverUI");
-            if (donationDriverDir.isDirectory()) return new File(donationDriverDir, "Goods Donations.xml");
+            if (donationDriverDir.isDirectory())
+                return new File(donationDriverDir, "Goods Donations.xml");
         }
         return new File(cwd, GOODS_XML_RELATIVE);
     }
@@ -299,7 +356,7 @@ public class BoxDonationController {
         parent.appendChild(el);
     }
 
-    private void openHelp(){
+    private void openHelp() {
         HelpView helpView = new HelpView();
         new HelpController(helpView);
         helpView.frame.setVisible(true);

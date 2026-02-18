@@ -1,1 +1,19 @@
-<?xml version="1.0" encoding="UTF-8"?><ticket><ticketId>1770738500586</ticketId><userId>donor@gmail.com</userId><status>PENDING</status><createdAt>2026-02-11 00:09:09</createdAt><itemCategory>clothes</itemCategory><quantity>3</quantity><condition>gently used, clean</condition><expirationDate></expirationDate><pickupDateTime>2026-02-15 10:00</pickupDateTime><pickupLocation>Mabalacat, PH</pickupLocation><photoPath></photoPath><notes>Typhoon relief - deliver to public school</notes></ticket>
+<?xml version="1.0" encoding="UTF-8"?>
+<ticket>
+  <ticketId>1770738500586</ticketId>
+  <userId>donor@gmail.com</userId>
+  <status>DELIVERED</status>
+  <createdAt>2026-02-11 00:09:09</createdAt>
+  <itemCategory>clothes</itemCategory>
+  <quantity>3</quantity>
+  <condition>gently used, clean</condition>
+  <expirationDate></expirationDate>
+  <pickupDateTime>2026-02-15 10:00</pickupDateTime>
+  <pickupLocation>Mabalacat, PH</pickupLocation>
+  <photoPath></photoPath>
+  <notes>Typhoon relief - deliver to public school</notes>
+  <donationDrive></donationDrive>
+  <deliveryDestination></deliveryDestination>
+  <riderId>nov@gmail.com</riderId>
+  <statusHistory>2026-02-18 21:12:31: PENDING -&amp;amp;gt; ACCEPTED by nov@gmail.com | 2026-02-18 21:12:41: ACCEPTED -&amp;gt; PICKED_UP by nov@gmail.com | 2026-02-18 21:12:46: PICKED_UP -&gt; DELIVERED by nov@gmail.com</statusHistory>
+</ticket>

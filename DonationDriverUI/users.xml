@@ -1,35 +1,37 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <users>
     
-  
   <user>
         
-    <email>2245587@slu.edu.ph</email>
+    <email>nov@gmail.com</email>
         
-    <password>sipitbu2</password>
+    <password>fafafa</password>
         
-    <firstName>Lexbher</firstName>
+    <firstName>Clay</firstName>
         
-    <lastName>Lumiwes</lastName>
+    <lastName>Novs</lastName>
         
-    <middleName>Oyangwa</middleName>
+    <middleName>pico</middleName>
         
-    <dateOfBirth>May 14 2003</dateOfBirth>
+    <dateOfBirth>29 jun 2004</dateOfBirth>
         
-    <address>Camp 7 Monticello Baguio City</address>
+    <address>camp 7</address>
         
-    <phoneNumber>09060241523</phoneNumber>
+    <phoneNumber>092358723522</phoneNumber>
+        
+    <role>RIDER</role>
       
   </user>
   
   <user>
-    <email>123456@slu.edu.ph</email>
-    <password>qwe123</password>
-    <firstName>Nice</firstName>
-    <lastName>bat</lastName>
-    <middleName>ngay</middleName>
-    <dateOfBirth>May 20 2000</dateOfBirth>
-    <address>basta dun</address>
-    <phoneNumber>09060241523</phoneNumber>
+    <email>clayemail</email>
+    <password>fafafa</password>
+    <firstName>clay</firstName>
+    <lastName>niove</lastName>
+    <middleName>ahjsf</middleName>
+    <dateOfBirth>29 jun 2004</dateOfBirth>
+    <address>camp sibne</address>
+    <phoneNumber>23et324252345</phoneNumber>
+    <role>DONOR</role>
   </user>
 </users>

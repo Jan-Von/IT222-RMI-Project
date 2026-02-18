@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ticket>
+  <ticketId>1771412693795</ticketId>
+  <userId>nov@gmail.com</userId>
+  <status>ACCEPTED</status>
+  <createdAt>2026-02-18 19:18:46</createdAt>
+  <itemCategory>Clothes</itemCategory>
+  <quantity>5</quantity>
+  <condition>good condition</condition>
+  <expirationDate></expirationDate>
+  <pickupDateTime></pickupDateTime>
+  <pickupLocation>Camp7</pickupLocation>
+  <photoPath></photoPath>
+  <notes>Goods donation – General Donation | Deliver to: Skul</notes>
+  <donationDrive>General Donation</donationDrive>
+  <deliveryDestination>Skul</deliveryDestination>
+  <riderId></riderId>
+  <statusHistory>2026-02-18 20:27:31: PENDING -&gt; ACCEPTED by admin</statusHistory>
+</ticket>

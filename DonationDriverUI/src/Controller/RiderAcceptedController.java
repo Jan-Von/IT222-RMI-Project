@@ -16,8 +16,7 @@ public class RiderAcceptedController {
     public RiderAcceptedController(RiderAcceptedView view) {
         this.view = view;
         view.notifBtn.addActionListener(e -> openNotification());
-        view.donationBtn.addActionListener(e -> openDonations());
-        view.DonateBtn.addActionListener(e -> openDonate());
+        view.myPickupsBtn.addActionListener(e -> openDonations());
         view.helpBtn.addActionListener(e -> openHelp());
         view.homeBtn.addActionListener(e -> openHome());
         view.deliveredBtn.addActionListener(e -> openDelivered());
@@ -25,6 +24,7 @@ public class RiderAcceptedController {
         view.refreshBtn.addActionListener(e -> loadAcceptedTickets());
         view.markPickedUpBtn.addActionListener(e -> markSelectedPickedUp());
         view.rejectTicketBtn.addActionListener(e -> rejectSelectedTicket());
+        view.settingsBtn.addActionListener(e -> openSettings());
 
         loadAcceptedTickets();
     }
@@ -33,7 +33,8 @@ public class RiderAcceptedController {
         ticketIds.clear();
         try {
             Client client = Client.getDefault();
-            String responseXml = client.readTickets("", "ACCEPTED");
+            String userId = LoginController.currentUserEmail;
+            String responseXml = client.readTickets(userId != null ? userId : "", "ACCEPTED");
             Client.Response response = Client.parseResponse(responseXml);
             DefaultListModel<String> model = new DefaultListModel<>();
             if (response != null && response.isOk() && response.message != null && !response.message.isEmpty()) {
@@ -57,13 +58,16 @@ public class RiderAcceptedController {
 
     private List<String> parseTicketSummaries(String ticketsXml) {
         List<String> list = new ArrayList<>();
-        if (ticketsXml == null || ticketsXml.isEmpty()) return list;
+        if (ticketsXml == null || ticketsXml.isEmpty())
+            return list;
         int idx = 0;
         while (true) {
             int start = ticketsXml.indexOf("<ticket>", idx);
-            if (start < 0) break;
+            if (start < 0)
+                break;
             int end = ticketsXml.indexOf("</ticket>", start);
-            if (end < 0) break;
+            if (end < 0)
+                break;
             String oneTicket = ticketsXml.substring(start, end + "</ticket>".length());
             String ticketId = getTag(oneTicket, "ticketId");
             ticketIds.add(ticketId != null ? ticketId : "");
@@ -86,11 +90,14 @@ public class RiderAcceptedController {
         String close = "</" + tag + ">";
         int i = xml.indexOf(open);
         int j = xml.indexOf(close);
-        if (i < 0 || j <= i) return null;
+        if (i < 0 || j <= i)
+            return null;
         return xml.substring(i + open.length(), j).trim();
     }
 
-    private String or(String v, String def) { return (v != null && !v.isEmpty()) ? v : def; }
+    private String or(String v, String def) {
+        return (v != null && !v.isEmpty()) ? v : def;
+    }
 
     private void markSelectedPickedUp() {
         updateSelectedTicketStatus("PICKED_UP");
@@ -142,37 +149,31 @@ public class RiderAcceptedController {
     }
 
     private void openNotification() {
-        NotificationView notificationView = new NotificationView();
-        new NotificationController(notificationView);
+        RiderNotificationView notificationView = new RiderNotificationView();
+        new RiderNotificationController(notificationView);
         notificationView.frame.setVisible(true);
         view.frame.dispose();
     }
 
     private void openHelp() {
-        HelpView helpView = new HelpView();
-        new HelpController(helpView);
+        RiderHelpView helpView = new RiderHelpView();
+        new RiderHelpController(helpView);
         helpView.frame.setVisible(true);
-        view.frame.dispose();
-    }
-
-    private void openDonate() {
-        DonateView donateView = new DonateView();
-        new DonateController(donateView);
-        donateView.frame.setVisible(true);
         view.frame.dispose();
     }
 
     private void openHome() {
         setRiderUnavailable();
-        DashboardView dashboardView = new DashboardView();
-        new DashboardController(dashboardView);
-        dashboardView.frame.setVisible(true);
+        RiderDashboard riderDashboard = new RiderDashboard();
+        new RiderController(riderDashboard);
+        riderDashboard.frame.setVisible(true);
         view.frame.dispose();
     }
 
     private void setRiderUnavailable() {
         String userId = LoginController.currentUserEmail;
-        if (userId == null || userId.trim().isEmpty()) return;
+        if (userId == null || userId.trim().isEmpty())
+            return;
         try {
             Client.getDefault().setRiderUnavailable(userId);
         } catch (IOException ex) {
@@ -191,6 +192,14 @@ public class RiderAcceptedController {
         RiderDeliveredView deliveredView = new RiderDeliveredView();
         new RiderDeliveredController(deliveredView);
         deliveredView.frame.setVisible(true);
+        view.frame.dispose();
+    }
+
+    private void openSettings() {
+        setRiderUnavailable();
+        SettingsView settingsView = new SettingsView();
+        new SettingsController(settingsView);
+        settingsView.frame.setVisible(true);
         view.frame.dispose();
     }
 }

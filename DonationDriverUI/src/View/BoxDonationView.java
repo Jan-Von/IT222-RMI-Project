@@ -5,7 +5,7 @@ import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.io.File;
 
-public class BoxDonationView{
+public class BoxDonationView {
     public JFrame frame;
     public JButton homeBtn;
     public JButton notifBtn;
@@ -36,7 +36,7 @@ public class BoxDonationView{
 
         JPanel header = new JPanel();
         header.setLayout(null);
-        header.setBackground(new Color( 245, 245, 245));
+        header.setBackground(new Color(245, 245, 245));
         header.setBounds(0, 0, 1400, 80);
 
         ImageIcon logo = new ImageIcon("Resources/Images/logoicon.png");
@@ -117,7 +117,7 @@ public class BoxDonationView{
         sidebar.add(sidebarDonate);
 
         helpBtn = new JButton("Help");
-        helpBtn.setBounds(45,550,120,40);
+        helpBtn.setBounds(45, 550, 120, 40);
         helpBtn.setBorderPainted(false);
         helpBtn.setFocusPainted(false);
         helpBtn.setContentAreaFilled(false);
@@ -173,11 +173,10 @@ public class BoxDonationView{
         liveIcon.setBounds(5, 50, 25, 25);
         donationPanel.add(liveIcon);
 
-        String fullText =
-                "Super Typhoon Haiyan (locally known as Yolanda) swept across the Philippines, " +
-                        "generating a storm surge of more than 5 meters in places and winds in excess of 190 mph. " +
-                        "Fifteen million people felt the effects of the storm directly. Across the nation, " +
-                        "approximately 4.1 million people were displaced from their homes.";
+        String fullText = "Super Typhoon Haiyan (locally known as Yolanda) swept across the Philippines, " +
+                "generating a storm surge of more than 5 meters in places and winds in excess of 190 mph. " +
+                "Fifteen million people felt the effects of the storm directly. Across the nation, " +
+                "approximately 4.1 million people were displaced from their homes.";
 
         JTextArea donationText = new JTextArea(fullText);
         donationText.setBounds(5, 250, 195, 140);
@@ -209,8 +208,8 @@ public class BoxDonationView{
         driveLabel.setBounds(10, 50, 140, 30);
         monetaryMainCard.add(driveLabel);
 
-        String[] drives = {"Select drive", "Typhoon Relief", "Fire Victims", "Earthquake Relief", "Flood Relief", "General Donation"};
-        donationDriveCombo = new JComboBox<>(drives);
+        donationDriveCombo = new JComboBox<>();
+        donationDriveCombo.addItem("Select drive");
         donationDriveCombo.setFont(new Font("Arial", Font.PLAIN, 14));
         donationDriveCombo.setBounds(230, 50, 300, 30);
         monetaryMainCard.add(donationDriveCombo);
@@ -281,7 +280,6 @@ public class BoxDonationView{
                 photoStatusLabel.setText("Photo selected: " + selectedPhotoFile.getName());
             }
         });
-
 
         donateNow = new JButton("Donate Now");
         donateNow.setFont(new Font("Arial", Font.BOLD, 14));
