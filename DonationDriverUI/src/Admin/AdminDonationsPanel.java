@@ -2,13 +2,16 @@ package Admin;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
+import javax.swing.RowFilter;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
 import java.awt.*;
-import Network.Client;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.regex.Pattern;
+import Network.Client;
+import java.io.IOException;
 
 public class AdminDonationsPanel extends JPanel {
 
@@ -17,8 +20,13 @@ public class AdminDonationsPanel extends JPanel {
     private static final int MAX_PHOTO_DISPLAY_HEIGHT = 600;
     private static final String PICKUP_DATETIME_FORMAT_HINT = "yyyy-MM-dd HH:mm (e.g. 2026-02-20 14:30)";
 
+    private static final String FILTER_STATUS_ALL = "All statuses";
+
     private DefaultTableModel donationsTableModel;
     private JTable donationsTable;
+    private TableRowSorter<DefaultTableModel> tableSorter;
+    private JComboBox<String> statusFilterCombo;
+    private JTextField searchField;
     private List<String> photoBase64ByRow = new ArrayList<>();
     private List<String> pickupDateTimeByRow = new ArrayList<>();
 
@@ -47,10 +55,80 @@ public class AdminDonationsPanel extends JPanel {
             public boolean isCellEditable(int row, int column) { return false; }
         };
         donationsTable = new JTable(donationsTableModel);
+        tableSorter = new TableRowSorter<>(donationsTableModel);
+        donationsTable.setRowSorter(tableSorter);
         styleTable(donationsTable);
+
+        add(buildFilterPanel(), BorderLayout.NORTH);
         add(new JScrollPane(donationsTable), BorderLayout.CENTER);
         add(buildActionsPanel(), BorderLayout.SOUTH);
         refreshData();
+    }
+
+    private JPanel buildFilterPanel() {
+        JPanel panel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
+        panel.setOpaque(true);
+        panel.setBackground(new Color(248, 248, 248));
+        panel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createMatteBorder(0, 0, 1, 0, new Color(220, 220, 220)),
+                new EmptyBorder(4, 4, 4, 4)));
+
+        panel.add(new JLabel("Status:"));
+        String[] statusOptions = {
+                FILTER_STATUS_ALL,
+                "PENDING",
+                "ACCEPTED",
+                "PICKED_UP",
+                "DELIVERED",
+                "REJECTED",
+                "CANCELLED"
+        };
+        statusFilterCombo = new JComboBox<>(statusOptions);
+        statusFilterCombo.setMaximumRowCount(statusOptions.length);
+        statusFilterCombo.addActionListener(e -> applyTableFilter());
+        panel.add(statusFilterCombo);
+
+        panel.add(new JLabel("  Search (ID or Donor):"));
+        searchField = new JTextField(20);
+        searchField.setToolTipText("Type to filter by ticket ID or donor email");
+        searchField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            @Override
+            public void insertUpdate(javax.swing.event.DocumentEvent e) { applyTableFilter(); }
+            @Override
+            public void removeUpdate(javax.swing.event.DocumentEvent e) { applyTableFilter(); }
+            @Override
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { applyTableFilter(); }
+        });
+        panel.add(searchField);
+
+        JButton clearBtn = new JButton("Clear");
+        clearBtn.addActionListener(e -> {
+            statusFilterCombo.setSelectedItem(FILTER_STATUS_ALL);
+            searchField.setText("");
+            applyTableFilter();
+        });
+        panel.add(clearBtn);
+
+        return panel;
+    }
+
+    private void applyTableFilter() {
+        if (tableSorter == null) return;
+        List<RowFilter<Object, Object>> filters = new ArrayList<>();
+        String status = (String) statusFilterCombo.getSelectedItem();
+        if (status != null && !FILTER_STATUS_ALL.equals(status)) {
+            filters.add(RowFilter.regexFilter("^" + Pattern.quote(status) + "$", 4));
+        }
+        String search = searchField.getText();
+        if (search != null && !search.trim().isEmpty()) {
+            String pattern = "(?i).*" + Pattern.quote(search.trim()) + ".*";
+            filters.add(RowFilter.regexFilter(pattern, 0, 2));
+        }
+        if (filters.isEmpty()) {
+            tableSorter.setRowFilter(null);
+        } else {
+            tableSorter.setRowFilter(RowFilter.andFilter(filters));
+        }
     }
 
     private JPanel buildActionsPanel() {
@@ -87,12 +165,13 @@ public class AdminDonationsPanel extends JPanel {
     }
 
     private void updateSelectedTicketStatus(String newStatus) {
-        int row = donationsTable.getSelectedRow();
-        if (row < 0) {
+        int viewRow = donationsTable.getSelectedRow();
+        if (viewRow < 0) {
             JOptionPane.showMessageDialog(this, "Please select a ticket first.");
             return;
         }
-        String ticketId = String.valueOf(donationsTableModel.getValueAt(row, 0));
+        int modelRow = donationsTable.convertRowIndexToModel(viewRow);
+        String ticketId = String.valueOf(donationsTableModel.getValueAt(modelRow, 0));
         String adminUserId = "admin";
 
         try {
@@ -115,12 +194,13 @@ public class AdminDonationsPanel extends JPanel {
     }
 
     private void cancelSelectedTicket() {
-        int row = donationsTable.getSelectedRow();
-        if (row < 0) {
+        int viewRow = donationsTable.getSelectedRow();
+        if (viewRow < 0) {
             JOptionPane.showMessageDialog(this, "Please select a ticket first.");
             return;
         }
-        String ticketId = String.valueOf(donationsTableModel.getValueAt(row, 0));
+        int modelRow = donationsTable.convertRowIndexToModel(viewRow);
+        String ticketId = String.valueOf(donationsTableModel.getValueAt(modelRow, 0));
         String reason = JOptionPane.showInputDialog(this,
                 "Reason for cancellation:", "Cancel Request", JOptionPane.QUESTION_MESSAGE);
         if (reason == null || reason.trim().isEmpty()) {
@@ -149,12 +229,13 @@ public class AdminDonationsPanel extends JPanel {
     }
 
     private void showQualityDialog(String newStatus) {
-        int row = donationsTable.getSelectedRow();
-        if (row < 0) {
+        int viewRow = donationsTable.getSelectedRow();
+        if (viewRow < 0) {
             JOptionPane.showMessageDialog(this, "Please select a ticket first.");
             return;
         }
-        String ticketId = String.valueOf(donationsTableModel.getValueAt(row, 0));
+        int modelRow = donationsTable.convertRowIndexToModel(viewRow);
+        String ticketId = String.valueOf(donationsTableModel.getValueAt(modelRow, 0));
         String adminUserId = "admin";
 
         // Create quality dialog
@@ -227,17 +308,18 @@ public class AdminDonationsPanel extends JPanel {
     }
 
     private void showReschedulePickupDialog() {
-        int row = donationsTable.getSelectedRow();
-        if (row < 0) {
+        int viewRow = donationsTable.getSelectedRow();
+        if (viewRow < 0) {
             JOptionPane.showMessageDialog(this, "Please select a ticket first.");
             return;
         }
-        String ticketId = String.valueOf(donationsTableModel.getValueAt(row, 0));
+        int modelRow = donationsTable.convertRowIndexToModel(viewRow);
+        String ticketId = String.valueOf(donationsTableModel.getValueAt(modelRow, 0));
         if ("-".equals(ticketId) || ticketId == null || ticketId.isEmpty()) {
             JOptionPane.showMessageDialog(this, "No valid ticket selected.");
             return;
         }
-        String currentPickup = row < pickupDateTimeByRow.size() ? pickupDateTimeByRow.get(row) : null;
+        String currentPickup = modelRow < pickupDateTimeByRow.size() ? pickupDateTimeByRow.get(modelRow) : null;
         if (currentPickup == null) currentPickup = "";
 
         JDialog dialog = new JDialog((Frame) SwingUtilities.getWindowAncestor(this), "Reschedule Pickup", true);
@@ -322,6 +404,7 @@ public class AdminDonationsPanel extends JPanel {
                 donationsTableModel.addRow(row);
             }
         }
+        applyTableFilter();
     }
 
     private List<Object[]> loadDonationsFromServer() {
@@ -403,16 +486,17 @@ public class AdminDonationsPanel extends JPanel {
     }
 
     private void viewSelectedPhoto() {
-        int row = donationsTable.getSelectedRow();
-        if (row < 0) {
+        int viewRow = donationsTable.getSelectedRow();
+        if (viewRow < 0) {
             JOptionPane.showMessageDialog(this, "Please select a ticket first.");
             return;
         }
-        if (row >= photoBase64ByRow.size()) {
+        int modelRow = donationsTable.convertRowIndexToModel(viewRow);
+        if (modelRow >= photoBase64ByRow.size()) {
             JOptionPane.showMessageDialog(this, "No photo data for this row.");
             return;
         }
-        String base64 = photoBase64ByRow.get(row);
+        String base64 = photoBase64ByRow.get(modelRow);
         if (base64 == null || base64.isEmpty()) {
             JOptionPane.showMessageDialog(this, "No photo attached to this donation.");
             return;
@@ -461,12 +545,13 @@ public class AdminDonationsPanel extends JPanel {
     }
 
     private void showPermanentDeleteDialog() {
-        int row = donationsTable.getSelectedRow();
-        if (row < 0) {
+        int viewRow = donationsTable.getSelectedRow();
+        if (viewRow < 0) {
             JOptionPane.showMessageDialog(this, "Please select a ticket first.");
             return;
         }
-        String ticketId = String.valueOf(donationsTableModel.getValueAt(row, 0));
+        int modelRow = donationsTable.convertRowIndexToModel(viewRow);
+        String ticketId = String.valueOf(donationsTableModel.getValueAt(modelRow, 0));
         String adminUserId = "admin";
 
         // Show confirmation dialog
