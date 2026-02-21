@@ -152,19 +152,32 @@ public class MonetaryDonationController {
                 + "Amount=" + amount + "; "
                 + "TransactionId=" + transactionId;
 
+        // Require photo upload
         File photoFile = view.getSelectedPhotoFile();
+        if (photoFile == null) {
+            javax.swing.JOptionPane.showMessageDialog(
+                    view.frame,
+                    "Please upload a photo before submitting your donation.",
+                    "Monetary Donation",
+                    javax.swing.JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        // Convert photo to base64 with exception handling
         String photoBase64 = null;
-        if (photoFile != null) {
+        try {
             photoBase64 = PhotoUtil.jpgFileToBase64(photoFile);
             if (photoBase64 == null) {
-                javax.swing.JOptionPane.showMessageDialog(
-                        view.frame,
-                        "Could not read the selected photo. Please choose a valid JPG file.",
-                        "Monetary Donation",
-                        javax.swing.JOptionPane.WARNING_MESSAGE);
-                view.clearSelectedPhoto();
-                return;
+                throw new IOException("Failed to read photo file");
             }
+        } catch (Exception ex) {
+            javax.swing.JOptionPane.showMessageDialog(
+                    view.frame,
+                    "Could not read the selected photo. Please choose a valid JPG file.\nError: " + ex.getMessage(),
+                    "Monetary Donation",
+                    javax.swing.JOptionPane.ERROR_MESSAGE);
+            view.clearSelectedPhoto();
+            return;
         }
 
         try {

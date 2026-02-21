@@ -168,18 +168,30 @@ public class BoxDonationController {
                 ? LoginController.currentUserEmail
                 : "guest@donationdriver";
 
+        // Require photo upload
         File photoFile = view.getSelectedPhotoFile();
+        if (photoFile == null) {
+            JOptionPane.showMessageDialog(view.frame,
+                    "Please upload a photo before submitting your donation.",
+                    "Create Donation Ticket",
+                    JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        // Convert photo to base64 with exception handling
         String photoBase64 = null;
-        if (photoFile != null) {
+        try {
             photoBase64 = PhotoUtil.jpgFileToBase64(photoFile);
             if (photoBase64 == null) {
-                JOptionPane.showMessageDialog(view.frame,
-                        "Could not read the selected photo. Please choose a valid JPG file.",
-                        "Create Donation Ticket",
-                        JOptionPane.WARNING_MESSAGE);
-                view.clearSelectedPhoto();
-                return;
+                throw new IOException("Failed to read photo file");
             }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(view.frame,
+                    "Could not read the selected photo. Please choose a valid JPG file.\nError: " + ex.getMessage(),
+                    "Create Donation Ticket",
+                    JOptionPane.ERROR_MESSAGE);
+            view.clearSelectedPhoto();
+            return;
         }
 
         String notes = "Goods donation – " + (drive != null ? drive : "")

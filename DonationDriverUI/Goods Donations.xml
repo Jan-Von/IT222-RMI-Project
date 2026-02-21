@@ -1,30 +1,62 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <goodsDonations>
+    
   
   <donation>
+        
     <userEmail>clayemail</userEmail>
+        
     <goods>damit</goods>
+        
     <quantity>10</quantity>
+        
     <location>bakakeng</location>
+        
     <timestamp>2026-02-18 23:23:20</timestamp>
+        
     <runningTotalBoxes>25.0</runningTotalBoxes>
+      
   </donation>
-
+    
   <donation>
+        
     <userEmail>clayemail</userEmail>
+        
     <goods>ballpen</goods>
+        
     <quantity>10</quantity>
+        
     <location>camp7</location>
+        
     <timestamp>2026-02-18 23:23:49</timestamp>
+        
     <runningTotalBoxes>35.0</runningTotalBoxes>
+      
+  </donation>
+    
+  
+  <donation>
+        
+    <userEmail>clayemail</userEmail>
+        
+    <goods>faahhhhh</goods>
+        
+    <quantity>2</quantity>
+        
+    <location>camp7</location>
+        
+    <timestamp>2026-02-18 23:32:47</timestamp>
+        
+    <runningTotalBoxes>37.0</runningTotalBoxes>
+      
   </donation>
   
   <donation>
-    <userEmail>clayemail</userEmail>
-    <goods>faahhhhh</goods>
-    <quantity>2</quantity>
-    <location>camp7</location>
-    <timestamp>2026-02-18 23:32:47</timestamp>
-    <runningTotalBoxes>37.0</runningTotalBoxes>
+    <userEmail>5012@gmail.com</userEmail>
+    <goods>Children's Clothes</goods>
+    <quantity>3</quantity>
+    <location>Baguio</location>
+    <timestamp>2026-02-21 18:38:04</timestamp>
+    <runningTotalBoxes>25.0</runningTotalBoxes>
   </donation>
 </goodsDonations>

@@ -39,3 +39,46 @@
 2026-02-19 00:25:15 | READ_TICKETS | admin | tickets queried by admin
 2026-02-19 00:25:33 | READ_TICKETS | admin | tickets queried by admin
 2026-02-19 00:25:33 | READ_DONATION_DRIVES |  | drives queried
+2026-02-21 18:33:15 | READ_TICKETS | donor@gmail.com | tickets queried by donor@gmail.com
+2026-02-21 18:33:15 | READ_TICKETS |  | tickets queried (status=PENDING) by all
+2026-02-21 18:33:27 | LOGIN |  | login attempt failed for: 2245587@slu.edu.ph
+2026-02-21 18:33:32 | LOGIN |  | login attempt failed for: 2245587@slu.edu.ph
+2026-02-21 18:35:11 | REGISTER |  | new user registered: 5012@gmail.com as DONOR
+2026-02-21 18:35:32 | LOGIN | 5012@gmail.com | user session: 5012@gmail.com (DONOR)
+2026-02-21 18:35:33 | READ_DONATION_DRIVES |  | drives queried
+2026-02-21 18:35:51 | READ_TICKETS | 5012@gmail.com | tickets queried (status=ACCEPTED) by 5012@gmail.com
+2026-02-21 18:35:51 | READ_TICKETS | 5012@gmail.com | tickets queried (status=PICKED_UP) by 5012@gmail.com
+2026-02-21 18:35:53 | READ_DONATION_DRIVES |  | drives queried
+2026-02-21 18:37:33 | READ_TICKETS | 5012@gmail.com | tickets queried (status=ACCEPTED) by 5012@gmail.com
+2026-02-21 18:37:33 | READ_TICKETS | 5012@gmail.com | tickets queried (status=PICKED_UP) by 5012@gmail.com
+2026-02-21 18:37:35 | READ_TICKETS | 5012@gmail.com | tickets queried (status=ACCEPTED) by 5012@gmail.com
+2026-02-21 18:37:35 | READ_TICKETS | 5012@gmail.com | tickets queried (status=PICKED_UP) by 5012@gmail.com
+2026-02-21 18:37:38 | READ_DONATION_DRIVES |  | drives queried
+2026-02-21 18:37:40 | READ_DONATION_DRIVES |  | drives queried
+2026-02-21 18:38:04 | CREATE_TICKET | 5012@gmail.com | Donation ticket created successfully. Ticket ID: 1771669995592
+2026-02-21 18:38:04 | UPDATE_DRIVE_AMOUNT | null | drive 'The Badjao Incident' amount updated by 3.0
+2026-02-21 18:43:16 | READ_DONATION_DRIVES |  | drives queried
+2026-02-21 18:43:28 | LOGIN |  | login attempt failed for: 5012@gmail.com
+2026-02-21 18:43:33 | LOGIN |  | login attempt failed for: 5012@gmail.com
+2026-02-21 18:43:37 | LOGIN | 5012@gmail.com | user session: 5012@gmail.com (DONOR)
+2026-02-21 18:43:38 | READ_DONATION_DRIVES |  | drives queried
+2026-02-21 18:43:41 | READ_DONATION_DRIVES |  | drives queried
+2026-02-21 18:44:03 | READ_DONATION_DRIVES |  | drives queried
+2026-02-21 18:44:26 | READ_TICKETS | 5012@gmail.com | tickets queried (status=ACCEPTED) by 5012@gmail.com
+2026-02-21 18:44:26 | READ_TICKETS | 5012@gmail.com | tickets queried (status=PICKED_UP) by 5012@gmail.com
+2026-02-21 18:44:28 | READ_DONATION_DRIVES |  | drives queried
+2026-02-21 18:44:31 | READ_DONATION_DRIVES |  | drives queried
+2026-02-21 18:44:55 | CREATE_TICKET | 5012@gmail.com | Donation ticket created successfully. Ticket ID: 1771669995593
+2026-02-21 18:44:55 | UPDATE_DRIVE_AMOUNT | null | drive 'Fire Hits Supermarket in Quezon' amount updated by 9500000.0
+2026-02-21 18:45:06 | READ_TICKETS | 5012@gmail.com | tickets queried (status=ACCEPTED) by 5012@gmail.com
+2026-02-21 18:45:06 | READ_TICKETS | 5012@gmail.com | tickets queried (status=PICKED_UP) by 5012@gmail.com
+2026-02-21 18:45:07 | READ_TICKETS | 5012@gmail.com | tickets queried (status=PENDING) by 5012@gmail.com
+2026-02-21 18:45:09 | READ_TICKETS | 5012@gmail.com | tickets queried (status=DELIVERED) by 5012@gmail.com
+2026-02-21 18:45:10 | READ_TICKETS | 5012@gmail.com | tickets queried (status=REJECTED) by 5012@gmail.com
+2026-02-21 18:45:10 | READ_TICKETS | 5012@gmail.com | tickets queried (status=ACCEPTED) by 5012@gmail.com
+2026-02-21 18:45:10 | READ_TICKETS | 5012@gmail.com | tickets queried (status=PICKED_UP) by 5012@gmail.com
+2026-02-21 18:45:11 | READ_TICKETS | 5012@gmail.com | tickets queried (status=PENDING) by 5012@gmail.com
+2026-02-21 18:45:11 | READ_TICKETS | 5012@gmail.com | tickets queried (status=DELIVERED) by 5012@gmail.com
+2026-02-21 18:45:11 | READ_TICKETS | 5012@gmail.com | tickets queried (status=REJECTED) by 5012@gmail.com
+2026-02-21 18:45:12 | READ_TICKETS | 5012@gmail.com | tickets queried (status=PENDING) by 5012@gmail.com
+2026-02-21 18:45:14 | READ_DONATION_DRIVES |  | drives queried
