@@ -96,11 +96,41 @@ public class Server extends JFrame implements DonationDriverService {
     }
 
     // Dummy returns & initial methods no body
-    @Override public String login(String email, String password) throws RemoteException { return ""; }
-    @Override public String register(String email, String password) throws RemoteException { return ""; }
-    @Override public String register(String firstName, String lastName, String middleName, String dateOfBirth, String address, String phone, String email, String password, String role) throws RemoteException { return ""; }
-    @Override public String logout(String email) throws RemoteException { return ""; }
-    @Override public String updateUserRole(String email, String newRole) throws RemoteException { return ""; }
+    @Override 
+    public String login(String email, String password) throws RemoteException {
+        log("AUTH", email, "Login attempt.");
+        log("AUTH", email, "Login result: (stub)");
+        return ""; 
+    }
+
+    @Override 
+    public String register(String email, String password) throws RemoteException {
+        log("AUTH", email, "Quick-register attempt.");
+        log("AUTH", email, "Quick-register result: (stub)");
+        return ""; 
+    }
+
+    @Override 
+    public String register(String firstName, String lastName, String middleName, String dateOfBirth, String address, String phone, String email, String password, String role) throws RemoteException {
+        log("AUTH", email, "Full-register attempt. Role=" + role);
+        log("AUTH", email, "Full-register result: (stub)");       
+        return ""; 
+    }
+
+    @Override 
+    public String logout(String email) throws RemoteException {
+        log("AUTH", email, "Logout requested.");
+        activeSessions.remove(email);
+        log("AUTH", email, "Session removed."); 
+        return ""; 
+    }
+
+    @Override 
+    public String updateUserRole(String email, String newRole) throws RemoteException {
+        log("AUTH", email, "Role update requested. NewRole=" + newRole);
+        log("AUTH", email, "Role update result: (stub)"); 
+        return ""; 
+    }
     @Override public String createTicket(String userId, String type, String details) throws RemoteException { return ""; }
     @Override public String createTicket(String userId, String itemCategory, int quantity, String condition, String expirationDate, String pickupDateTime, String pickupLocation, String photoPath, String notes, String photoBase64) throws RemoteException { return ""; }
     @Override public String createTicket(String userId, String itemCategory, int quantity, String condition, String expirationDate, String pickupDateTime, String pickupLocation, String photoPath, String notes, String donationDrive, String deliveryDestination, String photoBase64) throws RemoteException { return ""; }
