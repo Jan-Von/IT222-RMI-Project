@@ -60,6 +60,13 @@ public class Server extends JFrame implements DonationDriverService {
         String entry = String.format("[%s] [%s] [%s] %s", timestamp, type, userId, message);
 
         SwingUtilities.invokeLater(() -> logArea.append(message + "\n"));
+
+        try (FileWriter fw = new FileWriter(new File(LOG_FILE), true)) {
+            fw.write(entry + System.lineSeparator());
+        } catch (IOException e) {
+            System.err.println("server_log.txt write error: " + e.getMessage());
+        }
+    }
     }
 
     private void startServer() {
