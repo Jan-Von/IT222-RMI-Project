@@ -55,7 +55,10 @@ public class Server extends JFrame implements DonationDriverService {
         add(btnPanel, BorderLayout.SOUTH);
     }
 
-    private void log(String message) {
+    private void log(String type, String userId, String message) {
+        String timestamp = LocalDateTime.now().format(LOG_FMT);
+        String entry = String.format("[%s] [%s] [%s] %s", timestamp, type, userId, message);
+
         SwingUtilities.invokeLater(() -> logArea.append(message + "\n"));
     }
 
