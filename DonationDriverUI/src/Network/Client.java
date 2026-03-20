@@ -1,18 +1,18 @@
 package Network;
 
 import java.io.*;
-import java.net.InetSocketAddress;
-import java.net.Socket;
+import java.rmi.Naming;
+import java.rmi.RemoteException;
 
 public class Client {
 
     private static final String DEFAULT_HOST = "localhost";
     private static final int DEFAULT_PORT = 5267;
-    private static final int CONNECT_TIMEOUT_MS = 5000;
-    private static final int READ_TIMEOUT_MS = 10000;
 
     private final String host;
     private final int port;
+
+    private transient DonationDriverService service;
 
     public Client(String host, int port) {
         this.host = host;
@@ -24,27 +24,217 @@ public class Client {
     }
 
     public String sendRequest(String requestXml) throws IOException {
-        Socket socket = new Socket();
+        if (requestXml == null) return null;
+
+        String action = extractTagValue(requestXml, "action");
+        if (action == null) {
+            throw new IOException("Missing <action> in request.");
+        }
+
+        DonationDriverService svc = getService();
+
         try {
-            socket.connect(new InetSocketAddress(host, port), CONNECT_TIMEOUT_MS);
-            socket.setSoTimeout(READ_TIMEOUT_MS);
-            BufferedWriter out = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "UTF-8"));
-            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream(), "UTF-8"));
+            switch (action) {
+                case "LOGIN": {
+                    String email = unescapeXml(extractTagValue(requestXml, "email"));
+                    String password = unescapeXml(extractTagValue(requestXml, "password"));
+                    return svc.login(email, password);
+                }
+                case "REGISTER": {
+                    String firstName = extractTagValue(requestXml, "firstName");
+                    if (firstName == null) {
+                        String email = unescapeXml(extractTagValue(requestXml, "email"));
+                        String password = unescapeXml(extractTagValue(requestXml, "password"));
+                        return svc.register(email, password);
+                    }
 
-            out.write(requestXml);
-            out.newLine();
-            out.flush();
+                    String lastName = unescapeXml(extractTagValue(requestXml, "lastName"));
+                    String middleName = unescapeXml(extractTagValue(requestXml, "middleName"));
+                    String dateOfBirth = unescapeXml(extractTagValue(requestXml, "dateOfBirth"));
+                    String address = unescapeXml(extractTagValue(requestXml, "address"));
+                    String phone = unescapeXml(extractTagValue(requestXml, "phone"));
+                    String email = unescapeXml(extractTagValue(requestXml, "email"));
+                    String password = unescapeXml(extractTagValue(requestXml, "password"));
+                    String role = unescapeXml(extractTagValue(requestXml, "role"));
 
-            String responseXml = in.readLine();
-            if (responseXml == null) {
-                return null;
+                    return svc.register(
+                            unescapeXml(firstName),
+                            lastName == null ? "" : lastName,
+                            middleName == null ? "" : middleName,
+                            dateOfBirth == null ? "" : dateOfBirth,
+                            address == null ? "" : address,
+                            phone == null ? "" : phone,
+                            email,
+                            password,
+                            role == null ? "" : role
+                    );
+                }
+                case "UPDATE_USER_ROLE": {
+                    String email = unescapeXml(extractTagValue(requestXml, "email"));
+                    String role = unescapeXml(extractTagValue(requestXml, "role"));
+                    return svc.updateUserRole(email, role);
+                }
+                case "CREATE_TICKET": {
+                    String userId = unescapeXml(extractTagValue(requestXml, "userId"));
+
+                    // Optional 3-arg overload fields
+                    String type = unescapeXml(extractTagValue(requestXml, "type"));
+                    String details = unescapeXml(extractTagValue(requestXml, "details"));
+                    if (type != null && details != null) {
+                        return svc.createTicket(userId, type, details);
+                    }
+
+                    String itemCategory = unescapeXml(extractTagValue(requestXml, "itemCategory"));
+                    int quantity = parseIntOrZero(extractTagValue(requestXml, "quantity"));
+                    String condition = unescapeXml(extractTagValue(requestXml, "condition"));
+                    String expirationDate = unescapeXml(extractTagValue(requestXml, "expirationDate"));
+                    String pickupDateTime = unescapeXml(extractTagValue(requestXml, "pickupDateTime"));
+                    String pickupLocation = unescapeXml(extractTagValue(requestXml, "pickupLocation"));
+                    String photoPath = unescapeXml(extractTagValue(requestXml, "photoPath"));
+                    String notes = unescapeXml(extractTagValue(requestXml, "details"));
+                    String photoBase64 = unescapeXml(extractCdataTag(requestXml, "photoBase64"));
+
+                    String donationDriveRaw = extractTagValue(requestXml, "donationDrive");
+                    String deliveryDestinationRaw = extractTagValue(requestXml, "deliveryDestination");
+                    boolean hasDonationDrive = donationDriveRaw != null;
+                    boolean hasDeliveryDestination = deliveryDestinationRaw != null;
+
+                    if (hasDonationDrive || hasDeliveryDestination) {
+                        String donationDrive = hasDonationDrive ? unescapeXml(donationDriveRaw) : "";
+                        String deliveryDestination = hasDeliveryDestination ? unescapeXml(deliveryDestinationRaw) : "";
+                        return svc.createTicket(
+                                userId,
+                                itemCategory,
+                                quantity,
+                                condition,
+                                expirationDate,
+                                pickupDateTime,
+                                pickupLocation,
+                                photoPath,
+                                notes,
+                                donationDrive,
+                                deliveryDestination,
+                                photoBase64
+                        );
+                    }
+
+                    return svc.createTicket(
+                            userId,
+                            itemCategory,
+                            quantity,
+                            condition,
+                            expirationDate,
+                            pickupDateTime,
+                            pickupLocation,
+                            photoPath,
+                            notes,
+                            photoBase64
+                    );
+                }
+                case "READ_TICKETS": {
+                    String userId = unescapeXml(extractTagValue(requestXml, "userId"));
+                    String status = unescapeXml(extractTagValue(requestXml, "status"));
+                    if (status == null) {
+                        return svc.readTickets(userId);
+                    }
+                    return svc.readTickets(userId, status);
+                }
+                case "UPDATE_TICKET": {
+                    String userId = unescapeXml(extractTagValue(requestXml, "userId"));
+                    String ticketId = unescapeXml(extractTagValue(requestXml, "ticketId"));
+                    String status = unescapeXml(extractTagValue(requestXml, "status"));
+                    String pickupDateTime = unescapeXml(extractTagValue(requestXml, "pickupDateTime"));
+
+                    if (status == null && pickupDateTime != null) {
+                        return svc.updateTicketPickupTime(userId, ticketId, pickupDateTime);
+                    }
+
+                    String qualityStatus = unescapeXml(extractTagValue(requestXml, "qualityStatus"));
+                    String qualityReason = unescapeXml(extractTagValue(requestXml, "qualityReason"));
+
+                    if (qualityStatus != null || qualityReason != null) {
+                        return svc.updateTicket(
+                                userId,
+                                ticketId,
+                                status,
+                                qualityStatus == null ? "" : qualityStatus,
+                                qualityReason == null ? "" : qualityReason
+                        );
+                    }
+
+                    return svc.updateTicket(userId, ticketId, status);
+                }
+                case "DELETE_TICKET": {
+                    String userId = unescapeXml(extractTagValue(requestXml, "userId"));
+                    String ticketId = unescapeXml(extractTagValue(requestXml, "ticketId"));
+                    String deleteReason = unescapeXml(extractTagValue(requestXml, "deleteReason"));
+                    if (deleteReason == null || deleteReason.trim().isEmpty()) {
+                        return svc.deleteTicket(userId, ticketId);
+                    }
+                    return svc.deleteTicket(userId, ticketId, deleteReason);
+                }
+                case "PERMANENT_DELETE_TICKET": {
+                    String userId = unescapeXml(extractTagValue(requestXml, "userId"));
+                    String ticketId = unescapeXml(extractTagValue(requestXml, "ticketId"));
+                    return svc.permanentDeleteTicket(userId, ticketId);
+                }
+                case "CREATE_DONATION_DRIVE": {
+                    String userId = unescapeXml(extractTagValue(requestXml, "userId"));
+                    String title = unescapeXml(extractTagValue(requestXml, "title"));
+                    String description = unescapeXml(extractTagValue(requestXml, "description"));
+                    String targetAmount = extractTagValue(requestXml, "targetAmount");
+                    double amount = parseDoubleOrZero(targetAmount);
+                    return svc.createDonationDrive(userId, title, description, String.valueOf(amount), "");
+                }
+                case "READ_DONATION_DRIVES": {
+                    return svc.readDonationDrives();
+                }
+                case "DELETE_DONATION_DRIVE": {
+                    // Not currently used by UI socket client, keep for completeness.
+                    String userId = unescapeXml(extractTagValue(requestXml, "userId"));
+                    String title = unescapeXml(extractTagValue(requestXml, "driveTitle"));
+                    return svc.deleteDonationDrive(userId, title);
+                }
+                case "UPDATE_DRIVE_AMOUNT": {
+                    String driveTitle = unescapeXml(extractTagValue(requestXml, "driveTitle"));
+                    double amount = parseDoubleOrZero(extractTagValue(requestXml, "amount"));
+                    return svc.updateDriveAmount(driveTitle, amount);
+                }
+                case "RIDER_SET_AVAILABLE": {
+                    String userId = unescapeXml(extractTagValue(requestXml, "userId"));
+                    return svc.setRiderAvailable(userId);
+                }
+                case "RIDER_SET_UNAVAILABLE": {
+                    String userId = unescapeXml(extractTagValue(requestXml, "userId"));
+                    return svc.setRiderUnavailable(userId);
+                }
+                case "GET_SERVER_LOGS": {
+                    return svc.getServerLogs();
+                }
+                case "SET_SERVER_MAINTENANCE_MODE": {
+                    String enabledStr = unescapeXml(extractTagValue(requestXml, "enabled"));
+                    boolean enabled = enabledStr != null && enabledStr.equalsIgnoreCase("true");
+                    return svc.setServerMaintenanceMode(enabled);
+                }
+                case "PING": {
+                    return svc.ping();
+                }
+                default:
+                    throw new IOException("Unsupported action: " + action);
             }
-            return responseXml.trim();
-        } finally {
-            try {
-                socket.close();
-            } catch (IOException ignored) {
-            }
+        } catch (RemoteException e) {
+            throw new IOException("RMI call failed", e);
+        }
+    }
+
+    private DonationDriverService getService() throws IOException {
+        if (service != null) return service;
+        try {
+            String url = "rmi://" + host + ":" + port + "/DonationDriverService";
+            service = (DonationDriverService) Naming.lookup(url);
+            return service;
+        } catch (Exception e) {
+            throw new IOException("Cannot contact RMI server at " + host + ":" + port, e);
         }
     }
 
@@ -299,6 +489,37 @@ public class Client {
             return null;
         }
         return xml.substring(i + open.length(), j).trim();
+    }
+
+    private static String extractCdataTag(String xml, String tag) {
+        String openC = "<" + tag + "><![CDATA[";
+        String closeC = "]]></" + tag + ">";
+        int i = xml.indexOf(openC);
+        if (i == -1) {
+            // Fallback: not CDATA-wrapped.
+            return extractTagValue(xml, tag);
+        }
+        int j = xml.indexOf(closeC, i + openC.length());
+        if (j == -1) return null;
+        return xml.substring(i + openC.length(), j);
+    }
+
+    private static int parseIntOrZero(String s) {
+        try {
+            if (s == null) return 0;
+            return Integer.parseInt(s.trim());
+        } catch (Exception ignored) {
+            return 0;
+        }
+    }
+
+    private static double parseDoubleOrZero(String s) {
+        try {
+            if (s == null) return 0.0;
+            return Double.parseDouble(s.trim());
+        } catch (Exception ignored) {
+            return 0.0;
+        }
     }
 
     public static String escapeXml(String s) {
