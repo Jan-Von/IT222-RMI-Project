@@ -17,6 +17,11 @@ import java.util.Set;
 public class Server extends JFrame implements DonationDriverService {
 
     private static final int PORT = 5267;
+
+    private static final String LOG_FILE = "server_log.txt";
+
+    private static final DateTimeFormatter LOG_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+  
     private JTextArea logArea;
     private JButton startBtn;
     private JButton stopBtn;
