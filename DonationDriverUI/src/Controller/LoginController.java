@@ -6,6 +6,7 @@ import View.DashboardView;
 import Network.Client;
 import javax.swing.*;
 import java.io.IOException;
+import java.rmi.RemoteException;
 
 public class LoginController {
 
@@ -32,17 +33,19 @@ public class LoginController {
         String password = new String(view.passField.getPassword());
 
         try {
-            Client client = Client.getDefault();
-            String responseXml = client.login(email, password);
+            String responseXml = Client.getInstance().getService().login(email, password);
             Client.Response response = Client.parseResponse(responseXml);
+            String status = response != null ? response.status : "";
+            String role = response != null ? response.role : "";
+            String message = response != null ? response.message : "";
 
-            if (response != null && response.isOk()) {
+            if ("OK".equalsIgnoreCase(status)) {
                 currentUserEmail = email;
-                currentUserRole = response.role;
+                currentUserRole = role == null ? "" : role;
 
                 JOptionPane.showMessageDialog(view.frame, "Login Success!");
 
-                if ("RIDER".equalsIgnoreCase(response.role)) {
+                if ("RIDER".equalsIgnoreCase(currentUserRole)) {
                     View.RiderDashboard riderView = new View.RiderDashboard();
                     new RiderController(riderView);
                     riderView.frame.setVisible(true);
@@ -52,11 +55,17 @@ public class LoginController {
                 }
                 view.frame.dispose();
             } else {
-                String msg = (response != null && response.message != null && !response.message.isEmpty())
-                        ? response.message
+                String msg = (message != null && !message.isEmpty())
+                        ? message
                         : "Invalid email or password!";
                 JOptionPane.showMessageDialog(view.frame, msg);
             }
+        } catch (RemoteException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(view.frame,
+                    "Authentication failed due to remote server error.",
+                    "Server Error",
+                    JOptionPane.ERROR_MESSAGE);
         } catch (IOException ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(view.frame,

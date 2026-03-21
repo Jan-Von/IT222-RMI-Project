@@ -6,6 +6,7 @@ import javax.swing.*;
 import java.io.IOException;
 import Network.Client;
 import javax.swing.*;
+import java.rmi.RemoteException;
 
 public class RegistrationController {
 
@@ -65,8 +66,7 @@ public class RegistrationController {
         }
 
         try {
-            Client client = Client.getDefault();
-            String responseXml = client.register(
+            String responseXml = Client.getInstance().getService().register(
                     firstName,
                     lastName,
                     middleName,
@@ -77,22 +77,34 @@ public class RegistrationController {
                     password,
                     role.toUpperCase());
             Client.Response response = Client.parseResponse(responseXml);
+            String status = response != null ? response.status : "";
+            String message = response != null ? response.message : "";
+            String resolvedRole = response != null ? response.role : "";
 
-            if (response != null && response.isOk()) {
+            if ("OK".equalsIgnoreCase(status)) {
+                if (resolvedRole != null && !resolvedRole.isEmpty()) {
+                    LoginController.currentUserRole = resolvedRole;
+                }
                 JOptionPane.showMessageDialog(view.frame,
                         "Registration successful. You can now log in.");
                 LoginView loginView = new LoginView();
                 new LoginController(loginView);
                 view.frame.dispose();
             } else {
-                String msg = (response != null && response.message != null && !response.message.isEmpty())
-                        ? response.message
+                String msg = (message != null && !message.isEmpty())
+                        ? message
                         : "Registration failed. Please try again.";
                 JOptionPane.showMessageDialog(view.frame,
                         msg,
                         "Registration Error",
                         JOptionPane.ERROR_MESSAGE);
             }
+        } catch (RemoteException ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(view.frame,
+                    "Registration failed due to remote server error.",
+                    "Server Error",
+                    JOptionPane.ERROR_MESSAGE);
         } catch (IOException ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(view.frame,

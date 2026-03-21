@@ -9,18 +9,25 @@ public class Client {
     private static final String DEFAULT_HOST = "localhost";
     private static final int DEFAULT_PORT = 5267;
 
+    private static Client instance;
     private final String host;
     private final int port;
 
     private transient DonationDriverService service;
 
-    public Client(String host, int port) {
+    private Client(String host, int port) {
         this.host = host;
         this.port = port;
     }
+    public static synchronized Client getInstance() {
+        if (instance == null) {
+            instance = new Client(DEFAULT_HOST, DEFAULT_PORT);
+        }
+        return instance;
+    }
 
     public static Client getDefault() {
-        return new Client(DEFAULT_HOST, DEFAULT_PORT);
+        return getInstance();
     }
 
     public String sendRequest(String requestXml) throws IOException {
@@ -227,7 +234,7 @@ public class Client {
         }
     }
 
-    private DonationDriverService getService() throws IOException {
+    public DonationDriverService getService() throws IOException {
         if (service != null) return service;
         try {
             String url = "rmi://" + host + ":" + port + "/DonationDriverService";
