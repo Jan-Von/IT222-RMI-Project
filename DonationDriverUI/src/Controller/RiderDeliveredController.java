@@ -1,5 +1,6 @@
 package Controller;
 
+import Network.DonationDriverService;
 import View.*;
 import Network.Client;
 import javax.swing.*;
@@ -32,9 +33,9 @@ public class RiderDeliveredController {
         ticketIds.clear();
         DefaultListModel<String> model = new DefaultListModel<>();
         try {
-            Client client = Client.getDefault();
+            DonationDriverService svc = Client.getInstance().getService();
             String userId = LoginController.currentUserEmail;
-            String responseXml = client.readTickets(userId != null ? userId : "", "PICKED_UP");
+            String responseXml = svc.readTickets(userId != null ? userId : "", "PICKED_UP");
             Client.Response response = Client.parseResponse(responseXml);
             if (response != null && response.isOk() && response.message != null && !response.message.isEmpty()) {
                 String ticketsXml = Client.unescapeXml(response.message);

@@ -1,5 +1,6 @@
 package Controller;
 
+import Network.DonationDriverService;
 import View.*;
 import Network.Client;
 
@@ -32,9 +33,9 @@ public class RiderAcceptedController {
     private void loadAcceptedTickets() {
         ticketIds.clear();
         try {
-            Client client = Client.getDefault();
+            DonationDriverService svc = Client.getInstance().getService();
             String userId = LoginController.currentUserEmail;
-            String responseXml = client.readTickets(userId != null ? userId : "", "ACCEPTED");
+            String responseXml = svc.readTickets(userId != null ? userId : "", "ACCEPTED");
             Client.Response response = Client.parseResponse(responseXml);
             DefaultListModel<String> model = new DefaultListModel<>();
             if (response != null && response.isOk() && response.message != null && !response.message.isEmpty()) {

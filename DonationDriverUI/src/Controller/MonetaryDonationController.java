@@ -1,5 +1,6 @@
 package Controller;
 
+import Network.DonationDriverService;
 import View.*;
 import Network.Client;
 import Util.PhotoUtil;
@@ -48,17 +49,10 @@ public class MonetaryDonationController {
 
     }
 
-    private static final String[] HARDCODED_DRIVES = {
-            "Super Typhoon Haiyan", "6.9 Magnitude in Cebu", "Fire Hits Supermarket in Quezon"
-    };
-
     private void populateDriveCombo() {
-        for (String d : HARDCODED_DRIVES) {
-            view.donationDriveDropdown.addItem(d);
-        }
         try {
-            Client client = Client.getDefault();
-            String responseXml = client.readDonationDrives();
+            DonationDriverService svc = Client.getInstance().getService();
+            String responseXml = svc.readDonationDrives();
             Client.Response response = Client.parseResponse(responseXml);
             if (response != null && response.isOk()) {
                 String drivesXml = Client.unescapeXml(response.message);
@@ -81,9 +75,9 @@ public class MonetaryDonationController {
                 }
             }
         } catch (IOException ignored) {
-            /* server not available */ }
+            /* server not available */
+        }
     }
-
     private String extractTagValue(String xml, String tag) {
         String open = "<" + tag + ">";
         String close = "</" + tag + ">";

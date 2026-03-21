@@ -1,5 +1,6 @@
 package Controller;
 
+import Network.DonationDriverService;
 import View.RiderDashboard;
 import View.RiderDriveDetailsView;
 import Network.Client;
@@ -35,8 +36,8 @@ public class RiderDriveDetailsController {
     private void loadData() {
         new Thread(() -> {
             try {
-                Client client = Client.getDefault();
-                String responseXml = client.readTickets("rider", "PENDING"); // Get ALL pending for any rider
+                DonationDriverService svc = Client.getInstance().getService();
+                String responseXml = svc.readTickets("rider", "PENDING");
                 Client.Response response = Client.parseResponse(responseXml);
 
                 List<RiderDashboard.TicketStub> filteredList = new ArrayList<>();

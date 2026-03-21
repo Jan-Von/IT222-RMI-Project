@@ -1,5 +1,6 @@
 package Controller;
 
+import Network.DonationDriverService;
 import View.*;
 import Network.Client;
 import java.io.IOException;
@@ -26,9 +27,9 @@ public class RiderRejectedController {
 
     private void loadRejectedTickets() {
         try {
-            Client client = Client.getDefault();
+            DonationDriverService svc = Client.getInstance().getService();
             String userId = LoginController.currentUserEmail;
-            String responseXml = client.readTickets(userId != null ? userId : "", "REJECTED");
+            String responseXml = svc.readTickets(userId != null ? userId : "", "REJECTED");
             Client.Response response = Client.parseResponse(responseXml);
             DefaultListModel<String> model = new DefaultListModel<>();
             if (response != null && response.isOk() && response.message != null && !response.message.isEmpty()) {

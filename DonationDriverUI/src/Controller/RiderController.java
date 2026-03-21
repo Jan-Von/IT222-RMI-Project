@@ -1,5 +1,6 @@
 package Controller;
 
+import Network.DonationDriverService;
 import View.*;
 import Network.Client;
 
@@ -14,11 +15,7 @@ public class RiderController {
 
     private final RiderDashboard view;
 
-    private static final String[][] HARDCODED_DRIVES = {
-            { "Super Typhoon Haiyan", "Resources/Images/image1.png" },
-            { "6.9 Magnitude in Cebu", "Resources/Images/image2.png" },
-            { "Fire Hits Supermarket in Quezon", "Resources/Images/image3.png" },
-    };
+
 
     private final Map<String, RiderDashboard.DriveCardRefs> driveRefs = new HashMap<>();
 
@@ -44,19 +41,9 @@ public class RiderController {
     }
 
     private void buildDriveCards() {
-        // Hardcoded drives
-        for (String[] d : HARDCODED_DRIVES) {
-            String title = d[0];
-            String img = d[1];
-            RiderDashboard.DriveCardRefs refs = view.addDriveCard(title, img);
-            driveRefs.put(title, refs);
-            refs.actionBtn.addActionListener(e -> openDriveDetails(title));
-        }
-
-        // Server drives
         try {
-            Client client = Client.getDefault();
-            String responseXml = client.readDonationDrives();
+            DonationDriverService svc = Client.getInstance().getService();
+            String responseXml = svc.readDonationDrives();
             Client.Response response = Client.parseResponse(responseXml);
             if (response != null && response.isOk()) {
                 String drivesXml = Client.unescapeXml(response.message);
@@ -82,7 +69,8 @@ public class RiderController {
                 }
             }
         } catch (IOException ignored) {
-            /* server unavailable */ }
+            /* server unavailable */
+        }
     }
 
     private void refreshDashboard() {
