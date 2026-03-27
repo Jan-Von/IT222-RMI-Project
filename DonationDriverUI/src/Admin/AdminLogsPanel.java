@@ -45,7 +45,7 @@ public class AdminLogsPanel extends JPanel {
             boolean isMaintenance = maintenanceToggle.isSelected();
             try {
                 Client client = Client.getDefault();
-                String response = client.setServerMaintenanceMode(isMaintenance);
+                String response = client.getService().setServerMaintenanceMode(isMaintenance);
                 Client.Response resp = Client.parseResponse(response);
                 if (resp != null && resp.isOk()) {
                     if (isMaintenance) {
@@ -87,7 +87,7 @@ public class AdminLogsPanel extends JPanel {
     public void refreshData() {
         try {
             Client client = Client.getDefault();
-            String response = client.getServerLogs();
+            String response = client.getService().getServerLogs();
             Client.Response resp = Client.parseResponse(response);
             if (resp != null && resp.isOk() && resp.message != null) {
                 logsArea.setText(resp.message);

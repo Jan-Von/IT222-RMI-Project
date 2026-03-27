@@ -6,7 +6,6 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import Network.Client;
-import java.io.IOException;
 
 public class AdminHomePanel extends JPanel {
 
@@ -180,16 +179,6 @@ public class AdminHomePanel extends JPanel {
     }
 
     private void populateUrgentCards(JPanel cards) {
-        cards.add(buildUrgentCard("Super Typhoon Halyan", "443,721.00", "1,432", "287", 65,
-                "Donations are being collected and routed to affected areas. Relief packs are being assembled.",
-                () -> deleteDrive("Super Typhoon Halyan")));
-        cards.add(buildUrgentCard("6.9-Magnitude in Cebu Ear...", "320,500.00", "890", "156", 58,
-                "Monetary and in-kind donations are flowing in. Distribution to evacuation centers is in progress.",
-                () -> deleteDrive("6.9-Magnitude in Cebu Ear...")));
-        cards.add(buildUrgentCard("Fire Hits Supermarket in Qu...", "180,200.00", "420", "98", 48,
-                "Emergency supplies and cash aid are being coordinated with local responders.",
-                () -> deleteDrive("Fire Hits Supermarket in Qu...")));
-
         java.util.List<Drive> drives = loadDrivesFromServer();
         for (Drive d : drives) {
             int percentage = 0;
@@ -359,7 +348,7 @@ public class AdminHomePanel extends JPanel {
             String userId = Controller.LoginController.currentUserEmail;
             if (userId == null)
                 userId = "admin";
-            String responseXml = client.deleteDonationDrive(userId, driveTitle);
+            String responseXml = client.getService().deleteDonationDrive(userId, driveTitle);
             Client.Response response = Client.parseResponse(responseXml);
             if (response != null && response.isOk()) {
                 JOptionPane.showMessageDialog(this, response.message, "Drive Deleted", JOptionPane.INFORMATION_MESSAGE);
@@ -493,11 +482,7 @@ public class AdminHomePanel extends JPanel {
         JPanel card = new JPanel(new BorderLayout(8, 4));
         card.setBackground(Color.WHITE);
         card.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
-        card.add(new JLabel("J&T Express"), BorderLayout.NORTH);
-        card.add(new JLabel("Baguio City - Tacloban"), BorderLayout.CENTER);
-        card.add(new JLabel("Today 9:22 AM"), BorderLayout.CENTER);
-        card.add(new JLabel("Donation box left at the sorting facility"), BorderLayout.CENTER);
-        JLabel status = new JLabel("In Transit");
+        JLabel status = new JLabel("");
         status.setForeground(new Color(200, 120, 0));
         status.setFont(new Font("Arial", Font.BOLD, 12));
         card.add(status, BorderLayout.CENTER);

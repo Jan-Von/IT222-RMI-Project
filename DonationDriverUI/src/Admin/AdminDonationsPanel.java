@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.regex.Pattern;
 import Network.Client;
 import Controller.LoginController;
-import java.io.IOException;
 
 public class AdminDonationsPanel extends JPanel {
 
@@ -432,7 +431,7 @@ public class AdminDonationsPanel extends JPanel {
             String keyword = searchField.getText().trim();
             String responseXml;
             if (!keyword.isEmpty() && !keyword.equals("Search donations...")) {
-                responseXml = client.searchTickets(keyword);
+                responseXml = client.getService().searchTickets(keyword);
             } else {
                 responseXml = client.readTickets(userId, null);
             }

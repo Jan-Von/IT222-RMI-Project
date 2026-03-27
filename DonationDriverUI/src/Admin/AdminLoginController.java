@@ -1,19 +1,18 @@
 package Admin;
 
 import Controller.LoginController;
+import Network.Client;
 import View.LoginView;
+import java.io.IOException;
+
 
 import javax.swing.*;
 
 public class AdminLoginController {
 
     private final AdminLoginView view;
-    private final AdminCredentialsStore store;
-
     public AdminLoginController(AdminLoginView view) {
         this.view = view;
-        this.store = new AdminCredentialsStore();
-
         this.view.loginBtn.addActionListener(e -> handleLogin());
         this.view.cancelBtn.addActionListener(e -> view.frame.dispose());
     }
@@ -31,25 +30,35 @@ public class AdminLoginController {
                     JOptionPane.WARNING_MESSAGE);
             return;
         }
+        try {
+            String responseXml = Client.getInstance().getService().login(email, password);
+            Client.Response response = Client.parseResponse(responseXml);
+            String status = response != null ? response.status : "";
+            String message = response != null ? response.message : "";
 
-        if (store.isValidAdmin(email, password)) {
-            JOptionPane.showMessageDialog(view.frame,
-                    "Admin login successful!",
-                    "Admin Login",
-                    JOptionPane.INFORMATION_MESSAGE);
-            view.frame.dispose();
+            if ("OK".equalsIgnoreCase(status)) {
+                JOptionPane.showMessageDialog(view.frame,
+                        "Admin login successful!",
+                        "Admin Login",
+                        JOptionPane.INFORMATION_MESSAGE);
+                view.frame.dispose();
 
-            AdminDashboardView adminDashboardView = new AdminDashboardView();
-            adminDashboardView.logoutBtn.addActionListener(e -> {
-                adminDashboardView.frame.dispose();
-                LoginView loginView = new LoginView();
-                new LoginController(loginView);
-            });
-        } else {
-            JOptionPane.showMessageDialog(view.frame,
-                    "Invalid admin email or password.",
-                    "Admin Login",
-                    JOptionPane.ERROR_MESSAGE);
+                AdminDashboardView adminDashboardView = new AdminDashboardView();
+                adminDashboardView.logoutBtn.addActionListener(e -> {
+                    adminDashboardView.frame.dispose();
+                    LoginView loginView = new LoginView();
+                    new LoginController(loginView);
+                });
+            } else {
+                JOptionPane.showMessageDialog(view.frame,
+                        (message != null && !message.isEmpty())
+                                ? message
+                                : "Invalid admin email or password.",
+                        "Admin Login",
+                        JOptionPane.ERROR_MESSAGE);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }
