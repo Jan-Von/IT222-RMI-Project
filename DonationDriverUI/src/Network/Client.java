@@ -451,7 +451,7 @@ public class Client {
         return sendRequest(request.toString());
     }
 
-    public String createDonationDrive(String userId, String title, String description, String targetAmount)
+    public String createDonationDrive(String userId, String title, String description, String targetAmount, String photoBase64)
             throws IOException {
         StringBuilder request = new StringBuilder();
         request.append("<request><action>CREATE_DONATION_DRIVE</action>");
