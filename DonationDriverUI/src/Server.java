@@ -25,6 +25,7 @@ public class Server extends JFrame implements DonationDriverService {
     private Registry registry;
 
     private final Set<String> activeSessions = new HashSet<>();
+    private volatile boolean maintenanceMode;
 
     // Gson init (optional at runtime; we also support a Gson-free fallback).
     private static final Object GSON = initGson();
@@ -670,6 +671,7 @@ public class Server extends JFrame implements DonationDriverService {
     private void startServer() {
         try {
             initDataFiles();
+            maintenanceMode = isMaintenanceEnabled();
 
             registry = LocateRegistry.createRegistry(PORT);
             UnicastRemoteObject.exportObject(this, 0);
@@ -698,6 +700,7 @@ public class Server extends JFrame implements DonationDriverService {
     @Override
     public String login(String email, String password) throws RemoteException {
         if (email == null || password == null) return error("Missing email or password.");
+        if (maintenanceMode) return error("Server is in maintenance mode.");
         String emailNorm = email.trim().toLowerCase();
 
         List<User> users = loadUsers();
@@ -1227,6 +1230,7 @@ public class Server extends JFrame implements DonationDriverService {
             DATA_DIR.mkdirs();
             String json = "{\"maintenanceEnabled\":" + (enabled ? "true" : "false") + "}";
             Files.writeString(new File(DATA_DIR, "server_settings.json").toPath(), json, StandardCharsets.UTF_8);
+            maintenanceMode = enabled;
             appendServerLog("MAINTENANCE_MODE | enabled=" + enabled);
             return ok("Maintenance mode updated.", "");
         } catch (Exception e) {

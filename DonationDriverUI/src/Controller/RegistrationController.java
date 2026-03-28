@@ -1,11 +1,11 @@
 package Controller;
 
+import Network.Client;
 import View.LoginView;
 import View.RegistrationView;
+
 import javax.swing.*;
 import java.io.IOException;
-import Network.Client;
-import javax.swing.*;
 import java.rmi.RemoteException;
 
 public class RegistrationController {

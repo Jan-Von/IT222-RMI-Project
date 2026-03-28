@@ -3,10 +3,9 @@ package Admin;
 import Controller.LoginController;
 import Network.Client;
 import View.LoginView;
-import java.io.IOException;
-
 
 import javax.swing.*;
+import java.io.IOException;
 
 public class AdminLoginController {
 
