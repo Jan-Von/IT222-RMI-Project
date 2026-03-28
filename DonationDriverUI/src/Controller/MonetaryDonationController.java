@@ -200,7 +200,7 @@ public class MonetaryDonationController {
                 } catch (IOException ignored) {
                     /* non-critical */ }
 
-                logMonetaryDonation(selectedDrive, amount, transactionId, photoBase64);
+                // logMonetaryDonation(selectedDrive, amount, transactionId, photoBase64);
 
                 javax.swing.JOptionPane.showMessageDialog(
                         view.frame,
@@ -270,90 +270,15 @@ public class MonetaryDonationController {
         view.frame.dispose();
     }
 
-    private static File getMonetaryXmlFile() {
-        File cwd = new File(System.getProperty("user.dir"));
-        for (File dir = cwd; dir != null; dir = dir.getParentFile()) {
-            File candidate = new File(dir, MONETARY_XML_RELATIVE);
-            if (candidate.exists())
-                return candidate;
-            File donationDriverDir = new File(dir, "DonationDriverUI");
-            if (donationDriverDir.isDirectory())
-                return new File(donationDriverDir, "Monetary Donations.xml");
-        }
-        return new File(cwd, MONETARY_XML_RELATIVE);
-    }
 
+    // removed GetMonetaryXMLFIle
     /**
      * Append a monetary donation entry into Monetary Donations.xml.
      * Logs drive, amount, unique transaction id, and running total donated.
      * Optionally includes photoBase64 when a photo was attached.
      */
-    private void logMonetaryDonation(String driveName, double amount, String transactionId, String photoBase64) {
-        try {
-            File file = getMonetaryXmlFile();
 
-            Document doc;
-            if (file.exists()) {
-                doc = loadDocument(file);
-            } else {
-                DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-                DocumentBuilder db = dbf.newDocumentBuilder();
-                doc = db.newDocument();
-                doc.appendChild(doc.createElement("monetaryDonations"));
-            }
-
-            Element root = doc.getDocumentElement();
-            if (root == null || !"monetaryDonations".equals(root.getTagName())) {
-                root = doc.createElement("monetaryDonations");
-                doc.appendChild(root);
-            }
-
-            // Compute existing total amount
-            double existingTotal = 0.0;
-            org.w3c.dom.NodeList donations = root.getElementsByTagName("donation");
-            for (int i = 0; i < donations.getLength(); i++) {
-                org.w3c.dom.Element d = (org.w3c.dom.Element) donations.item(i);
-                org.w3c.dom.NodeList amountNodes = d.getElementsByTagName("amount");
-                if (amountNodes.getLength() > 0) {
-                    String text = amountNodes.item(0).getTextContent();
-                    if (text != null && !text.trim().isEmpty()) {
-                        try {
-                            existingTotal += Double.parseDouble(text.trim());
-                        } catch (NumberFormatException ignored) {
-                        }
-                    }
-                }
-            }
-
-            double newTotal = existingTotal + amount;
-
-            Element donationEl = doc.createElement("donation");
-
-            // Optional: who donated (if logged in)
-            String userEmail = LoginController.currentUserEmail != null
-                    ? LoginController.currentUserEmail
-                    : "guest@donationdriver";
-
-            appendChildText(doc, donationEl, "userEmail", userEmail);
-            appendChildText(doc, donationEl, "drive", driveName);
-            appendChildText(doc, donationEl, "transactionId", transactionId);
-            appendChildText(doc, donationEl, "amount", String.valueOf(amount));
-
-            // Optional: simple timestamp
-            String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-            appendChildText(doc, donationEl, "timestamp", timestamp);
-            appendChildText(doc, donationEl, "runningTotal", String.valueOf(newTotal));
-            if (photoBase64 != null && !photoBase64.isEmpty()) {
-                appendChildText(doc, donationEl, "photoBase64", photoBase64);
-            }
-
-            root.appendChild(donationEl);
-            writeDocument(doc, file);
-        } catch (Exception e) {
-            // For now, just print the stack trace; donation flow should still continue.
-            e.printStackTrace();
-        }
-    }
+    // removed logMonetaryDonation Class
 
     private static Document loadDocument(File file) throws Exception {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
@@ -361,20 +286,8 @@ public class MonetaryDonationController {
         return db.parse(file);
     }
 
-    private static void writeDocument(Document doc, File file) throws Exception {
-        File parent = file.getParentFile();
-        if (parent != null) {
-            parent.mkdirs();
-        }
-        TransformerFactory tf = TransformerFactory.newInstance();
-        Transformer t = tf.newTransformer();
-        t.setOutputProperty(OutputKeys.INDENT, "yes");
-        t.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-        t.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-        try (FileOutputStream out = new FileOutputStream(file)) {
-            t.transform(new DOMSource(doc), new StreamResult(out));
-        }
-    }
+
+    // removed writeDocument Class
 
     private static void appendChildText(Document doc, Element parent, String tagName, String value) {
         Element el = doc.createElement(tagName);

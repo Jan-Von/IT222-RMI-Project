@@ -216,7 +216,8 @@ public class BoxDonationController {
                     }
                 }
 
-                logGoodsDonation(userId, goods, quantity, location, photoBase64);
+                // logGoodsDonation(userId, goods, quantity, location, photoBase64);
+
 
                 JOptionPane.showMessageDialog(view.frame,
                         "Donation ticket created!\n" + response.message,
@@ -262,99 +263,16 @@ public class BoxDonationController {
         view.frame.dispose();
     }
 
-    private static File getGoodsXmlFile() {
-        File cwd = new File(System.getProperty("user.dir"));
-        for (File dir = cwd; dir != null; dir = dir.getParentFile()) {
-            File candidate = new File(dir, GOODS_XML_RELATIVE);
-            if (candidate.exists())
-                return candidate;
-            File donationDriverDir = new File(dir, "DonationDriverUI");
-            if (donationDriverDir.isDirectory())
-                return new File(donationDriverDir, "Goods Donations.xml");
-        }
-        return new File(cwd, GOODS_XML_RELATIVE);
-    }
-
+    // removed getGoodsXMLFile
     /**
      * Append a goods donation entry into Goods Donations.xml.
      * Logs goods, quantity, location, and running total boxes.
      * Optionally includes photoBase64 when a photo was attached.
      */
-    private void logGoodsDonation(String userId, String goods, int quantity, String location, String photoBase64) {
-        try {
-            File file = getGoodsXmlFile();
 
-            Document doc;
-            if (file.exists()) {
-                DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-                DocumentBuilder db = dbf.newDocumentBuilder();
-                doc = db.parse(file);
-            } else {
-                DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-                DocumentBuilder db = dbf.newDocumentBuilder();
-                doc = db.newDocument();
-                doc.appendChild(doc.createElement("goodsDonations"));
-            }
+    // removed logGoodsDonation
 
-            Element root = doc.getDocumentElement();
-            if (root == null || !"goodsDonations".equals(root.getTagName())) {
-                root = doc.createElement("goodsDonations");
-                doc.appendChild(root);
-            }
-
-            // Compute existing total quantity
-            double existingTotal = 0.0;
-            org.w3c.dom.NodeList donations = root.getElementsByTagName("donation");
-            for (int i = 0; i < donations.getLength(); i++) {
-                org.w3c.dom.Element d = (org.w3c.dom.Element) donations.item(i);
-                org.w3c.dom.NodeList qtyNodes = d.getElementsByTagName("quantity");
-                if (qtyNodes.getLength() > 0) {
-                    String text = qtyNodes.item(0).getTextContent();
-                    if (text != null && !text.trim().isEmpty()) {
-                        try {
-                            existingTotal += Double.parseDouble(text.trim());
-                        } catch (NumberFormatException ignored) {
-                        }
-                    }
-                }
-            }
-
-            double newTotal = existingTotal + quantity;
-
-            Element donationEl = doc.createElement("donation");
-            appendChildText(doc, donationEl, "userEmail", userId);
-            appendChildText(doc, donationEl, "goods", goods);
-            appendChildText(doc, donationEl, "quantity", String.valueOf(quantity));
-            appendChildText(doc, donationEl, "location", location);
-
-            String timestamp = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
-            appendChildText(doc, donationEl, "timestamp", timestamp);
-            appendChildText(doc, donationEl, "runningTotalBoxes", String.valueOf(newTotal));
-            if (photoBase64 != null && !photoBase64.isEmpty()) {
-                appendChildText(doc, donationEl, "photoBase64", photoBase64);
-            }
-
-            root.appendChild(donationEl);
-            writeDocument(doc, file);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void writeDocument(Document doc, File file) throws Exception {
-        File parent = file.getParentFile();
-        if (parent != null) {
-            parent.mkdirs();
-        }
-        TransformerFactory tf = TransformerFactory.newInstance();
-        Transformer t = tf.newTransformer();
-        t.setOutputProperty(OutputKeys.INDENT, "yes");
-        t.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-        t.setOutputProperty("{http://xml.apache.org/xslt}indent-amount", "2");
-        try (FileOutputStream out = new FileOutputStream(file)) {
-            t.transform(new DOMSource(doc), new StreamResult(out));
-        }
-    }
+    // removed writedocument class
 
     private static void appendChildText(Document doc, Element parent, String tagName, String value) {
         Element el = doc.createElement(tagName);

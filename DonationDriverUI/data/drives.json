@@ -1,16 +1,1 @@
-[
-  {
-    "title": "Relief for Flood Victims",
-    "description": "Providing food and clothing to affected families",
-    "targetAmount": 50000,
-    "currentAmount": 12500,
-    "photoBase64": ""
-  },
-  {
-    "title": "School Supplies Drive",
-    "description": "Collecting supplies for students",
-    "targetAmount": 20000,
-    "currentAmount": 8000,
-    "photoBase64": ""
-  }
-]
+[{"title":"Relief for Flood Victims","description":"Providing food and clothing to affected families","targetAmount":50000.0,"currentAmount":12500.0,"photoBase64":""},{"title":"School Supplies Drive","description":"Collecting supplies for students","targetAmount":20000.0,"currentAmount":28000.0,"photoBase64":""}]
