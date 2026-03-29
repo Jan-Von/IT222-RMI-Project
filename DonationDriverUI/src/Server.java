@@ -553,7 +553,8 @@ public class Server extends JFrame implements DonationDriverService {
             if (f == null || !f.exists() || f.length() == 0) return false;
             String json = Files.readString(f.toPath(), StandardCharsets.UTF_8);
             if (json == null) return false;
-            return json.toLowerCase().contains("\"maintenanceenabled\":true");
+            String compact = json.replaceAll("\\s+", "");
+            return compact.toLowerCase().contains("\"maintenanceenabled\":true");
         } catch (Exception ignored) {
             return false;
         }
@@ -700,6 +701,7 @@ public class Server extends JFrame implements DonationDriverService {
     @Override
     public String login(String email, String password) throws RemoteException {
         if (email == null || password == null) return error("Missing email or password.");
+        maintenanceMode = isMaintenanceEnabled();
         if (maintenanceMode) return error("Server is in maintenance mode.");
         String emailNorm = email.trim().toLowerCase();
 
