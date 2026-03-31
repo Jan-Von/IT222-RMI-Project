@@ -2,7 +2,11 @@ import Network.DonationDriverService;
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.nio.file.Files;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
@@ -665,8 +669,19 @@ public class Server extends JFrame implements DonationDriverService {
         add(btnPanel, BorderLayout.SOUTH);
     }
 
-    private void log(String message) {
+    private static final DateTimeFormatter LOG_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+
+    private void log(String type, String userId, String message) {
+        String timestamp = LocalDateTime.now().format(LOG_FMT);
+        String line = "[" + timestamp + "] [" + (type == null ? "INFO" : type.toUpperCase()) + "] "+ "user=" + (userId == null || userId.isBlank() ? "SYSTEM" : userId)+ " | " + (message == null ? "" : message);
+
         SwingUtilities.invokeLater(() -> logArea.append(message + "\n"));
+
+        File logFile = new File(DATA_DIR, "server_log.txt");
+        try (FileWriter fw = new FileWriter(logFile, true);
+             PrintWriter pw = new PrintWriter(fw)) {
+            pw.println(line);
+        } catch (Exception ignored) {}
     }
 
     private void startServer() {
@@ -677,11 +692,11 @@ public class Server extends JFrame implements DonationDriverService {
             registry = LocateRegistry.createRegistry(PORT);
             UnicastRemoteObject.exportObject(this, 0);
             Naming.rebind("rmi://localhost:" + PORT + "/DonationDriverService", this);
-            log("RMI Server started and bound on port " + PORT);
+            log("INFO", "SYSTEM", "RMI Server started and bound on port " + PORT);
             startBtn.setEnabled(false);
             stopBtn.setEnabled(true);
         } catch (Exception e) {
-            log("Failed to start server: " + e.getMessage());
+            log("ERROR", "SYSTEM", "Failed to start server: " + e.getMessage());
         }
     }
 
@@ -690,11 +705,11 @@ public class Server extends JFrame implements DonationDriverService {
             Naming.unbind("rmi://localhost:" + PORT + "/DonationDriverService");
             UnicastRemoteObject.unexportObject(this, true);
             if (registry != null) UnicastRemoteObject.unexportObject(registry, true);
-            log("RMI Server stopped.");
+            log("INFO", "SYSTEM", "RMI Server stopped.");
             startBtn.setEnabled(true);
             stopBtn.setEnabled(false);
         } catch (Exception e) {
-            log("Error stopping server: " + e.getMessage());
+            log("ERROR", "SYSTEM", "Error stopping server: " + e.getMessage());
         }
     }
 
@@ -712,13 +727,16 @@ public class Server extends JFrame implements DonationDriverService {
                 String role = u.role == null ? "DONOR" : u.role;
                 synchronized (activeSessions) {
                     if (activeSessions.contains(emailNorm)) {
+                        log("AUTH", emailNorm, "Login failed: user already logged in.");
                         return error("User is already logged in.");
                     }
                     activeSessions.add(emailNorm);
                 }
+                log("AUTH", emailNorm, "Login successful. Role=" + role);
                 return ok("Login Success!", role);
             }
         }
+        log("AUTH", emailNorm, "Login failed: invalid credentials.");
         return error("Invalid email or password!");
     }
 
@@ -750,6 +768,7 @@ public class Server extends JFrame implements DonationDriverService {
         users.add(nu);
         saveList(usersFile(), users);
 
+        log("AUTH", emailNorm, "Registered successfully. Role=" + roleNorm);
         return ok("Registration successful. You can now log in.", roleNorm);
     }
 
@@ -760,6 +779,7 @@ public class Server extends JFrame implements DonationDriverService {
                 activeSessions.remove(email.trim().toLowerCase());
             }
         }
+        log("AUTH", email.trim().toLowerCase(), "Logged out.");
         return ok("Logged out.", "");
     }
 
@@ -777,9 +797,11 @@ public class Server extends JFrame implements DonationDriverService {
                 if (u != null && u.email != null && u.email.trim().toLowerCase().equals(emailNorm)) {
                     u.role = roleNorm;
                     saveList(usersFile(), users);
+                    log("CRUD", emailNorm, "Role updated to " + roleNorm);
                     return ok("Role updated.", roleNorm);
                 }
             }
+            log("CRUD", emailNorm, "updateUserRole failed: user not found.");
             return error("User not found.");
         } catch (Exception e) {
             return error("updateUserRole failed: " + e.getMessage());
@@ -834,6 +856,7 @@ public class Server extends JFrame implements DonationDriverService {
             saveList(ticketsFile(), tickets);
 
             appendServerLog("CREATE_TICKET | " + t.ticketId + " by " + t.userId);
+            log("CRUD", t.userId, "createTicket | ticketId=" + t.ticketId + " category=" + itemCategory);
             return ok("Ticket created.", "");
         } catch (Exception e) {
             return error("createTicket failed: " + e.getMessage());
@@ -888,6 +911,7 @@ public class Server extends JFrame implements DonationDriverService {
 
             StringBuilder xml = new StringBuilder();
             for (Ticket t : filtered) xml.append(ticketToXml(t));
+             log("CRUD", userId == null ? "SYSTEM" : userId, "readTickets | status=" + status + " count=" + filtered.size());
             return ok(xml.toString(), "");
         } catch (Exception e) {
             return error("readTickets failed: " + e.getMessage());
@@ -927,6 +951,7 @@ public class Server extends JFrame implements DonationDriverService {
 
                 saveList(ticketsFile(), tickets);
                 appendServerLog("UPDATE_TICKET | " + t.ticketId + " -> " + status);
+                log("CRUD", userId == null ? "SYSTEM" : userId, "updateTicket | ticketId=" + ticketId + " status=" + status);
                 return ok("Ticket updated.", "");
             }
             return error("Ticket not found.");
@@ -949,6 +974,7 @@ public class Server extends JFrame implements DonationDriverService {
                 t.pickupDateTime = pickupDateTime;
                 saveList(ticketsFile(), tickets);
                 appendServerLog("UPDATE_PICKUP_TIME | " + t.ticketId);
+                log("CRUD", userId == null ? "SYSTEM" : userId, "updateTicketPickupTime | ticketId=" + ticketId + " time=" + pickupDateTime);
                 return ok("Pickup time updated.", "");
             }
             return error("Ticket not found.");
@@ -982,6 +1008,7 @@ public class Server extends JFrame implements DonationDriverService {
 
             saveList(ticketsFile(), out);
             appendServerLog("DELETE_TICKET | " + ticketId + " reason=" + (reason == null ? "" : reason));
+            log("CRUD", userId == null ? "SYSTEM" : userId, "deleteTicket | ticketId=" + ticketId + " reason=" + (reason == null ? "" : reason));
             return ok("Ticket deleted.", "");
         } catch (Exception e) {
             return error("deleteTicket failed: " + e.getMessage());
@@ -1031,6 +1058,7 @@ public class Server extends JFrame implements DonationDriverService {
 
             saveList(drivesFile(), drives);
             appendServerLog("CREATE_DRIVE | " + title.trim());
+            log("CRUD", userId == null ? "SYSTEM" : userId, "createDonationDrive | title=" + title.trim());
             return ok("Donation drive created.", "");
         } catch (Exception e) {
             return error("createDonationDrive failed: " + e.getMessage());
@@ -1045,6 +1073,7 @@ public class Server extends JFrame implements DonationDriverService {
             List<Drive> drives = loadList(drivesFile(), Drive.class);
             StringBuilder xml = new StringBuilder();
             for (Drive d : drives) xml.append(driveToXml(d));
+            log("CRUD", "SYSTEM", "readDonationDrives | count=" + drives.size());
             return ok(xml.toString(), "");
         } catch (Exception e) {
             return error("readDonationDrives failed: " + e.getMessage());
@@ -1071,6 +1100,7 @@ public class Server extends JFrame implements DonationDriverService {
 
             saveList(drivesFile(), out);
             appendServerLog("DELETE_DRIVE | " + driveTitle);
+            log("CRUD", userId == null ? "SYSTEM" : userId, "deleteDonationDrive | title=" + driveTitle);
             return ok("Donation drive deleted.", "");
         } catch (Exception e) {
             return error("deleteDonationDrive failed: " + e.getMessage());
@@ -1107,6 +1137,7 @@ public class Server extends JFrame implements DonationDriverService {
 
             saveList(drivesFile(), drives);
             appendServerLog("UPDATE_DRIVE_AMOUNT | " + titleNorm + " +" + amount);
+            log("CRUD", "SYSTEM", "updateDriveAmount | title=" + titleNorm + " amount=" + amount);
             return ok("Drive amount updated.", "");
         } catch (Exception e) {
             return error("updateDriveAmount failed: " + e.getMessage());
@@ -1135,6 +1166,7 @@ public class Server extends JFrame implements DonationDriverService {
                     xml.append(ticketToXml(t));
                 }
             }
+            log("CRUD", "SYSTEM", "searchTickets | keyword=" + keyword);
             return ok(xml.toString(), "");
         } catch (Exception e) {
             return error("searchTickets failed: " + e.getMessage());
@@ -1155,6 +1187,7 @@ public class Server extends JFrame implements DonationDriverService {
                     xml.append(driveToXml(d));
                 }
             }
+            log("CRUD", "SYSTEM", "searchDonationDrives | keyword=" + keyword);
             return ok(xml.toString(), "");
         } catch (Exception e) {
             return error("searchDonationDrives failed: " + e.getMessage());
@@ -1184,6 +1217,7 @@ public class Server extends JFrame implements DonationDriverService {
             if (!exists) riders.add(rider);
             saveList(availableRidersFile(), riders);
             appendServerLog("RIDER_SET_AVAILABLE | " + rider);
+            log("CRUD", rider, "setRiderAvailable");
             return ok("Rider set available.", "");
         } catch (Exception e) {
             return error("setRiderAvailable failed: " + e.getMessage());
@@ -1205,6 +1239,7 @@ public class Server extends JFrame implements DonationDriverService {
             }
             saveList(availableRidersFile(), out);
             appendServerLog("RIDER_SET_UNAVAILABLE | " + rider);
+            log("CRUD", rider, "setRiderUnavailable");
             return ok("Rider set unavailable.", "");
         } catch (Exception e) {
             return error("setRiderUnavailable failed: " + e.getMessage());
@@ -1220,6 +1255,7 @@ public class Server extends JFrame implements DonationDriverService {
                 if (line == null) continue;
                 sb.append(line).append("\n");
             }
+            log("INFO", "SYSTEM", "getServerLogs | entries=" + logs.size());
             return ok(sb.toString().trim(), "");
         } catch (Exception e) {
             return error("getServerLogs failed: " + e.getMessage());
@@ -1234,6 +1270,7 @@ public class Server extends JFrame implements DonationDriverService {
             Files.writeString(new File(DATA_DIR, "server_settings.json").toPath(), json, StandardCharsets.UTF_8);
             maintenanceMode = enabled;
             appendServerLog("MAINTENANCE_MODE | enabled=" + enabled);
+            log("MAINTENANCE", "SYSTEM", "setServerMaintenanceMode | enabled=" + enabled);
             return ok("Maintenance mode updated.", "");
         } catch (Exception e) {
             return error("setServerMaintenanceMode failed: " + e.getMessage());
