@@ -946,8 +946,11 @@ public class Server extends JFrame implements DonationDriverService {
                 if (t == null || t.ticketId == null) continue;
                 if (!t.ticketId.equalsIgnoreCase(ticketId)) continue;
 
-                t.status = status;
+                //Only allow accept if ticket is still PENDING
                 if ("ACCEPTED".equalsIgnoreCase(status)) {
+                    if (!"PENDING".equalsIgnoreCase(t.status)) {
+                        return error("Ticket already claimed or no longer available!");
+                    }
                     t.riderId = riderEmail;
                 } else {
                     // Keep riderId for visibility on rider side.
@@ -955,6 +958,7 @@ public class Server extends JFrame implements DonationDriverService {
                         t.riderId = riderEmail;
                     }
                 }
+                t.status = status;
 
                 if (qualityStatus != null) t.qualityStatus = qualityStatus;
                 if (qualityReason != null) t.qualityReason = qualityReason;
