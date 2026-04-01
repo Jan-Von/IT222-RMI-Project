@@ -749,6 +749,8 @@ public class Server extends JFrame implements DonationDriverService {
     public String register(String firstName, String lastName, String middleName, String dateOfBirth,
                                String address, String phone, String email, String password, String role) throws RemoteException {
         if (email == null || password == null) return error("Missing email or password.");
+        maintenanceMode = isMaintenanceEnabled();
+        if (maintenanceMode) return error("Server is in maintenance mode.");
 
         String emailNorm = email.trim().toLowerCase();
         String roleNorm = (role == null || role.trim().isEmpty()) ? "DONOR" : role.trim().toUpperCase();
