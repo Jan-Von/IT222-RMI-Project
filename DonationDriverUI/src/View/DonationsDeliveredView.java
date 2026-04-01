@@ -14,6 +14,7 @@ public class DonationsDeliveredView {
     public JButton ActiveDeliveryButton;
     public JButton DeliveredButton;
     public JButton RejectedButton;
+    public JButton viewPhotoBtn;
     public JButton PendingButton;
     public JList<String> ticketsList;
 
@@ -164,6 +165,12 @@ public class DonationsDeliveredView {
         RejectedButton.setFocusPainted(false);
         RejectedButton.setBackground(new Color(245,245,245));
         frame.add(RejectedButton);
+
+        viewPhotoBtn = new JButton("View Photo");
+        viewPhotoBtn.setBounds(800, 100, 120, 40);
+        viewPhotoBtn.setBorderPainted(false);
+        viewPhotoBtn.setFocusPainted(false);
+        frame.add(viewPhotoBtn);
 
         DefaultListModel<String> listModel = new DefaultListModel<>();
         ticketsList = new JList<>(listModel);

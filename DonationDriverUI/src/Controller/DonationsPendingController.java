@@ -15,6 +15,7 @@ public class DonationsPendingController {
 
     private DonationsPendingView view;
     private List<String> ticketIds = new ArrayList<>();
+    private List<String> photoData = new ArrayList<>();
     private Timer refreshTimer;
 
     public DonationsPendingController(DonationsPendingView view) {
@@ -28,6 +29,7 @@ public class DonationsPendingController {
         view.DonateBtn.addActionListener(e -> openDonate());
         view.helpBtn.addActionListener(e -> openHelp());
         view.changePickupTimeBtn.addActionListener(e -> showReschedulePickupDialog());
+        view.viewPhotoBtn.addActionListener(e -> showSelectedPhoto());
 
         loadPendingTickets();
 
@@ -74,6 +76,7 @@ public class DonationsPendingController {
     private List<String> buildTicketLines(String ticketsXml) {
         List<String> lines = new ArrayList<>();
         ticketIds.clear();
+        photoData.clear();
         if (ticketsXml == null || ticketsXml.isEmpty()) {
             return lines;
         }
@@ -88,6 +91,10 @@ public class DonationsPendingController {
             String oneTicket = ticketsXml.substring(start, end + "</ticket>".length());
             String ticketId = getTag(oneTicket, "ticketId");
             ticketIds.add(ticketId != null ? ticketId : "");
+            
+            String photoBase64 = getTag(oneTicket, "photoBase64");
+            photoData.add(photoBase64 != null ? photoBase64 : "");
+
             String line = formatOneTicket(oneTicket);
             lines.add(line);
 
@@ -272,6 +279,39 @@ public class DonationsPendingController {
         dialog.pack();
         dialog.setLocationRelativeTo(view.frame);
         dialog.setVisible(true);
+    }
+
+    private void showSelectedPhoto() {
+        int idx = view.ticketsList.getSelectedIndex();
+        if (idx < 0 || idx >= photoData.size()) {
+            JOptionPane.showMessageDialog(view.frame, "Please select a donation first.");
+            return;
+        }
+
+        String base64 = photoData.get(idx);
+        if (base64 == null || base64.trim().isEmpty()) {
+            JOptionPane.showMessageDialog(view.frame, "No photo available for this donation.");
+            return;
+        }
+
+        try {
+            byte[] imgBytes = java.util.Base64.getDecoder().decode(base64);
+            Image img = Toolkit.getDefaultToolkit().createImage(imgBytes);
+
+            ImageIcon icon = new ImageIcon(img);
+            if (icon.getIconWidth() > 800) {
+                 Image scaled = img.getScaledInstance(800, -1, Image.SCALE_SMOOTH);
+                 icon = new ImageIcon(scaled);
+            }
+
+            JLabel label = new JLabel(icon);
+            JScrollPane scroll = new JScrollPane(label);
+            scroll.setPreferredSize(new Dimension(850, 600));
+
+            JOptionPane.showMessageDialog(view.frame, scroll, "Donation Photo", JOptionPane.PLAIN_MESSAGE);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(view.frame, "Error displaying photo: " + ex.getMessage());
+        }
     }
 
 }

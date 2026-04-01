@@ -732,29 +732,31 @@ public class Server extends JFrame implements DonationDriverService {
 
     @Override
     public String login(String email, String password) throws RemoteException {
-        if (email == null || password == null) return error("Missing email or password.");
-        maintenanceMode = isMaintenanceEnabled();
-        if (maintenanceMode) return error("Server is in maintenance mode.");
-        String emailNorm = email.trim().toLowerCase();
+        synchronized (FILE_LOCK) {
+            if (email == null || password == null) return error("Missing email or password.");
+            maintenanceMode = isMaintenanceEnabled();
+            if (maintenanceMode) return error("Server is in maintenance mode.");
+            String emailNorm = email.trim().toLowerCase();
 
-        List<User> users = loadUsers();
-        for (User u : users) {
-            if (u == null || u.email == null) continue;
-            if (u.email.trim().toLowerCase().equals(emailNorm) && password.equals(u.password)) {
-                String role = u.role == null ? "DONOR" : u.role;
-                synchronized (activeSessions) {
-                    if (activeSessions.contains(emailNorm)) {
-                        log("AUTH", emailNorm, "Login failed: user already logged in.");
-                        return error("User is already logged in.");
+            List<User> users = loadUsers();
+            for (User u : users) {
+                if (u == null || u.email == null) continue;
+                if (u.email.trim().toLowerCase().equals(emailNorm) && password.equals(u.password)) {
+                    String role = (u.role == null || u.role.isEmpty()) ? "DONOR" : u.role;
+                    synchronized (activeSessions) {
+                        if (activeSessions.contains(emailNorm)) {
+                            log("AUTH", emailNorm, "Login failed: user already logged in.");
+                            // return error("User is already logged in.");
+                        }
+                        activeSessions.add(emailNorm);
                     }
-                    activeSessions.add(emailNorm);
+                    log("AUTH", emailNorm, "Login successful. Role=" + role);
+                    return ok("Login Success!", role);
                 }
-                log("AUTH", emailNorm, "Login successful. Role=" + role);
-                return ok("Login Success!", role);
             }
+            log("AUTH", emailNorm, "Login failed: invalid credentials.");
+            return error("Invalid email or password!");
         }
-        log("AUTH", emailNorm, "Login failed: invalid credentials.");
-        return error("Invalid email or password!");
     }
 
     @Override
@@ -765,65 +767,71 @@ public class Server extends JFrame implements DonationDriverService {
     @Override
     public String register(String firstName, String lastName, String middleName, String dateOfBirth,
                                String address, String phone, String email, String password, String role) throws RemoteException {
-        if (email == null || password == null) return error("Missing email or password.");
-        maintenanceMode = isMaintenanceEnabled();
-        if (maintenanceMode) return error("Server is in maintenance mode.");
+        synchronized (FILE_LOCK) {
+            if (email == null || password == null) return error("Missing email or password.");
+            maintenanceMode = isMaintenanceEnabled();
+            if (maintenanceMode) return error("Server is in maintenance mode.");
 
-        String emailNorm = email.trim().toLowerCase();
-        String roleNorm = (role == null || role.trim().isEmpty()) ? "DONOR" : role.trim().toUpperCase();
+            String emailNorm = email.trim().toLowerCase();
+            String roleNorm = (role == null || role.trim().isEmpty()) ? "DONOR" : role.trim().toUpperCase();
 
-        List<User> users = loadUsers();
-        for (User u : users) {
-            if (u == null || u.email == null) continue;
-            if (u.email.trim().toLowerCase().equals(emailNorm)) {
-                return error("Email is already registered.");
+            List<User> users = loadUsers();
+            for (User u : users) {
+                if (u == null || u.email == null) continue;
+                if (u.email.trim().toLowerCase().equals(emailNorm)) {
+                    return error("Email is already registered.");
+                }
             }
+
+            User nu = new User();
+            nu.email = emailNorm;
+            nu.password = password;
+            nu.role = roleNorm;
+            users.add(nu);
+            saveList(usersFile(), users);
+
+            log("AUTH", emailNorm, "Registered successfully. Role=" + roleNorm);
+            return ok("Registration successful. You can now log in.", roleNorm);
         }
-
-        User nu = new User();
-        nu.email = emailNorm;
-        nu.password = password;
-        nu.role = roleNorm;
-        users.add(nu);
-        saveList(usersFile(), users);
-
-        log("AUTH", emailNorm, "Registered successfully. Role=" + roleNorm);
-        return ok("Registration successful. You can now log in.", roleNorm);
     }
 
     @Override
     public String logout(String email) throws RemoteException {
-        if (email != null) {
-            synchronized (activeSessions) {
-                activeSessions.remove(email.trim().toLowerCase());
+        synchronized (FILE_LOCK) {
+            if (email != null) {
+                synchronized (activeSessions) {
+                    activeSessions.remove(email.trim().toLowerCase());
+                }
             }
+            log("AUTH", email == null ? "SYSTEM" : email.trim().toLowerCase(), "Logged out.");
+            return ok("Logged out.", "");
         }
-        log("AUTH", email.trim().toLowerCase(), "Logged out.");
-        return ok("Logged out.", "");
     }
 
     @Override
     public String updateUserRole(String email, String newRole) throws RemoteException {
-        try {
-            if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
-            if (email == null || newRole == null) return error("Missing email or role.");
+        synchronized (FILE_LOCK) {
+            try {
+                if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
+                if (email == null || newRole == null) return error("Missing email or role.");
 
-            String emailNorm = email.trim().toLowerCase();
-            String roleNorm = newRole.trim().toUpperCase();
+                String emailNorm = email.trim().toLowerCase();
+                String roleNorm = newRole.trim().toUpperCase();
 
-            List<User> users = loadList(usersFile(), User.class);
-            for (User u : users) {
-                if (u != null && u.email != null && u.email.trim().toLowerCase().equals(emailNorm)) {
-                    u.role = roleNorm;
-                    saveList(usersFile(), users);
-                    log("CRUD", emailNorm, "Role updated to " + roleNorm);
-                    return ok("Role updated.", roleNorm);
+                List<User> users = loadList(usersFile(), User.class);
+                for (User u : users) {
+                    if (u != null && u.email != null && u.email.trim().toLowerCase().equals(emailNorm)) {
+                        u.role = roleNorm;
+                        saveList(usersFile(), users);
+                        log("CRUD", emailNorm, "Role updated to " + roleNorm);
+                        return ok("Role updated.", roleNorm);
+                    }
                 }
+                log("CRUD", emailNorm, "updateUserRole failed: user not found.");
+                return error("User not found.");
+            } catch (Exception e) {
+                return error("updateUserRole failed: " + e.getMessage());
             }
-            log("CRUD", emailNorm, "updateUserRole failed: user not found.");
-            return error("User not found.");
-        } catch (Exception e) {
-            return error("updateUserRole failed: " + e.getMessage());
         }
     }
 
@@ -847,38 +855,40 @@ public class Server extends JFrame implements DonationDriverService {
                                  String expirationDate, String pickupDateTime, String pickupLocation,
                                  String photoPath, String notes, String donationDrive,
                                  String deliveryDestination, String photoBase64) throws RemoteException {
-        try {
-            if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
-            if (userId == null) return error("Missing userId.");
+        synchronized (FILE_LOCK) {
+            try {
+                if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
+                if (userId == null) return error("Missing userId.");
 
-            Ticket t = new Ticket();
-            t.ticketId = generateTicketId();
-            t.userId = userId.trim();
-            t.riderId = "";
-            t.status = "PENDING";
-            t.itemCategory = itemCategory;
-            t.quantity = quantity;
-            t.condition = condition;
-            t.expirationDate = expirationDate;
-            t.pickupDateTime = pickupDateTime;
-            t.pickupLocation = pickupLocation;
-            t.photoPath = photoPath;
-            t.details = notes;
-            t.donationDrive = donationDrive;
-            t.deliveryDestination = deliveryDestination;
-            t.photoBase64 = photoBase64;
-            t.qualityStatus = "";
-            t.qualityReason = "";
+                Ticket t = new Ticket();
+                t.ticketId = generateTicketId();
+                t.userId = userId.trim();
+                t.riderId = "";
+                t.status = "PENDING";
+                t.itemCategory = itemCategory;
+                t.quantity = quantity;
+                t.condition = condition;
+                t.expirationDate = expirationDate;
+                t.pickupDateTime = pickupDateTime;
+                t.pickupLocation = pickupLocation;
+                t.photoPath = photoPath;
+                t.details = notes;
+                t.donationDrive = donationDrive;
+                t.deliveryDestination = deliveryDestination;
+                t.photoBase64 = photoBase64;
+                t.qualityStatus = "";
+                t.qualityReason = "";
 
-            List<Ticket> tickets = loadList(ticketsFile(), Ticket.class);
-            tickets.add(t);
-            saveList(ticketsFile(), tickets);
+                List<Ticket> tickets = loadList(ticketsFile(), Ticket.class);
+                tickets.add(t);
+                saveList(ticketsFile(), tickets);
 
-            appendServerLog("CREATE_TICKET | " + t.ticketId + " by " + t.userId);
-            log("CRUD", t.userId, "createTicket | ticketId=" + t.ticketId + " category=" + itemCategory);
-            return ok("Ticket created.", "");
-        } catch (Exception e) {
-            return error("createTicket failed: " + e.getMessage());
+                appendServerLog("CREATE_TICKET | " + t.ticketId + " by " + t.userId);
+                log("CRUD", t.userId, "createTicket | ticketId=" + t.ticketId + " category=" + itemCategory);
+                return ok("Ticket created.", "");
+            } catch (Exception e) {
+                return error("createTicket failed: " + e.getMessage());
+            }
         }
     }
 
@@ -889,51 +899,53 @@ public class Server extends JFrame implements DonationDriverService {
 
     @Override
     public String readTickets(String userId, String status) throws RemoteException {
-        try {
-            if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
+        synchronized (FILE_LOCK) {
+            try {
+                if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
 
-            String userNorm = (userId == null) ? "" : userId.trim();
-            boolean riderQuery = "rider".equalsIgnoreCase(userNorm);
+                String userNorm = (userId == null) ? "" : userId.trim();
+                boolean riderQuery = "rider".equalsIgnoreCase(userNorm);
 
-            List<Ticket> tickets = loadList(ticketsFile(), Ticket.class);
-            List<Ticket> filtered = new ArrayList<>();
+                List<Ticket> tickets = loadList(ticketsFile(), Ticket.class);
+                List<Ticket> filtered = new ArrayList<>();
 
-            String userRole = null;
-            if (!riderQuery && !userNorm.isEmpty()) {
-                userRole = getUserRole(userNorm);
-            }
-
-            for (Ticket t : tickets) {
-                if (t == null) continue;
-                if (status != null && (t.status == null || !t.status.equalsIgnoreCase(status))) continue;
-
-                if (riderQuery) {
-                    filtered.add(t);
-                    continue;
+                String userRole = null;
+                if (!riderQuery && !userNorm.isEmpty()) {
+                    userRole = getUserRole(userNorm);
                 }
 
-                if (userNorm.isEmpty()) {
-                    filtered.add(t);
-                    continue;
-                }
+                for (Ticket t : tickets) {
+                    if (t == null) continue;
+                    if (status != null && (t.status == null || !t.status.equalsIgnoreCase(status))) continue;
 
-                if ("RIDER".equalsIgnoreCase(userRole)) {
-                    if (t.riderId != null && t.riderId.equalsIgnoreCase(userNorm)) {
+                    if (riderQuery) {
                         filtered.add(t);
+                        continue;
                     }
-                } else {
-                    if (t.userId != null && t.userId.equalsIgnoreCase(userNorm)) {
+
+                    if (userNorm.isEmpty()) {
                         filtered.add(t);
+                        continue;
+                    }
+
+                    if ("RIDER".equalsIgnoreCase(userRole)) {
+                        if (t.riderId != null && t.riderId.equalsIgnoreCase(userNorm)) {
+                            filtered.add(t);
+                        }
+                    } else {
+                        if (t.userId != null && t.userId.equalsIgnoreCase(userNorm)) {
+                            filtered.add(t);
+                        }
                     }
                 }
-            }
 
-            StringBuilder xml = new StringBuilder();
-            for (Ticket t : filtered) xml.append(ticketToXml(t));
-             log("CRUD", userId == null ? "SYSTEM" : userId, "readTickets | status=" + status + " count=" + filtered.size());
-            return ok(xml.toString(), "");
-        } catch (Exception e) {
-            return error("readTickets failed: " + e.getMessage());
+                StringBuilder xml = new StringBuilder();
+                for (Ticket t : filtered) xml.append(ticketToXml(t));
+                log("CRUD", userId == null ? "SYSTEM" : userId, "readTickets | status=" + status + " count=" + filtered.size());
+                return ok(xml.toString(), "");
+            } catch (Exception e) {
+                return error("readTickets failed: " + e.getMessage());
+            }
         }
     }
 
@@ -944,71 +956,75 @@ public class Server extends JFrame implements DonationDriverService {
 
     @Override
     public String updateTicket(String userId, String ticketId, String status, String qualityStatus, String qualityReason) throws RemoteException {
-        try {
-            if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
-            if (ticketId == null) return error("Missing ticketId.");
+        synchronized (FILE_LOCK) {
+            try {
+                if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
+                if (ticketId == null) return error("Missing ticketId.");
 
-            String riderEmail = userId == null ? "" : userId.trim();
-            List<Ticket> tickets = loadList(ticketsFile(), Ticket.class);
+                String riderEmail = userId == null ? "" : userId.trim();
+                List<Ticket> tickets = loadList(ticketsFile(), Ticket.class);
 
-            for (Ticket t : tickets) {
-                if (t == null || t.ticketId == null) continue;
-                if (!t.ticketId.equalsIgnoreCase(ticketId)) continue;
+                for (Ticket t : tickets) {
+                    if (t == null || t.ticketId == null) continue;
+                    if (!t.ticketId.equalsIgnoreCase(ticketId)) continue;
 
-                //Only allow accept if ticket is still PENDING
-                if ("ACCEPTED".equalsIgnoreCase(status)) {
-                    if (!"PENDING".equalsIgnoreCase(t.status)) {
-                        return error("Ticket already claimed or no longer available!");
-                    }
-                    t.riderId = riderEmail;
-                } else {
-                    // Keep riderId for visibility on rider side.
-                    if (t.riderId == null || t.riderId.trim().isEmpty()) {
+                    //Only allow accept if ticket is still PENDING
+                    if ("ACCEPTED".equalsIgnoreCase(status)) {
+                        if (!"PENDING".equalsIgnoreCase(t.status)) {
+                            return error("Ticket already claimed or no longer available!");
+                        }
                         t.riderId = riderEmail;
+                    } else {
+                        // Keep riderId for visibility on rider side.
+                        if (t.riderId == null || t.riderId.trim().isEmpty()) {
+                            t.riderId = riderEmail;
+                        }
                     }
+                    t.status = status;
+
+                    if (qualityStatus != null) t.qualityStatus = qualityStatus;
+                    if (qualityReason != null) t.qualityReason = qualityReason;
+
+                    saveList(ticketsFile(), tickets);
+                    appendServerLog("UPDATE_TICKET | " + t.ticketId + " -> " + status);
+                    log("CRUD", userId == null ? "SYSTEM" : userId, "updateTicket | ticketId=" + ticketId + " status=" + status);
+
+                    // Requirement 8: Archive accepted donations
+                    if ("ACCEPTED".equalsIgnoreCase(status) || "DELIVERED".equalsIgnoreCase(status) || "REJECTED".equalsIgnoreCase(status) || "CANCELLED".equalsIgnoreCase(status)) {
+                        archiveTicket(ticketId);
+                    }
+
+                    return ok("Ticket updated and archived.", "");
                 }
-                t.status = status;
-
-                if (qualityStatus != null) t.qualityStatus = qualityStatus;
-                if (qualityReason != null) t.qualityReason = qualityReason;
-
-                saveList(ticketsFile(), tickets);
-                appendServerLog("UPDATE_TICKET | " + t.ticketId + " -> " + status);
-                log("CRUD", userId == null ? "SYSTEM" : userId, "updateTicket | ticketId=" + ticketId + " status=" + status);
-
-                // Requirement 8: Archive accepted donations
-                if ("ACCEPTED".equalsIgnoreCase(status) || "DELIVERED".equalsIgnoreCase(status) || "REJECTED".equalsIgnoreCase(status) || "CANCELLED".equalsIgnoreCase(status)) {
-                    archiveTicket(ticketId);
-                }
-
-                return ok("Ticket updated and archived.", "");
+                return error("Ticket not found.");
+            } catch (Exception e) {
+                return error("updateTicket failed: " + e.getMessage());
             }
-            return error("Ticket not found.");
-        } catch (Exception e) {
-            return error("updateTicket failed: " + e.getMessage());
         }
     }
 
     @Override
     public String updateTicketPickupTime(String userId, String ticketId, String pickupDateTime) throws RemoteException {
-        try {
-            if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
-            if (ticketId == null) return error("Missing ticketId.");
+        synchronized (FILE_LOCK) {
+            try {
+                if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
+                if (ticketId == null) return error("Missing ticketId.");
 
-            List<Ticket> tickets = loadList(ticketsFile(), Ticket.class);
-            for (Ticket t : tickets) {
-                if (t == null || t.ticketId == null) continue;
-                if (!t.ticketId.equalsIgnoreCase(ticketId)) continue;
+                List<Ticket> tickets = loadList(ticketsFile(), Ticket.class);
+                for (Ticket t : tickets) {
+                    if (t == null || t.ticketId == null) continue;
+                    if (!t.ticketId.equalsIgnoreCase(ticketId)) continue;
 
-                t.pickupDateTime = pickupDateTime;
-                saveList(ticketsFile(), tickets);
-                appendServerLog("UPDATE_PICKUP_TIME | " + t.ticketId);
-                log("CRUD", userId == null ? "SYSTEM" : userId, "updateTicketPickupTime | ticketId=" + ticketId + " time=" + pickupDateTime);
-                return ok("Pickup time updated.", "");
+                    t.pickupDateTime = pickupDateTime;
+                    saveList(ticketsFile(), tickets);
+                    appendServerLog("UPDATE_PICKUP_TIME | " + t.ticketId);
+                    log("CRUD", userId == null ? "SYSTEM" : userId, "updateTicketPickupTime | ticketId=" + ticketId + " time=" + pickupDateTime);
+                    return ok("Pickup time updated.", "");
+                }
+                return error("Ticket not found.");
+            } catch (Exception e) {
+                return error("updateTicketPickupTime failed: " + e.getMessage());
             }
-            return error("Ticket not found.");
-        } catch (Exception e) {
-            return error("updateTicketPickupTime failed: " + e.getMessage());
         }
     }
 
@@ -1019,28 +1035,30 @@ public class Server extends JFrame implements DonationDriverService {
 
     @Override
     public String deleteTicket(String userId, String ticketId, String reason) throws RemoteException {
-        try {
-            if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
-            if (ticketId == null) return error("Missing ticketId.");
+        synchronized (FILE_LOCK) {
+            try {
+                if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
+                if (ticketId == null) return error("Missing ticketId.");
 
-            List<Ticket> tickets = loadList(ticketsFile(), Ticket.class);
-            List<Ticket> out = new ArrayList<>();
-            boolean removed = false;
-            for (Ticket t : tickets) {
-                if (t != null && t.ticketId != null && t.ticketId.equalsIgnoreCase(ticketId)) {
-                    removed = true;
-                } else {
-                    out.add(t);
+                List<Ticket> tickets = loadList(ticketsFile(), Ticket.class);
+                List<Ticket> out = new ArrayList<>();
+                boolean removed = false;
+                for (Ticket t : tickets) {
+                    if (t != null && t.ticketId != null && t.ticketId.equalsIgnoreCase(ticketId)) {
+                        removed = true;
+                    } else {
+                        out.add(t);
+                    }
                 }
-            }
-            if (!removed) return error("Ticket not found.");
+                if (!removed) return error("Ticket not found.");
 
-            saveList(ticketsFile(), out);
-            appendServerLog("DELETE_TICKET | " + ticketId + " reason=" + (reason == null ? "" : reason));
-            log("CRUD", userId == null ? "SYSTEM" : userId, "deleteTicket | ticketId=" + ticketId + " reason=" + (reason == null ? "" : reason));
-            return ok("Ticket deleted.", "");
-        } catch (Exception e) {
-            return error("deleteTicket failed: " + e.getMessage());
+                saveList(ticketsFile(), out);
+                appendServerLog("DELETE_TICKET | " + ticketId + " reason=" + (reason == null ? "" : reason));
+                log("CRUD", userId == null ? "SYSTEM" : userId, "deleteTicket | ticketId=" + ticketId + " reason=" + (reason == null ? "" : reason));
+                return ok("Ticket deleted.", "");
+            } catch (Exception e) {
+                return error("deleteTicket failed: " + e.getMessage());
+            }
         }
     }
 
@@ -1081,180 +1099,192 @@ public class Server extends JFrame implements DonationDriverService {
 
     @Override
     public String createDonationDrive(String userId, String title, String description, String targetAmount, String photoBase64) throws RemoteException {
-        try {
-            if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
-            if (title == null) return error("Missing title.");
-
-            double target = 0.0;
+        synchronized (FILE_LOCK) {
             try {
-                if (targetAmount != null && !targetAmount.trim().isEmpty()) {
-                    target = Double.parseDouble(targetAmount.trim());
-                }
-            } catch (NumberFormatException ignored) {}
+                if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
+                if (title == null) return error("Missing title.");
 
-            List<Drive> drives = loadList(drivesFile(), Drive.class);
-            Drive existing = null;
-            for (Drive d : drives) {
-                if (d != null && d.title != null && d.title.equalsIgnoreCase(title.trim())) {
-                    existing = d;
-                    break;
-                }
-            }
+                double target = 0.0;
+                try {
+                    if (targetAmount != null && !targetAmount.trim().isEmpty()) {
+                        target = Double.parseDouble(targetAmount.trim());
+                    }
+                } catch (NumberFormatException ignored) {}
 
-            if (existing == null) {
-                Drive d = new Drive();
-                d.title = title.trim();
-                d.description = description;
-                d.targetAmount = target;
-                d.currentAmount = 0.0;
-                d.photoBase64 = photoBase64;
-                if (photoBase64 != null) {
-                    System.out.println("[SERVER] createDonationDrive: Received photo length: " + photoBase64.length());
+                List<Drive> drives = loadList(drivesFile(), Drive.class);
+                Drive existing = null;
+                for (Drive d : drives) {
+                    if (d != null && d.title != null && d.title.equalsIgnoreCase(title.trim())) {
+                        existing = d;
+                        break;
+                    }
+                }
+
+                if (existing == null) {
+                    Drive d = new Drive();
+                    d.title = title.trim();
+                    d.description = description;
+                    d.targetAmount = target;
+                    d.currentAmount = 0.0;
+                    d.photoBase64 = photoBase64;
+                    if (photoBase64 != null) {
+                        System.out.println("[SERVER] createDonationDrive: Received photo length: " + photoBase64.length());
+                    } else {
+                        System.out.println("[SERVER] createDonationDrive: No photo received.");
+                    }
+                    drives.add(d);
                 } else {
-                    System.out.println("[SERVER] createDonationDrive: No photo received.");
+                    existing.description = description;
+                    existing.targetAmount = target;
+                    existing.photoBase64 = photoBase64;
                 }
-                drives.add(d);
-            } else {
-                existing.description = description;
-                existing.targetAmount = target;
-                existing.photoBase64 = photoBase64;
-            }
 
-            saveList(drivesFile(), drives);
-            appendServerLog("CREATE_DRIVE | " + title.trim());
-            log("CRUD", userId == null ? "SYSTEM" : userId, "createDonationDrive | title=" + title.trim());
-            return ok("Donation drive created.", "");
-        } catch (Exception e) {
-            return error("createDonationDrive failed: " + e.getMessage());
+                saveList(drivesFile(), drives);
+                appendServerLog("CREATE_DRIVE | " + title.trim());
+                log("CRUD", userId == null ? "SYSTEM" : userId, "createDonationDrive | title=" + title.trim());
+                return ok("Donation drive created.", "");
+            } catch (Exception e) {
+                return error("createDonationDrive failed: " + e.getMessage());
+            }
         }
     }
 
     @Override
     public String readDonationDrives() throws RemoteException {
-        try {
-            if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
+        synchronized (FILE_LOCK) {
+            try {
+                if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
 
-            List<Drive> drives = loadList(drivesFile(), Drive.class);
-            StringBuilder xml = new StringBuilder();
-            for (Drive d : drives) xml.append(driveToXml(d));
-            log("CRUD", "SYSTEM", "readDonationDrives | count=" + drives.size());
-            return ok(xml.toString(), "");
-        } catch (Exception e) {
-            return error("readDonationDrives failed: " + e.getMessage());
+                List<Drive> drives = loadList(drivesFile(), Drive.class);
+                StringBuilder xml = new StringBuilder();
+                for (Drive d : drives) xml.append(driveToXml(d));
+                log("CRUD", "SYSTEM", "readDonationDrives | count=" + drives.size());
+                return ok(xml.toString(), "");
+            } catch (Exception e) {
+                return error("readDonationDrives failed: " + e.getMessage());
+            }
         }
     }
 
     @Override
     public String deleteDonationDrive(String userId, String driveTitle) throws RemoteException {
-        try {
-            if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
-            if (driveTitle == null) return error("Missing driveTitle.");
+        synchronized (FILE_LOCK) {
+            try {
+                if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
+                if (driveTitle == null) return error("Missing driveTitle.");
 
-            List<Drive> drives = loadList(drivesFile(), Drive.class);
-            List<Drive> out = new ArrayList<>();
-            boolean removed = false;
-            for (Drive d : drives) {
-                if (d != null && d.title != null && d.title.equalsIgnoreCase(driveTitle.trim())) {
-                    removed = true;
-                } else {
-                    out.add(d);
+                List<Drive> drives = loadList(drivesFile(), Drive.class);
+                List<Drive> out = new ArrayList<>();
+                boolean removed = false;
+                for (Drive d : drives) {
+                    if (d != null && d.title != null && d.title.equalsIgnoreCase(driveTitle.trim())) {
+                        removed = true;
+                    } else {
+                        out.add(d);
+                    }
                 }
-            }
-            if (!removed) return error("Donation drive not found.");
+                if (!removed) return error("Donation drive not found.");
 
-            saveList(drivesFile(), out);
-            appendServerLog("DELETE_DRIVE | " + driveTitle);
-            log("CRUD", userId == null ? "SYSTEM" : userId, "deleteDonationDrive | title=" + driveTitle);
-            return ok("Donation drive deleted.", "");
-        } catch (Exception e) {
-            return error("deleteDonationDrive failed: " + e.getMessage());
+                saveList(drivesFile(), out);
+                appendServerLog("DELETE_DRIVE | " + driveTitle);
+                log("CRUD", userId == null ? "SYSTEM" : userId, "deleteDonationDrive | title=" + driveTitle);
+                return ok("Donation drive deleted.", "");
+            } catch (Exception e) {
+                return error("deleteDonationDrive failed: " + e.getMessage());
+            }
         }
     }
 
     @Override
     public String updateDriveAmount(String driveTitle, double amount) throws RemoteException {
-        try {
-            if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
-            if (driveTitle == null) return error("Missing driveTitle.");
+        synchronized (FILE_LOCK) {
+            try {
+                if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
+                if (driveTitle == null) return error("Missing driveTitle.");
 
-            String titleNorm = driveTitle.trim();
-            List<Drive> drives = loadList(drivesFile(), Drive.class);
-            Drive existing = null;
-            for (Drive d : drives) {
-                if (d != null && d.title != null && d.title.equalsIgnoreCase(titleNorm)) {
-                    existing = d;
-                    break;
+                String titleNorm = driveTitle.trim();
+                List<Drive> drives = loadList(drivesFile(), Drive.class);
+                Drive existing = null;
+                for (Drive d : drives) {
+                    if (d != null && d.title != null && d.title.equalsIgnoreCase(titleNorm)) {
+                        existing = d;
+                        break;
+                    }
                 }
-            }
 
-            if (existing == null) {
-                Drive d = new Drive();
-                d.title = titleNorm;
-                d.description = "";
-                d.targetAmount = 0.0;
-                d.currentAmount = amount;
-                d.photoBase64 = "";
-                drives.add(d);
-            } else {
-                existing.currentAmount += amount;
-            }
+                if (existing == null) {
+                    Drive d = new Drive();
+                    d.title = titleNorm;
+                    d.description = "";
+                    d.targetAmount = 0.0;
+                    d.currentAmount = amount;
+                    d.photoBase64 = "";
+                    drives.add(d);
+                } else {
+                    existing.currentAmount += amount;
+                }
 
-            saveList(drivesFile(), drives);
-            appendServerLog("UPDATE_DRIVE_AMOUNT | " + titleNorm + " +" + amount);
-            log("CRUD", "SYSTEM", "updateDriveAmount | title=" + titleNorm + " amount=" + amount);
-            return ok("Drive amount updated.", "");
-        } catch (Exception e) {
-            return error("updateDriveAmount failed: " + e.getMessage());
+                saveList(drivesFile(), drives);
+                appendServerLog("UPDATE_DRIVE_AMOUNT | " + titleNorm + " +" + amount);
+                log("CRUD", "SYSTEM", "updateDriveAmount | title=" + titleNorm + " amount=" + amount);
+                return ok("Drive amount updated.", "");
+            } catch (Exception e) {
+                return error("updateDriveAmount failed: " + e.getMessage());
+            }
         }
     }
 
     @Override
     public String searchTickets(String keyword) throws RemoteException {
-        try {
-            if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
-            String kw = keyword == null ? "" : keyword.trim().toLowerCase();
+        synchronized (FILE_LOCK) {
+            try {
+                if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
+                String kw = keyword == null ? "" : keyword.trim().toLowerCase();
 
-            List<Ticket> tickets = loadList(ticketsFile(), Ticket.class);
-            StringBuilder xml = new StringBuilder();
-            for (Ticket t : tickets) {
-                if (t == null) continue;
-                if (containsIgnoreCase(t.ticketId, kw)
-                        || containsIgnoreCase(t.userId, kw)
-                        || containsIgnoreCase(t.riderId, kw)
-                        || containsIgnoreCase(t.status, kw)
-                        || containsIgnoreCase(t.itemCategory, kw)
-                        || containsIgnoreCase(t.details, kw)
-                        || containsIgnoreCase(t.donationDrive, kw)
-                        || containsIgnoreCase(t.deliveryDestination, kw)
-                        || containsIgnoreCase(t.pickupLocation, kw)) {
-                    xml.append(ticketToXml(t));
+                List<Ticket> tickets = loadList(ticketsFile(), Ticket.class);
+                StringBuilder xml = new StringBuilder();
+                for (Ticket t : tickets) {
+                    if (t == null) continue;
+                    if (containsIgnoreCase(t.ticketId, kw)
+                            || containsIgnoreCase(t.userId, kw)
+                            || containsIgnoreCase(t.riderId, kw)
+                            || containsIgnoreCase(t.status, kw)
+                            || containsIgnoreCase(t.itemCategory, kw)
+                            || containsIgnoreCase(t.details, kw)
+                            || containsIgnoreCase(t.donationDrive, kw)
+                            || containsIgnoreCase(t.deliveryDestination, kw)
+                            || containsIgnoreCase(t.pickupLocation, kw)) {
+                        xml.append(ticketToXml(t));
+                    }
                 }
+                log("CRUD", "SYSTEM", "searchTickets | keyword=" + keyword);
+                return ok(xml.toString(), "");
+            } catch (Exception e) {
+                return error("searchTickets failed: " + e.getMessage());
             }
-            log("CRUD", "SYSTEM", "searchTickets | keyword=" + keyword);
-            return ok(xml.toString(), "");
-        } catch (Exception e) {
-            return error("searchTickets failed: " + e.getMessage());
         }
     }
 
     @Override
     public String searchDonationDrives(String keyword) throws RemoteException {
-        try {
-            if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
-            String kw = keyword == null ? "" : keyword.trim().toLowerCase();
+        synchronized (FILE_LOCK) {
+            try {
+                if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
+                String kw = keyword == null ? "" : keyword.trim().toLowerCase();
 
-            List<Drive> drives = loadList(drivesFile(), Drive.class);
-            StringBuilder xml = new StringBuilder();
-            for (Drive d : drives) {
-                if (d == null) continue;
-                if (containsIgnoreCase(d.title, kw) || containsIgnoreCase(d.description, kw)) {
-                    xml.append(driveToXml(d));
+                List<Drive> drives = loadList(drivesFile(), Drive.class);
+                StringBuilder xml = new StringBuilder();
+                for (Drive d : drives) {
+                    if (d == null) continue;
+                    if (containsIgnoreCase(d.title, kw) || containsIgnoreCase(d.description, kw)) {
+                        xml.append(driveToXml(d));
+                    }
                 }
+                log("CRUD", "SYSTEM", "searchDonationDrives | keyword=" + keyword);
+                return ok(xml.toString(), "");
+            } catch (Exception e) {
+                return error("searchDonationDrives failed: " + e.getMessage());
             }
-            log("CRUD", "SYSTEM", "searchDonationDrives | keyword=" + keyword);
-            return ok(xml.toString(), "");
-        } catch (Exception e) {
-            return error("searchDonationDrives failed: " + e.getMessage());
         }
     }
 
@@ -1265,48 +1295,52 @@ public class Server extends JFrame implements DonationDriverService {
 
     @Override
     public String setRiderAvailable(String userId) throws RemoteException {
-        try {
-            if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
-            if (userId == null || userId.trim().isEmpty()) return error("Missing userId.");
+        synchronized (FILE_LOCK) {
+            try {
+                if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
+                if (userId == null || userId.trim().isEmpty()) return error("Missing userId.");
 
-            List<String> riders = loadList(availableRidersFile(), String.class);
-            String rider = userId.trim();
-            boolean exists = false;
-            for (String r : riders) {
-                if (r != null && r.equalsIgnoreCase(rider)) {
-                    exists = true;
-                    break;
+                List<String> riders = loadList(availableRidersFile(), String.class);
+                String rider = userId.trim();
+                boolean exists = false;
+                for (String r : riders) {
+                    if (r != null && r.equalsIgnoreCase(rider)) {
+                        exists = true;
+                        break;
+                    }
                 }
+                if (!exists) riders.add(rider);
+                saveList(availableRidersFile(), riders);
+                appendServerLog("RIDER_SET_AVAILABLE | " + rider);
+                log("CRUD", rider, "setRiderAvailable");
+                return ok("Rider set available.", "");
+            } catch (Exception e) {
+                return error("setRiderAvailable failed: " + e.getMessage());
             }
-            if (!exists) riders.add(rider);
-            saveList(availableRidersFile(), riders);
-            appendServerLog("RIDER_SET_AVAILABLE | " + rider);
-            log("CRUD", rider, "setRiderAvailable");
-            return ok("Rider set available.", "");
-        } catch (Exception e) {
-            return error("setRiderAvailable failed: " + e.getMessage());
         }
     }
 
     @Override
     public String setRiderUnavailable(String userId) throws RemoteException {
-        try {
-            if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
-            if (userId == null || userId.trim().isEmpty()) return error("Missing userId.");
+        synchronized (FILE_LOCK) {
+            try {
+                if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
+                if (userId == null || userId.trim().isEmpty()) return error("Missing userId.");
 
-            String rider = userId.trim();
-            List<String> riders = loadList(availableRidersFile(), String.class);
-            List<String> out = new ArrayList<>();
-            for (String r : riders) {
-                if (r != null && r.equalsIgnoreCase(rider)) continue;
-                out.add(r);
+                String rider = userId.trim();
+                List<String> riders = loadList(availableRidersFile(), String.class);
+                List<String> out = new ArrayList<>();
+                for (String r : riders) {
+                    if (r != null && r.equalsIgnoreCase(rider)) continue;
+                    out.add(r);
+                }
+                saveList(availableRidersFile(), out);
+                appendServerLog("RIDER_SET_UNAVAILABLE | " + rider);
+                log("CRUD", rider, "setRiderUnavailable");
+                return ok("Rider set unavailable.", "");
+            } catch (Exception e) {
+                return error("setRiderUnavailable failed: " + e.getMessage());
             }
-            saveList(availableRidersFile(), out);
-            appendServerLog("RIDER_SET_UNAVAILABLE | " + rider);
-            log("CRUD", rider, "setRiderUnavailable");
-            return ok("Rider set unavailable.", "");
-        } catch (Exception e) {
-            return error("setRiderUnavailable failed: " + e.getMessage());
         }
     }
 
@@ -1328,16 +1362,18 @@ public class Server extends JFrame implements DonationDriverService {
 
     @Override
     public String setServerMaintenanceMode(boolean enabled) throws RemoteException {
-        try {
-            DATA_DIR.mkdirs();
-            String json = "{\"maintenanceEnabled\":" + (enabled ? "true" : "false") + "}";
-            Files.writeString(new File(DATA_DIR, "server_settings.json").toPath(), json, StandardCharsets.UTF_8);
-            maintenanceMode = enabled;
-            appendServerLog("MAINTENANCE_MODE | enabled=" + enabled);
-            log("MAINTENANCE", "SYSTEM", "setServerMaintenanceMode | enabled=" + enabled);
-            return ok("Maintenance mode updated.", "");
-        } catch (Exception e) {
-            return error("setServerMaintenanceMode failed: " + e.getMessage());
+        synchronized (FILE_LOCK) {
+            try {
+                DATA_DIR.mkdirs();
+                String json = "{\"maintenanceEnabled\":" + (enabled ? "true" : "false") + "}";
+                Files.writeString(new File(DATA_DIR, "server_settings.json").toPath(), json, StandardCharsets.UTF_8);
+                maintenanceMode = enabled;
+                appendServerLog("MAINTENANCE_MODE | enabled=" + enabled);
+                log("MAINTENANCE", "SYSTEM", "setServerMaintenanceMode | enabled=" + enabled);
+                return ok("Maintenance mode updated.", "");
+            } catch (Exception e) {
+                return error("setServerMaintenanceMode failed: " + e.getMessage());
+            }
         }
     }
 

@@ -16,6 +16,7 @@ public class DonationsPendingView{
     public JButton PendingButton;
     public JButton RejectedButton;
     public JButton changePickupTimeBtn;
+    public JButton viewPhotoBtn;
     public JList<String> ticketsList;
 
     public DonationsPendingView() {
@@ -171,6 +172,12 @@ public class DonationsPendingView{
         changePickupTimeBtn.setBorderPainted(false);
         changePickupTimeBtn.setFocusPainted(false);
         frame.add(changePickupTimeBtn);
+
+        viewPhotoBtn = new JButton("View Photo");
+        viewPhotoBtn.setBounds(990, 100, 120, 40);
+        viewPhotoBtn.setBorderPainted(false);
+        viewPhotoBtn.setFocusPainted(false);
+        frame.add(viewPhotoBtn);
 
         DefaultListModel<String> listModel = new DefaultListModel<>();
         ticketsList = new JList<>(listModel);

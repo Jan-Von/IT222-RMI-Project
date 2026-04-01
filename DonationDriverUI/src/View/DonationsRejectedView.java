@@ -3,7 +3,7 @@ package View;
 import javax.swing.*;
 import java.awt.*;
 
-public class DonationsRejectedView{
+public class DonationsRejectedView {
     public JFrame frame;
     public JButton notifBtn;
     public JButton donationBtn;
@@ -13,8 +13,9 @@ public class DonationsRejectedView{
     public JButton homeBtn;
     public JButton ActiveDeliveryButton;
     public JButton DeliveredButton;
-    public JButton RejectedButton;
     public JButton PendingButton;
+    public JButton RejectedButton;
+    public JButton viewPhotoBtn;
     public JList<String> ticketsList;
 
     public DonationsRejectedView() {
@@ -29,7 +30,7 @@ public class DonationsRejectedView{
 
         JPanel header = new JPanel();
         header.setLayout(null);
-        header.setBackground(new Color( 245, 245, 245));
+        header.setBackground(new Color(245, 245, 245));
         header.setBounds(0, 0, 1400, 80);
 
         ImageIcon logo = new ImageIcon("Resources/Images/logoicon.png");
@@ -110,7 +111,7 @@ public class DonationsRejectedView{
         sidebar.add(sidebarDonate);
 
         helpBtn = new JButton("Help");
-        helpBtn.setBounds(45,550,120,40);
+        helpBtn.setBounds(45, 550, 120, 40);
         helpBtn.setBorderPainted(false);
         helpBtn.setFocusPainted(false);
         helpBtn.setContentAreaFilled(false);
@@ -141,21 +142,21 @@ public class DonationsRejectedView{
         ActiveDeliveryButton.setBounds(225, 100, 120, 40);
         ActiveDeliveryButton.setBorderPainted(false);
         ActiveDeliveryButton.setFocusPainted(false);
-        ActiveDeliveryButton.setBackground(new Color(245,245,245));
+        ActiveDeliveryButton.setBackground(new Color(245, 245, 245));
         frame.add(ActiveDeliveryButton);
 
         PendingButton = new JButton("Pending");
         PendingButton.setBounds(375, 100, 120, 40);
         PendingButton.setBorderPainted(false);
         PendingButton.setFocusPainted(false);
-        PendingButton.setBackground(new Color(245,245,245));
+        PendingButton.setBackground(new Color(245, 245, 245));
         frame.add(PendingButton);
 
         DeliveredButton = new JButton("Delivered");
         DeliveredButton.setBounds(525, 100, 120, 40);
         DeliveredButton.setBorderPainted(false);
         DeliveredButton.setFocusPainted(false);
-        DeliveredButton.setBackground(new Color(245,245,245));
+        DeliveredButton.setBackground(new Color(245, 245, 245));
         frame.add(DeliveredButton);
 
         RejectedButton = new JButton("Rejected");
@@ -165,6 +166,12 @@ public class DonationsRejectedView{
         RejectedButton.setBackground(Color.lightGray);
         frame.add(RejectedButton);
 
+        viewPhotoBtn = new JButton("View Photo");
+        viewPhotoBtn.setBounds(800, 100, 120, 40);
+        viewPhotoBtn.setBorderPainted(false);
+        viewPhotoBtn.setFocusPainted(false);
+        frame.add(viewPhotoBtn);
+
         DefaultListModel<String> listModel = new DefaultListModel<>();
         ticketsList = new JList<>(listModel);
         ticketsList.setFont(new Font("Arial", Font.PLAIN, 14));
@@ -172,12 +179,6 @@ public class DonationsRejectedView{
         scrollPane.setBounds(225, 160, 900, 500);
         frame.add(scrollPane);
 
-
-
         frame.setVisible(true);
-    }
-
-    public static void main(String[] args) {
-        new DonationsRejectedView();
     }
 }
