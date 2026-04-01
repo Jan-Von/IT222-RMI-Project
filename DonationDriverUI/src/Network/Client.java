@@ -230,6 +230,9 @@ public class Client {
                     throw new IOException("Unsupported action: " + action);
             }
         } catch (RemoteException e) {
+            javax.swing.JOptionPane.showMessageDialog(null,
+                    "Server connection lost. Please verify the server is running.",
+                    "Network Error", javax.swing.JOptionPane.ERROR_MESSAGE);
             throw new IOException("RMI call failed", e);
         }
     }
@@ -241,6 +244,9 @@ public class Client {
             service = (DonationDriverService) Naming.lookup(url);
             return service;
         } catch (Exception e) {
+            javax.swing.JOptionPane.showMessageDialog(null,
+                    "Cannot contact RMI server at " + host + ":" + port + ".\nPlease make sure the server is started.",
+                    "Connection Error", javax.swing.JOptionPane.ERROR_MESSAGE);
             throw new IOException("Cannot contact RMI server at " + host + ":" + port, e);
         }
     }

@@ -33,6 +33,8 @@ public class Server extends JFrame implements DonationDriverService {
 
     // Gson init (optional at runtime; we also support a Gson-free fallback).
     private static final Object GSON = initGson();
+    
+    private static final Object FILE_LOCK = new Object();
 
     private static Object initGson() {
         try {
@@ -137,53 +139,55 @@ public class Server extends JFrame implements DonationDriverService {
         } catch (Exception ignored) {}
     }
 
-    /* ===================== Generic load/save (JSON) ===================== */
     private static <T> List<T> loadList(File file, Class<T> elementClass) {
-        if (file == null || !file.exists() || file.length() == 0) return new ArrayList<>();
-        try {
-            // Gson path (if gson exists on runtime classpath)
-            if (GSON != null) {
-                Object gson = GSON;
-                @SuppressWarnings("unchecked")
-                List<Object> rawList = (List<Object>) gson.getClass()
-                        .getMethod("fromJson", String.class, Class.class)
-                        .invoke(gson, Files.readString(file.toPath(), StandardCharsets.UTF_8), List.class);
-
-                List<T> out = new ArrayList<>();
-                for (Object rawEl : rawList) {
-                    if (rawEl == null) continue;
-                    String elJson = (String) gson.getClass().getMethod("toJson", Object.class).invoke(gson, rawEl);
+        synchronized (FILE_LOCK) {
+            if (file == null || !file.exists() || file.length() == 0) return new ArrayList<>();
+            try {
+                if (GSON != null) {
+                    Object gson = GSON;
                     @SuppressWarnings("unchecked")
-                    T converted = (T) gson.getClass()
+                    List<Object> rawList = (List<Object>) gson.getClass()
                             .getMethod("fromJson", String.class, Class.class)
-                            .invoke(gson, elJson, elementClass);
-                    out.add(converted);
+                            .invoke(gson, Files.readString(file.toPath(), StandardCharsets.UTF_8), List.class);
+    
+                    List<T> out = new ArrayList<>();
+                    for (Object rawEl : rawList) {
+                        if (rawEl == null) continue;
+                        String elJson = (String) gson.getClass().getMethod("toJson", Object.class).invoke(gson, rawEl);
+                        @SuppressWarnings("unchecked")
+                        T converted = (T) gson.getClass()
+                                .getMethod("fromJson", String.class, Class.class)
+                                .invoke(gson, elJson, elementClass);
+                        out.add(converted);
+                    }
+                    return out;
                 }
-                return out;
+    
+                // Gson-free fallback
+                return loadListFallback(file, elementClass);
+            } catch (Exception e) {
+                e.printStackTrace();
+                return new ArrayList<>();
             }
-
-            // Gson-free fallback
-            return loadListFallback(file, elementClass);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ArrayList<>();
         }
     }
 
     private static <T> void saveList(File file, List<T> list) {
-        if (file == null) return;
-        if (list == null) list = new ArrayList<>();
-        try {
-            if (GSON != null) {
-                String json = (String) GSON.getClass().getMethod("toJson", Object.class).invoke(GSON, list);
-                File parent = file.getParentFile();
-                if (parent != null) parent.mkdirs();
-                Files.writeString(file.toPath(), json, StandardCharsets.UTF_8);
-                return;
+        synchronized (FILE_LOCK) {
+            if (file == null) return;
+            if (list == null) list = new ArrayList<>();
+            try {
+                if (GSON != null) {
+                    String json = (String) GSON.getClass().getMethod("toJson", Object.class).invoke(GSON, list);
+                    File parent = file.getParentFile();
+                    if (parent != null) parent.mkdirs();
+                    Files.writeString(file.toPath(), json, StandardCharsets.UTF_8);
+                    return;
+                }
+                saveListFallback(file, list);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            saveListFallback(file, list);
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
 
@@ -552,15 +556,17 @@ public class Server extends JFrame implements DonationDriverService {
     }
 
     private static boolean isMaintenanceEnabled() {
-        try {
-            File f = serverSettingsFile();
-            if (f == null || !f.exists() || f.length() == 0) return false;
-            String json = Files.readString(f.toPath(), StandardCharsets.UTF_8);
-            if (json == null) return false;
-            String compact = json.replaceAll("\\s+", "");
-            return compact.toLowerCase().contains("\"maintenanceenabled\":true");
-        } catch (Exception ignored) {
-            return false;
+        synchronized (FILE_LOCK) {
+            try {
+                File f = serverSettingsFile();
+                if (f == null || !f.exists() || f.length() == 0) return false;
+                String json = Files.readString(f.toPath(), StandardCharsets.UTF_8);
+                if (json == null) return false;
+                String compact = json.replaceAll("\\s+", "");
+                return compact.toLowerCase().contains("\"maintenanceenabled\":true");
+            } catch (Exception ignored) {
+                return false;
+            }
         }
     }
 
@@ -677,11 +683,13 @@ public class Server extends JFrame implements DonationDriverService {
 
         SwingUtilities.invokeLater(() -> logArea.append(message + "\n"));
 
-        File logFile = new File(DATA_DIR, "server_log.txt");
-        try (FileWriter fw = new FileWriter(logFile, true);
-             PrintWriter pw = new PrintWriter(fw)) {
-            pw.println(line);
-        } catch (Exception ignored) {}
+        synchronized (FILE_LOCK) {
+            File logFile = new File(DATA_DIR, "server_log.txt");
+            try (FileWriter fw = new FileWriter(logFile, true);
+                 PrintWriter pw = new PrintWriter(fw)) {
+                pw.println(line);
+            } catch (Exception ignored) {}
+        }
     }
 
     private void startServer() {
