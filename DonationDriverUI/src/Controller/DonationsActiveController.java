@@ -14,6 +14,7 @@ public class DonationsActiveController {
 
     private DonationsActiveView view;
     private List<String> ticketIds = new ArrayList<>();
+    private Timer refreshTimer;
 
     public DonationsActiveController(DonationsActiveView view) {
         this.view = view;
@@ -28,6 +29,9 @@ public class DonationsActiveController {
         view.changePickupTimeBtn.addActionListener(e -> showReschedulePickupDialog());
 
         loadActiveTickets();
+
+        refreshTimer = new Timer(5000, e -> loadActiveTickets());
+        refreshTimer.start();
     }
     private void loadActiveTickets() {
         String userId = LoginController.currentUserEmail;
@@ -40,6 +44,8 @@ public class DonationsActiveController {
         }
 
         try {
+            int selectedIdx = view.ticketsList.getSelectedIndex();
+
             Client client = Client.getDefault();
 
             String acceptedResponseXml = client.readTickets(userId, "ACCEPTED");
@@ -85,6 +91,9 @@ public class DonationsActiveController {
             }
 
             view.ticketsList.setModel(model);
+            if (selectedIdx >= 0 && selectedIdx < model.getSize()) {
+                view.ticketsList.setSelectedIndex(selectedIdx);
+            }
 
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -151,6 +160,7 @@ public class DonationsActiveController {
     }
 
     private void openDashBoard(){
+        if (refreshTimer != null) refreshTimer.stop();
         DashboardView dashboardView = new DashboardView();
         new DashboardController(dashboardView);
         dashboardView.frame.setVisible(true);
@@ -158,6 +168,7 @@ public class DonationsActiveController {
     }
 
     private void openNotification(){
+        if (refreshTimer != null) refreshTimer.stop();
         NotificationView notificationView = new NotificationView();
         new NotificationController(notificationView);
         notificationView.frame.setVisible(true);
@@ -165,6 +176,7 @@ public class DonationsActiveController {
     }
 
     private void openDonationPending(){
+        if (refreshTimer != null) refreshTimer.stop();
         DonationsPendingView donationsPendingView = new DonationsPendingView();
         new DonationsPendingController(donationsPendingView);
         donationsPendingView.frame.setVisible(true);
@@ -172,6 +184,7 @@ public class DonationsActiveController {
     }
 
     private void openDonationsDelivered(){
+        if (refreshTimer != null) refreshTimer.stop();
         DonationsDeliveredView donationsDeliverView = new DonationsDeliveredView();
         new DonationsDeliveredController(donationsDeliverView);
         donationsDeliverView.frame.setVisible(true);
@@ -179,6 +192,7 @@ public class DonationsActiveController {
     }
 
     private void openDonationsRejected(){
+        if (refreshTimer != null) refreshTimer.stop();
         DonationsRejectedView donationsRejectedView = new DonationsRejectedView();
         new DonationsRejectedController(donationsRejectedView);
         donationsRejectedView.frame.setVisible(true);
@@ -186,6 +200,7 @@ public class DonationsActiveController {
     }
 
     private void openDonate (){
+        if (refreshTimer != null) refreshTimer.stop();
         DonateView donateView = new DonateView();
         new DonateController(donateView);
         donateView.frame.setVisible(true);
@@ -193,6 +208,7 @@ public class DonationsActiveController {
     }
 
     private void openHelp(){
+        if (refreshTimer != null) refreshTimer.stop();
         HelpView helpView = new HelpView();
         new HelpController(helpView);
         helpView.frame.setVisible(true);
