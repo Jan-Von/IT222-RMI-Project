@@ -10,6 +10,7 @@ import java.util.List;
 public class RiderRejectedController {
 
     private final RiderRejectedView view;
+    private javax.swing.Timer refreshTimer;
 
     public RiderRejectedController(RiderRejectedView view) {
         this.view = view;
@@ -23,6 +24,15 @@ public class RiderRejectedController {
         view.settingsBtn.addActionListener(e -> openSettings());
 
         loadRejectedTickets();
+
+        refreshTimer = new javax.swing.Timer(5000, e -> loadRejectedTickets());
+        refreshTimer.start();
+    }
+
+    private void stopTimer() {
+        if (refreshTimer != null) {
+            refreshTimer.stop();
+        }
     }
 
     private void loadRejectedTickets() {
@@ -94,6 +104,7 @@ public class RiderRejectedController {
     }
 
     private void openDonations() {
+        stopTimer();
         RiderAcceptedView acceptedView = new RiderAcceptedView();
         new RiderAcceptedController(acceptedView);
         acceptedView.frame.setVisible(true);
@@ -101,6 +112,7 @@ public class RiderRejectedController {
     }
 
     private void openHome() {
+        stopTimer();
         setRiderUnavailable();
         RiderDashboard riderDashboard = new RiderDashboard();
         new RiderController(riderDashboard);
@@ -109,6 +121,7 @@ public class RiderRejectedController {
     }
 
     private void openNotification() {
+        stopTimer();
         setRiderUnavailable();
         RiderNotificationView notificationView = new RiderNotificationView();
         new RiderNotificationController(notificationView);
@@ -128,6 +141,7 @@ public class RiderRejectedController {
     }
 
     private void openHelp() {
+        stopTimer();
         setRiderUnavailable();
         RiderHelpView helpView = new RiderHelpView();
         new RiderHelpController(helpView);
@@ -136,6 +150,7 @@ public class RiderRejectedController {
     }
 
     private void openAccepted() {
+        stopTimer();
         RiderAcceptedView acceptedView = new RiderAcceptedView();
         new RiderAcceptedController(acceptedView);
         acceptedView.frame.setVisible(true);
@@ -143,6 +158,7 @@ public class RiderRejectedController {
     }
 
     private void openDelivered() {
+        stopTimer();
         RiderDeliveredView deliveredView = new RiderDeliveredView();
         new RiderDeliveredController(deliveredView);
         deliveredView.frame.setVisible(true);
@@ -150,6 +166,7 @@ public class RiderRejectedController {
     }
 
     private void openSettings() {
+        stopTimer();
         setRiderUnavailable();
         SettingsView settingsView = new SettingsView();
         new SettingsController(settingsView);

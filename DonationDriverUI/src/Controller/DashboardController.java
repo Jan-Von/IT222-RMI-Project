@@ -13,6 +13,7 @@ public class DashboardController {
 
     private DashboardView view;
     private String selectedDrive = "";
+    private Timer refreshTimer;
 
     private static final String[][] HARDCODED_DRIVES = {
             { "Super Typhoon Haiyan",
@@ -42,6 +43,15 @@ public class DashboardController {
         }
 
         loadDriveCards();
+
+        refreshTimer = new Timer(5000, e -> loadDriveCards());
+        refreshTimer.start();
+    }
+
+    private void stopTimer() {
+        if (refreshTimer != null) {
+            refreshTimer.stop();
+        }
     }
 
     private void loadDriveCards() {
@@ -190,6 +200,7 @@ public class DashboardController {
     }
 
     private void openMonetaryDonation() {
+        stopTimer();
         MonetaryDonationView moneyView = new MonetaryDonationView();
         new MonetaryDonationController(moneyView, selectedDrive);
         moneyView.frame.setVisible(true);
@@ -197,6 +208,7 @@ public class DashboardController {
     }
 
     private void openBoxDonation() {
+        stopTimer();
         BoxDonationView boxView = new BoxDonationView();
         new BoxDonationController(boxView, selectedDrive);
         boxView.frame.setVisible(true);
@@ -204,6 +216,7 @@ public class DashboardController {
     }
 
     private void openNotification() {
+        stopTimer();
         NotificationView notifView = new NotificationView();
         new NotificationController(notifView);
         notifView.frame.setVisible(true);
@@ -211,6 +224,7 @@ public class DashboardController {
     }
 
     private void openDonations() {
+        stopTimer();
         DonationsActiveView donationsView = new DonationsActiveView();
         new DonationsActiveController(donationsView);
         donationsView.frame.setVisible(true);
@@ -226,6 +240,7 @@ public class DashboardController {
                     JOptionPane.INFORMATION_MESSAGE);
             return;
         }
+        stopTimer();
         RiderDashboard riderView = new RiderDashboard();
         new RiderController(riderView);
         riderView.frame.setVisible(true);
@@ -233,6 +248,7 @@ public class DashboardController {
     }
 
     private void openDonate() {
+        stopTimer();
         DonateView donateView = new DonateView();
         new DonateController(donateView);
         donateView.frame.setVisible(true);
@@ -240,6 +256,7 @@ public class DashboardController {
     }
 
     private void openHelp() {
+        stopTimer();
         HelpView helpView = new HelpView();
         new HelpController(helpView);
         helpView.frame.setVisible(true);
@@ -247,6 +264,7 @@ public class DashboardController {
     }
 
     private void openSettings() {
+        stopTimer();
         SettingsView settingsView = new SettingsView();
         new SettingsController(settingsView);
         settingsView.frame.setVisible(true);

@@ -11,6 +11,7 @@ import java.util.List;
 public class DonationsRejectedController {
 
     private DonationsRejectedView view;
+    private Timer refreshTimer;
 
     public DonationsRejectedController(DonationsRejectedView view) {
         this.view = view;
@@ -25,6 +26,15 @@ public class DonationsRejectedController {
 
 
         loadRejectedTickets();
+
+        refreshTimer = new Timer(5000, e -> loadRejectedTickets());
+        refreshTimer.start();
+    }
+
+    private void stopTimer() {
+        if (refreshTimer != null) {
+            refreshTimer.stop();
+        }
     }
 
     private void loadRejectedTickets() {
@@ -137,6 +147,7 @@ public class DonationsRejectedController {
     }
 
     private void openDashBoard(){
+        stopTimer();
         DashboardView dashboardView = new DashboardView();
         new DashboardController(dashboardView);
         dashboardView.frame.setVisible(true);
@@ -144,6 +155,7 @@ public class DonationsRejectedController {
     }
 
     private void openNotification(){
+        stopTimer();
         NotificationView notificationView = new NotificationView();
         new NotificationController(notificationView);
         notificationView.frame.setVisible(true);
@@ -151,6 +163,7 @@ public class DonationsRejectedController {
     }
 
     private void openDonationsActive(){
+        stopTimer();
         DonationsActiveView donationsactiveView = new DonationsActiveView();
         new DonationsActiveController(donationsactiveView);
         donationsactiveView.frame.setVisible(true);
@@ -158,6 +171,7 @@ public class DonationsRejectedController {
     }
 
     private void openDonationPending(){
+        stopTimer();
         DonationsPendingView donationsPendingView = new DonationsPendingView();
         new DonationsPendingController(donationsPendingView);
         donationsPendingView.frame.setVisible(true);
@@ -165,6 +179,7 @@ public class DonationsRejectedController {
     }
 
     private void openDonationsDelivered(){
+        stopTimer();
         DonationsDeliveredView donationsdeliveredView = new DonationsDeliveredView();
         new DonationsDeliveredController(donationsdeliveredView);
         donationsdeliveredView.frame.setVisible(true);
@@ -172,6 +187,7 @@ public class DonationsRejectedController {
     }
 
     private void openDonate (){
+        stopTimer();
         DonateView donateView = new DonateView();
         new DonateController(donateView);
         donateView.frame.setVisible(true);
@@ -179,6 +195,7 @@ public class DonationsRejectedController {
     }
 
     private void openHelp(){
+        stopTimer();
         HelpView helpView = new HelpView();
         new HelpController(helpView);
         helpView.frame.setVisible(true);

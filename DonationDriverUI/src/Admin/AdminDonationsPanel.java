@@ -2,14 +2,12 @@ package Admin;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
-import javax.swing.RowFilter;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-import java.util.regex.Pattern;
 import Network.Client;
 import Controller.LoginController;
 
@@ -29,6 +27,7 @@ public class AdminDonationsPanel extends JPanel {
     private JTextField searchField;
     private List<String> photoBase64ByRow = new ArrayList<>();
     private List<String> pickupDateTimeByRow = new ArrayList<>();
+    private Timer refreshTimer;
 
     public AdminDonationsPanel() {
         setLayout(new BorderLayout(16, 16));
@@ -65,6 +64,15 @@ public class AdminDonationsPanel extends JPanel {
         add(new JScrollPane(donationsTable), BorderLayout.CENTER);
         add(buildActionsPanel(), BorderLayout.SOUTH);
         refreshData();
+
+        refreshTimer = new Timer(5000, e -> refreshData());
+        refreshTimer.start();
+    }
+
+    public void stopTimer() {
+        if (refreshTimer != null) {
+            refreshTimer.stop();
+        }
     }
 
     private JPanel buildFilterPanel() {
@@ -123,23 +131,7 @@ public class AdminDonationsPanel extends JPanel {
     }
 
     private void applyTableFilter() {
-        if (tableSorter == null)
-            return;
-        List<RowFilter<Object, Object>> filters = new ArrayList<>();
-        String status = (String) statusFilterCombo.getSelectedItem();
-        if (status != null && !FILTER_STATUS_ALL.equals(status)) {
-            filters.add(RowFilter.regexFilter("^" + Pattern.quote(status) + "$", 4));
-        }
-        String search = searchField.getText();
-        if (search != null && !search.trim().isEmpty()) {
-            String pattern = "(?i).*" + Pattern.quote(search.trim()) + ".*";
-            filters.add(RowFilter.regexFilter(pattern, 0, 2));
-        }
-        if (filters.isEmpty()) {
-            tableSorter.setRowFilter(null);
-        } else {
-            tableSorter.setRowFilter(RowFilter.andFilter(filters));
-        }
+        refreshData();
     }
 
     private JPanel buildActionsPanel() {
@@ -163,7 +155,6 @@ public class AdminDonationsPanel extends JPanel {
         panel.add(acceptBtn);
         panel.add(rejectBtn);
         panel.add(rescheduleBtn);
-        panel.add(cancelBtn);
         panel.add(archiveBtn);
 
         return panel;
@@ -413,11 +404,13 @@ public class AdminDonationsPanel extends JPanel {
             photoBase64ByRow.add(null);
             pickupDateTimeByRow.add("");
         } else {
+            String statusFilter = (String) statusFilterCombo.getSelectedItem();
             for (Object[] row : rows) {
-                donationsTableModel.addRow(row);
+                if (statusFilter == null || FILTER_STATUS_ALL.equals(statusFilter) || statusFilter.equalsIgnoreCase(String.valueOf(row[4]))) {
+                    donationsTableModel.addRow(row);
+                }
             }
         }
-        applyTableFilter();
     }
 
     private List<Object[]> loadDonationsFromServer() {

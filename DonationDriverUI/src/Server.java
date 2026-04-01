@@ -107,6 +107,7 @@ public class Server extends JFrame implements DonationDriverService {
     private static File availableRidersFile() { return new File(DATA_DIR, "available_riders.json"); }
 
     private static File serverLogsFile() { return new File(DATA_DIR, "server_logs.json"); }
+    private static File archivedTicketsFile() { return new File(DATA_DIR, "archived_tickets.json"); }
     private static File serverSettingsFile() { return new File(DATA_DIR, "server_settings.json"); }
 
     private void initDataFiles() {
@@ -116,6 +117,7 @@ public class Server extends JFrame implements DonationDriverService {
         ensureEmptyArrayFile(drivesFile());
         ensureEmptyArrayFile(availableRidersFile());
         ensureEmptyArrayFile(new File(DATA_DIR, "server_logs.json"));
+        ensureEmptyArrayFile(archivedTicketsFile());
         ensureEmptyObjectFile(new File(DATA_DIR, "server_settings.json"), "{\"maintenanceEnabled\":false}");
     }
 
@@ -966,7 +968,13 @@ public class Server extends JFrame implements DonationDriverService {
                 saveList(ticketsFile(), tickets);
                 appendServerLog("UPDATE_TICKET | " + t.ticketId + " -> " + status);
                 log("CRUD", userId == null ? "SYSTEM" : userId, "updateTicket | ticketId=" + ticketId + " status=" + status);
-                return ok("Ticket updated.", "");
+
+                // Requirement 8: Archive accepted donations
+                if ("ACCEPTED".equalsIgnoreCase(status) || "DELIVERED".equalsIgnoreCase(status) || "REJECTED".equalsIgnoreCase(status) || "CANCELLED".equalsIgnoreCase(status)) {
+                    archiveTicket(ticketId);
+                }
+
+                return ok("Ticket updated and archived.", "");
             }
             return error("Ticket not found.");
         } catch (Exception e) {
@@ -1029,9 +1037,39 @@ public class Server extends JFrame implements DonationDriverService {
         }
     }
 
+    private void archiveTicket(String ticketId) {
+        synchronized (FILE_LOCK) {
+            try {
+                List<Ticket> active = loadList(ticketsFile(), Ticket.class);
+                List<Ticket> archived = loadList(archivedTicketsFile(), Ticket.class);
+                Ticket target = null;
+                List<Ticket> remaining = new ArrayList<>();
+                
+                for (Ticket t : active) {
+                    if (t != null && t.ticketId != null && t.ticketId.equalsIgnoreCase(ticketId)) {
+                        target = t;
+                    } else {
+                        remaining.add(t);
+                    }
+                }
+
+                if (target != null) {
+                    archived.add(target);
+                    saveList(ticketsFile(), remaining);
+                    saveList(archivedTicketsFile(), archived);
+                    appendServerLog("ARCHIVE_TICKET | id=" + ticketId);
+                    log("CRUD", "SYSTEM", "archiveTicket | ticket=" + ticketId);
+                }
+            } catch (Exception e) {
+                log("ERROR", "SYSTEM", "archiveTicket failed: " + e.getMessage());
+            }
+        }
+    }
+
     @Override
     public String permanentDeleteTicket(String adminUserId, String ticketId) throws RemoteException {
-        return deleteTicket(adminUserId, ticketId, "permanent");
+        archiveTicket(ticketId);
+        return ok("Ticket " + ticketId + " has been archived.", "");
     }
 
     @Override
