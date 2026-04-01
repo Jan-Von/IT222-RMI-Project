@@ -7,7 +7,11 @@ import javax.swing.border.LineBorder;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.util.Base64;
+import javax.imageio.ImageIO;
 
 public class DashboardController {
 
@@ -58,7 +62,7 @@ public class DashboardController {
         view.driveCardsPanel.removeAll();
 
         for (String[] drive : HARDCODED_DRIVES) {
-            view.driveCardsPanel.add(buildDriveCard(drive[0], drive[1]));
+            view.driveCardsPanel.add(buildDriveCard(drive[0], drive[1], null));
         }
 
         try {
@@ -79,9 +83,11 @@ public class DashboardController {
                         String driveXml = drivesXml.substring(start, end + "</drive>".length());
                         String title = extractTagValue(driveXml, "title");
                         String description = extractTagValue(driveXml, "description");
+                        String photoBase64 = extractTagValue(driveXml, "photoBase64");
                         if (title != null && !title.isEmpty()) {
                             view.driveCardsPanel.add(buildDriveCard(title,
-                                    description != null ? description : ""));
+                                    description != null ? description : "",
+                                    photoBase64));
                         }
                         idx = end + "</drive>".length();
                     }
@@ -95,7 +101,7 @@ public class DashboardController {
         view.driveCardsPanel.repaint();
     }
 
-    private JPanel buildDriveCard(String driveName, String description) {
+    private JPanel buildDriveCard(String driveName, String description, String photoBase64) {
         Color bg = new Color(20, 35, 100);
         Color hoverBg = new Color(30, 50, 140);
 
@@ -104,6 +110,21 @@ public class DashboardController {
         card.setPreferredSize(new Dimension(280, 300));
         card.setBackground(bg);
         card.setBorder(new LineBorder(Color.LIGHT_GRAY, 1));
+
+        JLabel photoLabel = null;
+        if (photoBase64 != null && !photoBase64.trim().isEmpty()) {
+            try {
+                byte[] imgBytes = Base64.getDecoder().decode(photoBase64);
+                BufferedImage img = ImageIO.read(new ByteArrayInputStream(imgBytes));
+                if (img != null) {
+                    Image scaled = img.getScaledInstance(280, 120, Image.SCALE_SMOOTH);
+                    photoLabel = new JLabel(new ImageIcon(scaled));
+                    photoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+                    card.add(photoLabel);
+                }
+            } catch (Exception ignored) {
+            }
+        }
 
         JLabel titleLabel = new JLabel("<html><center>" + driveName + "</center></html>");
         titleLabel.setForeground(Color.WHITE);

@@ -191,7 +191,8 @@ public class Client {
                     String description = unescapeXml(extractTagValue(requestXml, "description"));
                     String targetAmount = extractTagValue(requestXml, "targetAmount");
                     double amount = parseDoubleOrZero(targetAmount);
-                    return svc.createDonationDrive(userId, title, description, String.valueOf(amount), "");
+                    String drivePhoto = unescapeXml(extractCdataTag(requestXml, "photoBase64"));
+                    return svc.createDonationDrive(userId, title, description, String.valueOf(amount), drivePhoto != null ? drivePhoto : "");
                 }
                 case "READ_DONATION_DRIVES": {
                     return svc.readDonationDrives();
@@ -466,6 +467,9 @@ public class Client {
         request.append("<description>").append(escapeXml(description != null ? description : ""))
                 .append("</description>");
         request.append("<targetAmount>").append(escapeXml(targetAmount)).append("</targetAmount>");
+        if (photoBase64 != null && !photoBase64.isEmpty()) {
+            request.append("<photoBase64><![CDATA[").append(photoBase64).append("]]></photoBase64>");
+        }
         request.append("</request>");
         return sendRequest(request.toString());
     }
