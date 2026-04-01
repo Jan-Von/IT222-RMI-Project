@@ -13,6 +13,7 @@ public class RiderDashboard {
     public JButton settingsBtn;
     public JButton homeBtn;
     public JButton locUpdateBtn;
+    public JToggleButton onlineToggle;
     public JPanel cardsPanel;
     public JLabel reqCount;
     public JLabel donInHandCount;
@@ -60,6 +61,15 @@ public class RiderDashboard {
         JLabel profileIcon = new JLabel(new ImageIcon(scaledProfile));
         profileIcon.setBounds(1340, 25, 25, 25);
         header.add(profileIcon);
+
+        onlineToggle = new JToggleButton("Online (Receiving Requests)");
+        onlineToggle.setBounds(980, 20, 220, 40);
+        onlineToggle.setBackground(new Color(0, 150, 0));
+        onlineToggle.setForeground(Color.WHITE);
+        onlineToggle.setFont(new Font("Arial", Font.BOLD, 12));
+        onlineToggle.setFocusPainted(false);
+        onlineToggle.setSelected(true);
+        header.add(onlineToggle);
 
         frame.add(header);
 

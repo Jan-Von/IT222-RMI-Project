@@ -28,6 +28,18 @@ public class RiderController {
         view.locUpdateBtn.addActionListener(e -> refreshDashboard());
         view.settingsBtn.addActionListener(e -> openSettings());
 
+        view.onlineToggle.addActionListener(e -> {
+            if (view.onlineToggle.isSelected()) {
+                view.onlineToggle.setText("Online (Receiving Requests)");
+                view.onlineToggle.setBackground(new java.awt.Color(0, 150, 0));
+                setRiderAvailable();
+            } else {
+                view.onlineToggle.setText("Offline");
+                view.onlineToggle.setBackground(new java.awt.Color(150, 0, 0));
+                setRiderUnavailable();
+            }
+        });
+
         view.frame.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
