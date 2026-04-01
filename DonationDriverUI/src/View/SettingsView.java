@@ -9,8 +9,11 @@ public class SettingsView {
     public JButton homeBtn;
     public JButton logoutBtn;
 
+
     public SettingsView() {
         frame = new JFrame("DonationDriver - Settings");
+        ImageIcon frameIcon = new ImageIcon("Resources/Images/logoicon.png");
+        frame.setIconImage(frameIcon.getImage());
         frame.setSize(400, 350);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setLocationRelativeTo(null);
@@ -41,5 +44,9 @@ public class SettingsView {
         logoutBtn.setForeground(Color.WHITE);
         logoutBtn.setFocusPainted(false);
         frame.add(logoutBtn);
+    }
+
+    public static void main(String[] args) {
+       new SettingsView();
     }
 }

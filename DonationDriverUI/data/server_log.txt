@@ -25,3 +25,84 @@
 [2026-04-01 18:54:10] [INFO] user=SYSTEM | RMI Server stopped.
 [2026-04-01 18:54:38] [INFO] user=SYSTEM | RMI Server started and bound on port 5267
 [2026-04-01 18:54:41] [INFO] user=SYSTEM | RMI Server stopped.
+[2026-04-01 18:57:14] [INFO] user=SYSTEM | RMI Server started and bound on port 5267
+[2026-04-01 18:57:27] [AUTH] user=fafafa@gmail.com | Login successful. Role=RIDER
+[2026-04-01 18:57:28] [CRUD] user=fafafa@gmail.com | setRiderAvailable
+[2026-04-01 18:57:28] [CRUD] user=SYSTEM | readDonationDrives | count=2
+[2026-04-01 18:57:28] [CRUD] user=rider | readTickets | status=PENDING count=1
+[2026-04-01 18:57:28] [CRUD] user=fafafa@gmail.com | readTickets | status= count=0
+[2026-04-01 18:57:33] [CRUD] user=rider | readTickets | status=PENDING count=1
+[2026-04-01 18:57:33] [CRUD] user=fafafa@gmail.com | readTickets | status= count=0
+[2026-04-01 18:57:33] [CRUD] user=rider | readTickets | status=PENDING count=1
+[2026-04-01 18:57:33] [CRUD] user=fafafa@gmail.com | readTickets | status= count=0
+[2026-04-01 18:57:34] [CRUD] user=rider | readTickets | status=PENDING count=1
+[2026-04-01 18:57:34] [CRUD] user=fafafa@gmail.com | readTickets | status= count=0
+[2026-04-01 18:57:34] [CRUD] user=rider | readTickets | status=PENDING count=1
+[2026-04-01 18:57:34] [CRUD] user=fafafa@gmail.com | readTickets | status= count=0
+[2026-04-01 18:57:34] [CRUD] user=rider | readTickets | status=PENDING count=1
+[2026-04-01 18:57:34] [CRUD] user=fafafa@gmail.com | readTickets | status= count=0
+[2026-04-01 18:57:37] [CRUD] user=fafafa@gmail.com | setRiderUnavailable
+[2026-04-01 18:57:39] [CRUD] user=fafafa@gmail.com | setRiderAvailable
+[2026-04-01 18:57:39] [CRUD] user=SYSTEM | readDonationDrives | count=2
+[2026-04-01 18:57:39] [CRUD] user=rider | readTickets | status=PENDING count=1
+[2026-04-01 18:57:39] [CRUD] user=fafafa@gmail.com | readTickets | status= count=0
+[2026-04-01 18:57:40] [CRUD] user=fafafa@gmail.com | setRiderUnavailable
+[2026-04-01 18:57:41] [CRUD] user=fafafa@gmail.com | readTickets | status=ACCEPTED count=0
+[2026-04-01 18:57:42] [CRUD] user=fafafa@gmail.com | setRiderUnavailable
+[2026-04-01 18:57:42] [CRUD] user=fafafa@gmail.com | setRiderAvailable
+[2026-04-01 18:57:42] [CRUD] user=SYSTEM | readDonationDrives | count=2
+[2026-04-01 18:57:42] [CRUD] user=rider | readTickets | status=PENDING count=1
+[2026-04-01 18:57:42] [CRUD] user=fafafa@gmail.com | readTickets | status= count=0
+[2026-04-01 18:57:45] [CRUD] user=fafafa@gmail.com | setRiderUnavailable
+[2026-04-01 18:57:46] [CRUD] user=fafafa@gmail.com | setRiderAvailable
+[2026-04-01 18:57:47] [CRUD] user=fafafa@gmail.com | setRiderUnavailable
+[2026-04-01 18:57:51] [CRUD] user=fafafa@gmail.com | setRiderAvailable
+[2026-04-01 18:57:51] [CRUD] user=SYSTEM | readDonationDrives | count=2
+[2026-04-01 18:57:51] [CRUD] user=rider | readTickets | status=PENDING count=1
+[2026-04-01 18:57:51] [CRUD] user=fafafa@gmail.com | readTickets | status= count=0
+[2026-04-01 18:57:56] [CRUD] user=rider | readTickets | status=PENDING count=1
+[2026-04-01 18:57:56] [CRUD] user=fafafa@gmail.com | readTickets | status= count=0
+[2026-04-01 18:58:01] [CRUD] user=rider | readTickets | status=PENDING count=1
+[2026-04-01 18:58:01] [CRUD] user=fafafa@gmail.com | readTickets | status= count=0
+[2026-04-01 18:58:06] [CRUD] user=rider | readTickets | status=PENDING count=1
+[2026-04-01 18:58:06] [CRUD] user=fafafa@gmail.com | readTickets | status= count=0
+[2026-04-01 18:58:11] [CRUD] user=rider | readTickets | status=PENDING count=1
+[2026-04-01 18:58:11] [CRUD] user=fafafa@gmail.com | readTickets | status= count=0
+[2026-04-01 18:58:13] [CRUD] user=fafafa@gmail.com | setRiderUnavailable
+[2026-04-01 18:58:25] [AUTH] user=janvon@gmail.coim | Login successful. Role=DONOR
+[2026-04-01 18:58:25] [CRUD] user=SYSTEM | readDonationDrives | count=2
+[2026-04-01 18:58:30] [CRUD] user=SYSTEM | readDonationDrives | count=2
+[2026-04-01 18:58:35] [CRUD] user=SYSTEM | readDonationDrives | count=2
+[2026-04-01 18:58:40] [CRUD] user=SYSTEM | readDonationDrives | count=2
+[2026-04-01 18:58:45] [CRUD] user=SYSTEM | readDonationDrives | count=2
+[2026-04-01 18:58:50] [CRUD] user=SYSTEM | readDonationDrives | count=2
+[2026-04-01 18:58:55] [CRUD] user=SYSTEM | readDonationDrives | count=2
+[2026-04-01 18:59:03] [CRUD] user=SYSTEM | readDonationDrives | count=2
+[2026-04-01 18:59:12] [CRUD] user=SYSTEM | readDonationDrives | count=2
+[2026-04-01 18:59:34] [CRUD] user=janvon@gmail.coim | readTickets | status=ACCEPTED count=0
+[2026-04-01 18:59:34] [CRUD] user=janvon@gmail.coim | readTickets | status=PICKED_UP count=0
+[2026-04-01 18:59:36] [CRUD] user=janvon@gmail.coim | readTickets | status=PENDING count=0
+[2026-04-01 18:59:36] [CRUD] user=janvon@gmail.coim | readTickets | status=DELIVERED count=0
+[2026-04-01 18:59:36] [CRUD] user=janvon@gmail.coim | readTickets | status=REJECTED count=0
+[2026-04-01 18:59:37] [CRUD] user=janvon@gmail.coim | readTickets | status=DELIVERED count=0
+[2026-04-01 18:59:38] [CRUD] user=janvon@gmail.coim | readTickets | status=PENDING count=0
+[2026-04-01 18:59:40] [CRUD] user=janvon@gmail.coim | readTickets | status=ACCEPTED count=0
+[2026-04-01 18:59:40] [CRUD] user=janvon@gmail.coim | readTickets | status=PICKED_UP count=0
+[2026-04-01 18:59:44] [CRUD] user=janvon@gmail.coim | readTickets | status=ACCEPTED count=0
+[2026-04-01 18:59:44] [CRUD] user=janvon@gmail.coim | readTickets | status=PICKED_UP count=0
+[2026-04-01 18:59:49] [CRUD] user=janvon@gmail.coim | readTickets | status=ACCEPTED count=0
+[2026-04-01 18:59:49] [CRUD] user=janvon@gmail.coim | readTickets | status=PICKED_UP count=0
+[2026-04-01 18:59:54] [CRUD] user=janvon@gmail.coim | readTickets | status=ACCEPTED count=0
+[2026-04-01 18:59:54] [CRUD] user=janvon@gmail.coim | readTickets | status=PICKED_UP count=0
+[2026-04-01 18:59:59] [CRUD] user=janvon@gmail.coim | readTickets | status=ACCEPTED count=0
+[2026-04-01 18:59:59] [CRUD] user=janvon@gmail.coim | readTickets | status=PICKED_UP count=0
+[2026-04-01 19:00:04] [CRUD] user=janvon@gmail.coim | readTickets | status=ACCEPTED count=0
+[2026-04-01 19:00:04] [CRUD] user=janvon@gmail.coim | readTickets | status=PICKED_UP count=0
+[2026-04-01 19:00:09] [CRUD] user=janvon@gmail.coim | readTickets | status=ACCEPTED count=0
+[2026-04-01 19:00:09] [CRUD] user=janvon@gmail.coim | readTickets | status=PICKED_UP count=0
+[2026-04-01 19:00:24] [AUTH] user=janvon@gmail.coim | Login failed: user already logged in.
+[2026-04-01 19:00:30] [INFO] user=SYSTEM | RMI Server stopped.
+[2026-04-01 19:00:31] [INFO] user=SYSTEM | RMI Server started and bound on port 5267
+[2026-04-01 19:00:46] [AUTH] user=cholo | Login successful. Role=DONOR
+[2026-04-01 19:00:47] [CRUD] user=SYSTEM | readDonationDrives | count=2
+[2026-04-01 19:00:53] [CRUD] user=SYSTEM | readDonationDrives | count=2
