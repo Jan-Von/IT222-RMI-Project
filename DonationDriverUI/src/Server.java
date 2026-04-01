@@ -480,8 +480,8 @@ public class Server extends JFrame implements DonationDriverService {
     private static String xmlResponse(String status, String message, String role) {
         return "<response>"
                 + "<status>" + escapeXml(status) + "</status>"
-                + "<message>" + escapeXml(message == null ? "" : message) + "</message>"
-                + "<role>" + escapeXml(role == null ? "" : role) + "</role>"
+                + "<message><![CDATA[" + (message == null ? "" : message) + "]]></message>"
+                + "<role><![CDATA[" + (role == null ? "" : role) + "]]></role>"
                 + "</response>";
     }
 

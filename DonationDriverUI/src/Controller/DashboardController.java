@@ -61,8 +61,8 @@ public class DashboardController {
             String responseXml = client.readDonationDrives();
             Client.Response response = Client.parseResponse(responseXml);
             if (response != null && response.isOk()) {
-                String drivesXml = Client.unescapeXml(response.message);
-                if (drivesXml != null) {
+                String drivesXml = response.message;
+                if (drivesXml != null && !drivesXml.isEmpty()) {
                     int idx = 0;
                     while (true) {
                         int start = drivesXml.indexOf("<drive>", idx);

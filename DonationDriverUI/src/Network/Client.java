@@ -492,8 +492,8 @@ public class Client {
             return null;
         }
         String status = extractTagValue(responseXml, "status");
-        String message = extractTagValue(responseXml, "message");
-        String role = extractTagValue(responseXml, "role");
+        String message = extractCdataTag(responseXml, "message");
+        String role = extractCdataTag(responseXml, "role");
         return new Response(status != null ? status : "", message != null ? message : "", role != null ? role : "");
     }
 

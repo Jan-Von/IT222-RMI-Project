@@ -154,7 +154,6 @@ public class AdminHomePanel extends JPanel {
             if (ticketsXml == null || ticketsXml.isEmpty()) {
                 return m;
             }
-            ticketsXml = Client.unescapeXml(ticketsXml);
 
             int idx = 0;
             while (true) {
@@ -255,8 +254,6 @@ public class AdminHomePanel extends JPanel {
             String xml = client.readDonationDrives();
             if (xml == null || xml.isEmpty())
                 return list; // Empty or error
-
-            xml = Client.unescapeXml(xml);
 
             Client.Response resp = Client.parseResponse(xml);
             if (resp == null || !resp.isOk())
