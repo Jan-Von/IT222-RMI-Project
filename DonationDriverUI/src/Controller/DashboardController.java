@@ -19,14 +19,7 @@ public class DashboardController {
     private String selectedDrive = "";
     private Timer refreshTimer;
 
-    private static final String[][] HARDCODED_DRIVES = {
-            { "Super Typhoon Haiyan",
-                    "Super Typhoon Haiyan, as the storm plowed across the cluster of islands in the heart of country..." },
-            { "6.9 Magnitude in Cebu",
-                    "The magnitude 6.9 quake struck late Tuesday off the northern tip of Cebu island near Bago City..." },
-            { "Fire Hits Supermarket in Quezon",
-                    "A fire that reached fifth alarm gutted a Landers Supermarket branch in Barangay Pason Putik, Quezon City..." }
-    };
+
 
     public DashboardController(DashboardView view) {
         this.view = view;
@@ -61,9 +54,7 @@ public class DashboardController {
     private void loadDriveCards() {
         view.driveCardsPanel.removeAll();
 
-        for (String[] drive : HARDCODED_DRIVES) {
-            view.driveCardsPanel.add(buildDriveCard(drive[0], drive[1], null));
-        }
+        // Only server-side drives will be shown
 
         try {
             Client client = Client.getDefault();

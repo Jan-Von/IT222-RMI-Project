@@ -16,6 +16,7 @@ public class AddDonationDriveView {
     public JButton cancelBtn;
     public JButton uploadPhotoBtn;
     public JLabel photoStatusLabel;
+    public JLabel photoPreviewLabel;
     private File selectedPhotoFile;
 
     public AddDonationDriveView(JFrame parent) {
@@ -56,18 +57,32 @@ public class AddDonationDriveView {
         uploadPhotoBtn.setFont(new Font("Arial", Font.PLAIN, 12));
         photoPanel.add(uploadPhotoBtn);
         
-        photoStatusLabel = new JLabel("No photo selected");
-        photoStatusLabel.setFont(new Font("Arial", Font.PLAIN, 11));
-        photoStatusLabel.setForeground(Color.GRAY);
-        photoStatusLabel.setBorder(BorderFactory.createEmptyBorder(0, 10, 0, 0));
-        photoPanel.add(photoStatusLabel);
-        
+        photoPreviewLabel = new JLabel();
+        photoPreviewLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        photoPreviewLabel.setPreferredSize(new Dimension(100, 60));
+        photoPreviewLabel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
+        photoPreviewLabel.setVisible(false);
+        content.add(photoPreviewLabel);
+        content.add(Box.createVerticalStrut(10));
+
         uploadPhotoBtn.addActionListener(e -> {
             JFileChooser chooser = new JFileChooser();
             chooser.setFileFilter(new FileNameExtensionFilter("JPEG images", "jpg", "jpeg"));
             if (chooser.showOpenDialog(frame) == JFileChooser.APPROVE_OPTION) {
                 selectedPhotoFile = chooser.getSelectedFile();
                 photoStatusLabel.setText("Photo: " + selectedPhotoFile.getName());
+                
+                // Update preview thumbnail
+                try {
+                    ImageIcon full = new ImageIcon(selectedPhotoFile.getAbsolutePath());
+                    Image scaled = full.getImage().getScaledInstance(100, 60, Image.SCALE_SMOOTH);
+                    photoPreviewLabel.setIcon(new ImageIcon(scaled));
+                    photoPreviewLabel.setVisible(true);
+                    frame.revalidate();
+                    frame.repaint();
+                } catch (Exception ex) {
+                    photoPreviewLabel.setVisible(false);
+                }
             }
         });
         
@@ -107,6 +122,10 @@ public class AddDonationDriveView {
         selectedPhotoFile = null;
         if (photoStatusLabel != null) {
             photoStatusLabel.setText("No photo selected");
+        }
+        if (photoPreviewLabel != null) {
+            photoPreviewLabel.setIcon(null);
+            photoPreviewLabel.setVisible(false);
         }
     }
 }

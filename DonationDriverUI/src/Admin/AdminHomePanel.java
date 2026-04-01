@@ -6,6 +6,10 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import Network.Client;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayInputStream;
+import javax.imageio.ImageIO;
+import java.util.Base64;
 
 public class AdminHomePanel extends JPanel {
 
@@ -217,6 +221,7 @@ public class AdminHomePanel extends JPanel {
                     "-",
                     percentage,
                     d.description,
+                    d.photoBase64,
                     () -> deleteDrive(driveTitle)));
         }
 
@@ -240,6 +245,7 @@ public class AdminHomePanel extends JPanel {
         String description;
         double targetAmount;
         double currentAmount;
+        String photoBase64;
     }
 
     private java.util.List<Drive> loadDrivesFromServer() {
@@ -273,6 +279,7 @@ public class AdminHomePanel extends JPanel {
                 Drive d = new Drive();
                 d.title = extractTagValue(driveXml, "title");
                 d.description = extractTagValue(driveXml, "description");
+                d.photoBase64 = extractTagValue(driveXml, "photoBase64");
                 String tAmt = extractTagValue(driveXml, "targetAmount");
                 String cAmt = extractTagValue(driveXml, "currentAmount");
                 try {
@@ -290,24 +297,38 @@ public class AdminHomePanel extends JPanel {
         return list;
     }
 
-    private JPanel buildUrgentCard(String title, String monetary, String current, String incoming,
-            int progressPercent, String whatsHappening) {
-        return buildUrgentCard(title, monetary, current, incoming, progressPercent, whatsHappening, null);
-    }
+
 
     private JPanel buildUrgentCard(String title, String monetary, String current, String incoming,
-            int progressPercent, String whatsHappening, Runnable onDelete) {
+            int progressPercent, String whatsHappening, String photoBase64, Runnable onDelete) {
         Color cardBg = new Color(246, 249, 255);
         Color borderColor = new Color(200, 210, 230);
         Color hoverBg = new Color(235, 242, 252);
         Color hoverBorder = new Color(20, 35, 100);
 
         JPanel card = new JPanel();
-        card.setPreferredSize(new Dimension(220, 140));
+        card.setPreferredSize(new Dimension(220, 180)); // Increased height for photo
         card.setBackground(cardBg);
         card.setBorder(new LineBorder(borderColor, 1));
         card.setLayout(new BoxLayout(card, BoxLayout.Y_AXIS));
         card.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+
+        // Display cover photo if available
+        if (photoBase64 != null && !photoBase64.trim().isEmpty()) {
+            try {
+                byte[] bytes = Base64.getDecoder().decode(photoBase64);
+                BufferedImage img = ImageIO.read(new ByteArrayInputStream(bytes));
+                if (img != null) {
+                    Image scaled = img.getScaledInstance(220, 60, Image.SCALE_SMOOTH);
+                    JLabel photoLabel = new JLabel(new ImageIcon(scaled));
+                    photoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+                    card.add(photoLabel);
+                    card.add(Box.createVerticalStrut(4));
+                }
+            } catch (Exception ignored) {
+                // Skip photo on error
+            }
+        }
 
         JPanel topRow = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
         topRow.setOpaque(false);

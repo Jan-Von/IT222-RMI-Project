@@ -1108,6 +1108,11 @@ public class Server extends JFrame implements DonationDriverService {
                 d.targetAmount = target;
                 d.currentAmount = 0.0;
                 d.photoBase64 = photoBase64;
+                if (photoBase64 != null) {
+                    System.out.println("[SERVER] createDonationDrive: Received photo length: " + photoBase64.length());
+                } else {
+                    System.out.println("[SERVER] createDonationDrive: No photo received.");
+                }
                 drives.add(d);
             } else {
                 existing.description = description;

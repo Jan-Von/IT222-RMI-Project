@@ -99,7 +99,7 @@ public class Client {
                     String pickupLocation = unescapeXml(extractTagValue(requestXml, "pickupLocation"));
                     String photoPath = unescapeXml(extractTagValue(requestXml, "photoPath"));
                     String notes = unescapeXml(extractTagValue(requestXml, "details"));
-                    String photoBase64 = unescapeXml(extractCdataTag(requestXml, "photoBase64"));
+                    String photoBase64 = extractCdataTag(requestXml, "photoBase64");
 
                     String donationDriveRaw = extractTagValue(requestXml, "donationDrive");
                     String deliveryDestinationRaw = extractTagValue(requestXml, "deliveryDestination");
@@ -191,7 +191,7 @@ public class Client {
                     String description = unescapeXml(extractTagValue(requestXml, "description"));
                     String targetAmount = extractTagValue(requestXml, "targetAmount");
                     double amount = parseDoubleOrZero(targetAmount);
-                    String drivePhoto = unescapeXml(extractCdataTag(requestXml, "photoBase64"));
+                    String drivePhoto = extractCdataTag(requestXml, "photoBase64");
                     return svc.createDonationDrive(userId, title, description, String.valueOf(amount), drivePhoto != null ? drivePhoto : "");
                 }
                 case "READ_DONATION_DRIVES": {
