@@ -651,11 +651,13 @@ public class Server extends JFrame implements DonationDriverService {
     }
 
     public Server() throws RemoteException {
-        super("DonationDriver RMI Server");
+        super("DonationDriver - RMI Server");
         initUI();
     }
 
     private void initUI() {
+        ImageIcon frameIcon = new ImageIcon("Resources/Images/logoicon.png");
+        setIconImage(frameIcon.getImage());
         setSize(600, 400);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(new BorderLayout());
@@ -664,8 +666,12 @@ public class Server extends JFrame implements DonationDriverService {
         logArea.setEditable(false);
         add(new JScrollPane(logArea), BorderLayout.CENTER);
 
+
         JPanel btnPanel = new JPanel();
         startBtn = new JButton("Start Server");
+        startBtn.setForeground(Color.WHITE);
+        startBtn.setFocusPainted(false);
+        startBtn.setBackground(new Color(20, 35, 100));
         stopBtn = new JButton("Stop Server");
         stopBtn.setEnabled(false);
 
@@ -675,6 +681,7 @@ public class Server extends JFrame implements DonationDriverService {
         btnPanel.add(startBtn);
         btnPanel.add(stopBtn);
         add(btnPanel, BorderLayout.SOUTH);
+        setLocationRelativeTo(null);
     }
 
     private static final DateTimeFormatter LOG_FMT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");

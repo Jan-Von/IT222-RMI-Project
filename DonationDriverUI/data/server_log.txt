@@ -1,0 +1,27 @@
+[2026-04-01 18:27:35] [INFO] user=SYSTEM | RMI Server started and bound on port 5267
+[2026-04-01 18:27:46] [AUTH] user=fafafa@gmail.com | Login successful. Role=DONOR
+[2026-04-01 18:27:47] [CRUD] user=SYSTEM | readDonationDrives | count=2
+[2026-04-01 18:27:52] [CRUD] user=SYSTEM | readDonationDrives | count=2
+[2026-04-01 18:27:56] [CRUD] user=fafafa@gmail.com | readTickets | status=ACCEPTED count=0
+[2026-04-01 18:27:56] [CRUD] user=fafafa@gmail.com | readTickets | status=PICKED_UP count=0
+[2026-04-01 18:28:00] [CRUD] user=SYSTEM | readDonationDrives | count=2
+[2026-04-01 18:28:21] [CRUD] user=fafafa@gmail.com | readTickets | status=ACCEPTED count=0
+[2026-04-01 18:28:21] [CRUD] user=fafafa@gmail.com | readTickets | status=PICKED_UP count=0
+[2026-04-01 18:28:25] [CRUD] user=SYSTEM | readDonationDrives | count=2
+[2026-04-01 18:28:34] [CRUD] user=fafafa@gmail.com | Role updated to RIDER
+[2026-04-01 18:28:47] [CRUD] user=fafafa@gmail.com | Role updated to RIDER
+[2026-04-01 18:28:50] [CRUD] user=SYSTEM | readDonationDrives | count=2
+[2026-04-01 18:28:55] [CRUD] user=SYSTEM | readDonationDrives | count=2
+[2026-04-01 18:29:00] [CRUD] user=SYSTEM | readDonationDrives | count=2
+[2026-04-01 18:29:05] [CRUD] user=SYSTEM | readDonationDrives | count=2
+[2026-04-01 18:29:09] [CRUD] user=SYSTEM | readDonationDrives | count=2
+[2026-04-01 18:51:08] [INFO] user=SYSTEM | RMI Server started and bound on port 5267
+[2026-04-01 18:51:10] [INFO] user=SYSTEM | RMI Server stopped.
+[2026-04-01 18:53:40] [INFO] user=SYSTEM | RMI Server started and bound on port 5267
+[2026-04-01 18:53:43] [INFO] user=SYSTEM | RMI Server stopped.
+[2026-04-01 18:54:02] [INFO] user=SYSTEM | RMI Server started and bound on port 5267
+[2026-04-01 18:54:07] [INFO] user=SYSTEM | RMI Server stopped.
+[2026-04-01 18:54:08] [INFO] user=SYSTEM | RMI Server started and bound on port 5267
+[2026-04-01 18:54:10] [INFO] user=SYSTEM | RMI Server stopped.
+[2026-04-01 18:54:38] [INFO] user=SYSTEM | RMI Server started and bound on port 5267
+[2026-04-01 18:54:41] [INFO] user=SYSTEM | RMI Server stopped.
