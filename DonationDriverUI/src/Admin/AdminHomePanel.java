@@ -13,6 +13,8 @@ public class AdminHomePanel extends JPanel {
     private JLabel ridersOnlineValueLabel;
     private JLabel ongoingShipmentValueLabel;
     private JPanel urgentCardsPanel; // rebuild on refresh
+    private AdminLogsPanel adminLogsPanel;
+    private Timer refreshTimer;
 
     private Runnable onShowNotifications;
     private Runnable onShowDonations;
@@ -35,10 +37,33 @@ public class AdminHomePanel extends JPanel {
         main.add(buildUrgentDonations());
         main.add(Box.createVerticalStrut(GAP));
         main.add(buildBottomRow());
+        main.add(Box.createVerticalStrut(GAP));
+
+        adminLogsPanel = new AdminLogsPanel();
+        adminLogsPanel.setPreferredSize(new Dimension(800, 300));
+        adminLogsPanel.setMinimumSize(new Dimension(800, 300));
+        adminLogsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 300));
+        adminLogsPanel.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(new Color(230, 230, 235), 1),
+                BorderFactory.createEmptyBorder(14, 16, 14, 16)));
+        main.add(adminLogsPanel);
+
         main.add(Box.createVerticalGlue());
 
         add(new JScrollPane(main), BorderLayout.CENTER);
         refreshData();
+
+        refreshTimer = new Timer(5000, e -> refreshData());
+        refreshTimer.start();
+    }
+
+    public void stopTimer() {
+        if (refreshTimer != null) {
+            refreshTimer.stop();
+        }
+        if (adminLogsPanel != null) {
+            adminLogsPanel.stopTimer();
+        }
     }
 
     private JPanel buildBottomRow() {

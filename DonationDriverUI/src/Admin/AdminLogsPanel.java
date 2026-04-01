@@ -9,6 +9,7 @@ public class AdminLogsPanel extends JPanel {
 
     private JTextArea logsArea;
     private JToggleButton maintenanceToggle;
+    private Timer refreshTimer;
 
     public AdminLogsPanel() {
         setLayout(new BorderLayout(16, 16));
@@ -80,8 +81,15 @@ public class AdminLogsPanel extends JPanel {
         scrollPane.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY));
         add(scrollPane, BorderLayout.CENTER);
 
-        // Real-Time Polling Timer
-        new Timer(3000, e -> refreshData()).start();
+        // For updating real-time
+        refreshTimer = new Timer(3000, e -> refreshData());
+        refreshTimer.start();
+    }
+
+    public void stopTimer() {
+        if (refreshTimer != null) {
+            refreshTimer.stop();
+        }
     }
 
     public void refreshData() {

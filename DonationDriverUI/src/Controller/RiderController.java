@@ -14,6 +14,7 @@ import java.util.Map;
 public class RiderController {
 
     private final RiderDashboard view;
+    private Timer refreshTimer;
 
 
 
@@ -50,6 +51,9 @@ public class RiderController {
         setRiderAvailable();
         buildDriveCards(); // build cards first, then load counts
         loadDashboardData();
+
+        refreshTimer = new Timer(5000, e -> refreshDashboard());
+        refreshTimer.start();
     }
 
     private void buildDriveCards() {
@@ -232,6 +236,7 @@ public class RiderController {
     }
 
     private void openNotification() {
+        if (refreshTimer != null) refreshTimer.stop();
         setRiderUnavailable();
         RiderNotificationView notificationView = new RiderNotificationView();
         new RiderNotificationController(notificationView);
@@ -240,6 +245,7 @@ public class RiderController {
     }
 
     private void openDonations() {
+        if (refreshTimer != null) refreshTimer.stop();
         RiderAcceptedView acceptedView = new RiderAcceptedView();
         new RiderAcceptedController(acceptedView);
         acceptedView.frame.setVisible(true);
@@ -247,6 +253,7 @@ public class RiderController {
     }
 
     private void openHelp() {
+        if (refreshTimer != null) refreshTimer.stop();
         setRiderUnavailable();
         RiderHelpView helpView = new RiderHelpView();
         new RiderHelpController(helpView);
@@ -255,6 +262,7 @@ public class RiderController {
     }
 
     private void openSettings() {
+        if (refreshTimer != null) refreshTimer.stop();
         setRiderUnavailable();
         SettingsView settingsView = new SettingsView();
         new SettingsController(settingsView);

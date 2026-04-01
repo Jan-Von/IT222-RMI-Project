@@ -7,7 +7,6 @@ public class AdminDashboardView {
 
     public static final String CARD_HOME = "HOME";
     public static final String CARD_NOTIFICATIONS = "NOTIFICATIONS";
-    public static final String CARD_LOGS = "LOGS";
     public static final String CARD_DONATIONS = "DONATIONS";
 
     public JFrame frame;
@@ -25,7 +24,6 @@ public class AdminDashboardView {
 
     public AdminHomePanel homePanel;
     public AdminNotificationsPanel notificationsPanel;
-    public AdminLogsPanel logsPanel;
     public AdminDonationsPanel donationsPanel;
 
     public AdminDashboardView() {
@@ -66,6 +64,10 @@ public class AdminDashboardView {
 
         logoutBtn = new JButton("Logout");
         logoutBtn.setFocusPainted(false);
+        logoutBtn.addActionListener(e -> {
+            if (homePanel != null) homePanel.stopTimer();
+            frame.dispose();
+        });
         header.add(logoutBtn, BorderLayout.EAST);
 
         frame.add(header, BorderLayout.NORTH);
@@ -86,12 +88,10 @@ public class AdminDashboardView {
         homePanel.setOnShowNotifications(() -> showCard(CARD_NOTIFICATIONS));
         homePanel.setOnShowDonations(() -> showCard(CARD_DONATIONS));
         notificationsPanel = new AdminNotificationsPanel();
-        logsPanel = new AdminLogsPanel();
         donationsPanel = new AdminDonationsPanel();
 
         contentPanel.add(homePanel, CARD_HOME);
         contentPanel.add(notificationsPanel, CARD_NOTIFICATIONS);
-        contentPanel.add(logsPanel, CARD_LOGS);
         contentPanel.add(donationsPanel, CARD_DONATIONS);
 
         mainPanel.add(contentPanel, BorderLayout.CENTER);
@@ -110,7 +110,6 @@ public class AdminDashboardView {
 
         homeBtn = createSidebarButton("Home");
         notificationsBtn = createSidebarButton("Notifications");
-        logsBtn = createSidebarButton("Server Logs");
         donationsBtn = createSidebarButton("Donations");
         donationsBtn.setFont(new Font("Arial", Font.BOLD, 14));
         donationsBtn.setForeground(new Color(20, 35, 100));
@@ -119,14 +118,11 @@ public class AdminDashboardView {
 
         homeBtn.addActionListener(e -> showCard(CARD_HOME));
         notificationsBtn.addActionListener(e -> showCard(CARD_NOTIFICATIONS));
-        logsBtn.addActionListener(e -> showCard(CARD_LOGS));
         donationsBtn.addActionListener(e -> showCard(CARD_DONATIONS));
 
         sidebar.add(homeBtn);
         sidebar.add(Box.createVerticalStrut(10));
         sidebar.add(notificationsBtn);
-        sidebar.add(Box.createVerticalStrut(10));
-        sidebar.add(logsBtn);
         sidebar.add(Box.createVerticalStrut(10));
         sidebar.add(donationsBtn);
 
@@ -158,8 +154,6 @@ public class AdminDashboardView {
                 homePanel.refreshData();
             } else if (CARD_NOTIFICATIONS.equals(cardName) && notificationsPanel != null) {
                 notificationsPanel.refreshData();
-            } else if (CARD_LOGS.equals(cardName) && logsPanel != null) {
-                logsPanel.refreshData();
             } else if (CARD_DONATIONS.equals(cardName) && donationsPanel != null) {
                 donationsPanel.refreshData();
             }
