@@ -209,13 +209,6 @@ public class BoxDonationController {
 
             Client.Response response = Client.parseResponse(responseXml);
             if (response != null && response.isOk()) {
-                if (drive != null && !drive.isEmpty()) {
-                    try {
-                        client.updateDriveAmount(drive, quantity);
-                    } catch (Exception ignored) {
-                    }
-                }
-
                 // logGoodsDonation(userId, goods, quantity, location, photoBase64);
 
 
