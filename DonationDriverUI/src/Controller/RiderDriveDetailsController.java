@@ -60,14 +60,27 @@ public class RiderDriveDetailsController {
                         String quantity = extract(ticketXml, "quantity");
                         String location = extract(ticketXml, "pickupLocation");
                         String drive = extract(ticketXml, "donationDrive");
+                        String notes = extract(ticketXml, "notes");
 
-                        if (drive != null && (driveName == null || drive.trim().toLowerCase().contains(driveName.trim().toLowerCase()))) {
+                        boolean match = false;
+                        if (driveName == null) {
+                            match = true;
+                        } else {
+                            String target = driveName.trim().toLowerCase();
+                            if (drive != null && drive.trim().toLowerCase().contains(target)) {
+                                match = true;
+                            } else if (notes != null && notes.trim().toLowerCase().contains(target)) {
+                                match = true;
+                            }
+                        }
+
+                        if (match) {
                             filteredList.add(new RiderDashboard.TicketStub(
                                     ticketId,
-                                    category != null ? category : "Item",
+                                    category != null && !category.isEmpty() ? category : "Item",
                                     quantity != null ? quantity : "1",
                                     location != null ? location : "Location N/A",
-                                    drive));
+                                    drive != null && !drive.isEmpty() ? drive : driveName));
                         }
 
                         idx = end + "</ticket>".length();

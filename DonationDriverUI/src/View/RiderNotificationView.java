@@ -10,6 +10,7 @@ public class RiderNotificationView {
     public JButton myPickupsBtn;
     public JButton helpBtn;
     public JButton settingsBtn;
+    public JPanel notificationsPanel;
 
     public RiderNotificationView() {
         frame = new JFrame("DonationDriver - Rider Notifications");
@@ -122,16 +123,20 @@ public class RiderNotificationView {
         content.setBounds(200, 80, 1200, 720);
         content.setBackground(Color.WHITE);
 
-        // to do: load notifs dynamically
         JLabel label = new JLabel("Notifications");
         label.setFont(new Font("Arial", Font.BOLD, 24));
         label.setBounds(40, 20, 300, 30);
         content.add(label);
 
-        JLabel info = new JLabel("No new notifications.");
-        info.setFont(new Font("Arial", Font.PLAIN, 16));
-        info.setBounds(40, 70, 300, 30);
-        content.add(info);
+        notificationsPanel = new JPanel();
+        notificationsPanel.setLayout(new BoxLayout(notificationsPanel, BoxLayout.Y_AXIS));
+        notificationsPanel.setBackground(Color.WHITE);
+
+        JScrollPane scrollPane = new JScrollPane(notificationsPanel);
+        scrollPane.setBounds(40, 70, 1100, 600);
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.getVerticalScrollBar().setUnitIncrement(16);
+        content.add(scrollPane);
 
         frame.add(content);
 

@@ -85,10 +85,10 @@ public class Client {
                     String userId = unescapeXml(extractTagValue(requestXml, "userId"));
 
                     // Optional 3-arg overload fields
-                    String type = unescapeXml(extractTagValue(requestXml, "type"));
-                    String details = unescapeXml(extractTagValue(requestXml, "details"));
-                    if (type != null && details != null) {
-                        return svc.createTicket(userId, type, details);
+                    String typeRaw = extractTagValue(requestXml, "type");
+                    String detailsRaw = extractTagValue(requestXml, "details");
+                    if (typeRaw != null && detailsRaw != null) {
+                        return svc.createTicket(userId, unescapeXml(typeRaw), unescapeXml(detailsRaw));
                     }
 
                     String itemCategory = unescapeXml(extractTagValue(requestXml, "itemCategory"));

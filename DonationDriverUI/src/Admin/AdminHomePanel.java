@@ -20,6 +20,8 @@ public class AdminHomePanel extends JPanel {
     private JPanel urgentCardsPanel; // rebuild on refresh
     private AdminLogsPanel adminLogsPanel;
     private Timer refreshTimer;
+    private JPanel notificationsListPanel;
+    private JLabel activeDeliveryStatusLabel;
 
     private Runnable onShowNotifications;
     private Runnable onShowDonations;
@@ -141,6 +143,60 @@ public class AdminHomePanel extends JPanel {
             urgentCardsPanel.revalidate();
             urgentCardsPanel.repaint();
         }
+
+        refreshNotificationsAndDelivery();
+    }
+
+    private void refreshNotificationsAndDelivery() {
+        if (notificationsListPanel == null || activeDeliveryStatusLabel == null) return;
+        notificationsListPanel.removeAll();
+        try {
+            Network.Client client = Network.Client.getDefault();
+            String responseXml = client.readTickets("admin", null);
+            Client.Response response = Client.parseResponse(responseXml);
+            int activeDeliveries = 0;
+            boolean hasNotif = false;
+            
+            if (response != null && response.isOk() && response.message != null) {
+                String ticketsXml = response.message;
+                int idx = 0;
+                while (true) {
+                    int start = ticketsXml.indexOf("<ticket>", idx);
+                    if (start < 0) break;
+                    int end = ticketsXml.indexOf("</ticket>", start);
+                    if (end < 0) break;
+
+                    String tXml = ticketsXml.substring(start, end + "</ticket>".length());
+                    String status = extractTagValue(tXml, "status");
+                    String id = extractTagValue(tXml, "ticketId");
+                    String dest = extractTagValue(tXml, "deliveryDestination");
+                    if (dest == null || dest.isEmpty()) dest = "Unknown Destination";
+                    String drive = extractTagValue(tXml, "donationDrive");
+
+                    if ("ACCEPTED".equalsIgnoreCase(status) || "PICKED_UP".equalsIgnoreCase(status)) {
+                        activeDeliveries++;
+                    } else if ("DELIVERED".equalsIgnoreCase(status)) {
+                        notificationsListPanel.add(buildNotificationItem("Donation Delivered", (drive != null && !drive.isEmpty() ? drive + " - " : "") + dest, "Ticket: " + id));
+                        notificationsListPanel.add(Box.createVerticalStrut(8));
+                        hasNotif = true;
+                    } else if ("CANCELLED".equalsIgnoreCase(status)) {
+                        notificationsListPanel.add(buildNotificationItem("Donation Cancelled", "Ticket: " + id, "Status updated by user"));
+                        notificationsListPanel.add(Box.createVerticalStrut(8));
+                        hasNotif = true;
+                    }
+
+                    idx = end + "</ticket>".length();
+                }
+            }
+            if (!hasNotif) {
+                notificationsListPanel.add(new JLabel(" No recent notifications."));
+            }
+            activeDeliveryStatusLabel.setText(activeDeliveries > 0 ? activeDeliveries + " delivery in transit" : "No active deliveries");
+        } catch (Exception ex) {
+            notificationsListPanel.add(new JLabel(" Error loading."));
+        }
+        notificationsListPanel.revalidate();
+        notificationsListPanel.repaint();
     }
 
     private static class Metrics {
@@ -542,10 +598,10 @@ public class AdminHomePanel extends JPanel {
         JPanel card = new JPanel(new BorderLayout(8, 4));
         card.setBackground(Color.WHITE);
         card.setBorder(BorderFactory.createEmptyBorder(12, 12, 12, 12));
-        JLabel status = new JLabel("");
-        status.setForeground(new Color(200, 120, 0));
-        status.setFont(new Font("Arial", Font.BOLD, 12));
-        card.add(status, BorderLayout.CENTER);
+        activeDeliveryStatusLabel = new JLabel("Loading active deliveries...");
+        activeDeliveryStatusLabel.setForeground(new Color(200, 120, 0));
+        activeDeliveryStatusLabel.setFont(new Font("Arial", Font.BOLD, 12));
+        card.add(activeDeliveryStatusLabel, BorderLayout.CENTER);
         JButton viewDetails = new JButton("View Details");
         viewDetails.setFocusPainted(false);
         viewDetails.setFont(new Font("Arial", Font.PLAIN, 12));
@@ -573,13 +629,10 @@ public class AdminHomePanel extends JPanel {
         header.add(viewAll, BorderLayout.EAST);
         panel.add(header, BorderLayout.NORTH);
 
-        JPanel list = new JPanel();
-        list.setLayout(new BoxLayout(list, BoxLayout.Y_AXIS));
-        list.setOpaque(false);
-        list.add(buildNotificationItem("Donation Delivered", "Baguio City - Tacloban", "3:00 PM Feb. 21 Delivered"));
-        list.add(Box.createVerticalStrut(8));
-        list.add(buildNotificationItem("In Transit", "Baguio City - Tacloban", "Today 9:22 AM"));
-        panel.add(new JScrollPane(list), BorderLayout.CENTER);
+        notificationsListPanel = new JPanel();
+        notificationsListPanel.setLayout(new BoxLayout(notificationsListPanel, BoxLayout.Y_AXIS));
+        notificationsListPanel.setOpaque(false);
+        panel.add(new JScrollPane(notificationsListPanel), BorderLayout.CENTER);
         return panel;
     }
 
