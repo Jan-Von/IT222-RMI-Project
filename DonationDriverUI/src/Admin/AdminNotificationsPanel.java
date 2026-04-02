@@ -15,6 +15,7 @@ public class AdminNotificationsPanel extends JPanel {
     private DefaultTableModel monetaryTableModel;
     private JTable donationBoxesTable;
     private DefaultTableModel donationBoxesTableModel;
+    private Timer refreshTimer;
 
     public AdminNotificationsPanel() {
         setLayout(null);
@@ -67,6 +68,13 @@ public class AdminNotificationsPanel extends JPanel {
         add(boxesScrollPane);
 
         refreshData();
+
+        refreshTimer = new Timer(5000, e -> refreshData());
+        refreshTimer.start();
+    }
+
+    public void stopTimer() {
+        if (refreshTimer != null) refreshTimer.stop();
     }
 
     private JTable createStyledTable(DefaultTableModel model) {
@@ -168,7 +176,7 @@ public class AdminNotificationsPanel extends JPanel {
             // Client.readTickets uses the currently logged in user context
             String userId = Controller.LoginController.currentUserEmail;
             if (userId == null || userId.isEmpty()) {
-                userId = "admin";
+                userId = "admin@donationdriver.com";
             }
             String responseXml = client.readTickets(userId, null);
             Client.Response response = Client.parseResponse(responseXml);
@@ -176,7 +184,7 @@ public class AdminNotificationsPanel extends JPanel {
                 return list;
             }
 
-            String ticketsXml = Client.unescapeXml(response.message);
+            String ticketsXml = response.message;
             if (ticketsXml == null || ticketsXml.isEmpty())
                 return list;
 

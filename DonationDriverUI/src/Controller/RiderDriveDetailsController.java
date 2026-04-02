@@ -43,7 +43,7 @@ public class RiderDriveDetailsController {
                 List<RiderDashboard.TicketStub> filteredList = new ArrayList<>();
 
                 if (response != null && response.isOk() && response.message != null) {
-                    String ticketsXml = Client.unescapeXml(response.message);
+                    String ticketsXml = response.message;
 
                     int idx = 0;
                     while (true) {
@@ -61,8 +61,7 @@ public class RiderDriveDetailsController {
                         String location = extract(ticketXml, "pickupLocation");
                         String drive = extract(ticketXml, "donationDrive");
 
-                        // Filter by Drive
-                        if (drive != null && drive.contains(driveName)) {
+                        if (drive != null && (driveName == null || drive.trim().toLowerCase().contains(driveName.trim().toLowerCase()))) {
                             filteredList.add(new RiderDashboard.TicketStub(
                                     ticketId,
                                     category != null ? category : "Item",

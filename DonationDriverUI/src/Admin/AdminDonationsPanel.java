@@ -419,7 +419,7 @@ public class AdminDonationsPanel extends JPanel {
             Client client = Client.getDefault();
             String userId = LoginController.currentUserEmail;
             if (userId == null || userId.isEmpty()) {
-                userId = "admin"; // Fallback to ensure admin view if login context is missing during dev
+                userId = "admin@donationdriver.com";
             }
             String keyword = searchField.getText().trim();
             String responseXml;

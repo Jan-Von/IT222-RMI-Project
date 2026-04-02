@@ -1002,16 +1002,21 @@ public class Server extends JFrame implements DonationDriverService {
                     userRole = getUserRole(userNorm);
                 }
 
+                boolean isAdmin = "ADMIN".equalsIgnoreCase(userRole);
+
                 for (Ticket t : tickets) {
                     if (t == null) continue;
+                    
+                    // Filter by status if requested
                     if (status != null && (t.status == null || !t.status.equalsIgnoreCase(status))) continue;
 
+                    // Rider query for "Available" (PENDING) tickets
                     if (riderQuery) {
                         filtered.add(t);
                         continue;
                     }
 
-                    if (userNorm.isEmpty()) {
+                    if (isAdmin || userNorm.isEmpty()) {
                         filtered.add(t);
                         continue;
                     }
