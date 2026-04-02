@@ -16,6 +16,7 @@ public class AdminHomePanel extends JPanel {
     private JLabel shippedValueLabel;
     private JLabel ridersOnlineValueLabel;
     private JLabel ongoingShipmentValueLabel;
+    private JLabel totalFundsValueLabel;
     private JPanel urgentCardsPanel; // rebuild on refresh
     private AdminLogsPanel adminLogsPanel;
     private Timer refreshTimer;
@@ -85,16 +86,22 @@ public class AdminHomePanel extends JPanel {
         shippedValueLabel = new JLabel("0");
         ridersOnlineValueLabel = new JLabel("0");
         ongoingShipmentValueLabel = new JLabel("0");
+        totalFundsValueLabel = new JLabel("₱0.00");
 
         JPanel c1 = buildMetricCard("Shipped Donations", shippedValueLabel, new Color(234, 248, 255));
         JPanel c2 = buildMetricCard("Pending Requests", ridersOnlineValueLabel, new Color(238, 247, 239));
         JPanel c3 = buildMetricCard("Ongoing Shipment", ongoingShipmentValueLabel, new Color(253, 244, 230));
+        JPanel c4 = buildMetricCard("Total Funds Raised", totalFundsValueLabel, new Color(255, 240, 240));
+        
         c1.setMinimumSize(new Dimension(180, 80));
         c2.setMinimumSize(new Dimension(180, 80));
         c3.setMinimumSize(new Dimension(180, 80));
+        c4.setMinimumSize(new Dimension(180, 80));
+        
         bar.add(c1);
         bar.add(c2);
         bar.add(c3);
+        bar.add(c4);
         return bar;
     }
 
@@ -124,6 +131,9 @@ public class AdminHomePanel extends JPanel {
         if (ongoingShipmentValueLabel != null) {
             ongoingShipmentValueLabel.setText(String.valueOf(m.activeCount));
         }
+        if (totalFundsValueLabel != null) {
+            totalFundsValueLabel.setText(String.format("₱%,.2f", m.totalFunds));
+        }
 
         if (urgentCardsPanel != null) {
             urgentCardsPanel.removeAll();
@@ -137,6 +147,7 @@ public class AdminHomePanel extends JPanel {
         int pendingCount;
         int deliveredCount;
         int activeCount;
+        double totalFunds;
     }
 
     private Metrics loadMetricsFromServer() {
@@ -182,6 +193,12 @@ public class AdminHomePanel extends JPanel {
                 }
 
                 idx = end + "</ticket>".length();
+            }
+            
+
+            java.util.List<Drive> drives = loadDrivesFromServer();
+            for (Drive d : drives) {
+                m.totalFunds += d.currentAmount;
             }
         } catch (Exception ex) {
             ex.printStackTrace();

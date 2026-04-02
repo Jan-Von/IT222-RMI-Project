@@ -19,6 +19,7 @@ public class RiderAcceptedView {
     public JButton refreshBtn;
     public JButton markPickedUpBtn;
     public JButton rejectTicketBtn;
+    public JButton viewPhotoBtn;
 
     public RiderAcceptedView() {
         frame = new JFrame("DonationDriver");
@@ -216,9 +217,11 @@ public class RiderAcceptedView {
         refreshBtn = new JButton("Refresh");
         markPickedUpBtn = new JButton("Mark Picked Up");
         rejectTicketBtn = new JButton("Reject");
+        viewPhotoBtn = new JButton("View Photo");
         ticketActions.add(refreshBtn);
         ticketActions.add(markPickedUpBtn);
         ticketActions.add(rejectTicketBtn);
+        ticketActions.add(viewPhotoBtn);
         ticketsPanel.add(ticketActions, BorderLayout.SOUTH);
 
         content.add(ticketsPanel, BorderLayout.CENTER);

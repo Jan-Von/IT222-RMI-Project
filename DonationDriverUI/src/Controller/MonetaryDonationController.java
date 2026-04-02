@@ -131,19 +131,31 @@ public class MonetaryDonationController {
             return;
         }
 
-        // Generate a simple numeric transaction ID (random 9‑digit number)
-        String transactionId = String.format("%09d",
-                (int) (Math.random() * 1_000_000_000));
-        view.transactionIdField.setText(transactionId);
+        // Validate payment method
+        String paymentMethod = (String) view.paymentMethodDropdown.getSelectedItem();
+        if (paymentMethod == null || paymentMethod.equals("Select")) {
+            javax.swing.JOptionPane.showMessageDialog(
+                    view.frame,
+                    "Please select a payment method.",
+                    "Monetary Donation",
+                    javax.swing.JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        // Get or generate Transaction ID
+        String transactionId = view.transactionIdField.getText().trim();
+        if (transactionId.isEmpty()) {
+            transactionId = String.format("%09d", (int) (Math.random() * 1_000_000_000));
+            view.transactionIdField.setText(transactionId);
+        }
 
         String userId = (LoginController.currentUserEmail != null && !LoginController.currentUserEmail.isEmpty())
                 ? LoginController.currentUserEmail
                 : "guest@donationdriver";
 
         // Build notes for the ticket
-        String notes = "Monetary donation to Super Typhoon Haiyan; "
-                + "Amount=" + amount + "; "
-                + "TransactionId=" + transactionId;
+        String notes = String.format("Monetary Donation | Method: %s | ID: %s | Amount: %.2f", 
+                                    paymentMethod, transactionId, amount);
 
         // Require photo upload
         File photoFile = view.getSelectedPhotoFile();
@@ -176,20 +188,19 @@ public class MonetaryDonationController {
         try {
             Client client = Client.getDefault();
 
-            // Use the extended CREATE_TICKET for consistency with goods donations
             String responseXml = client.createTicket(
                     userId,
-                    "Monetary donation", // itemCategory
-                    1, // quantity (conceptual)
-                    "N/A", // condition
-                    "", // expirationDate
-                    "", // pickupDateTime
-                    "", // pickupLocation
-                    "", // photoPath
-                    notes, // details / notes
-                    selectedDrive, // donationDrive
-                    "", // deliveryDestination
-                    photoBase64 != null ? photoBase64 : "" // photoBase64
+                    "Monetary", //simplified itemCategory
+                    1, 
+                    "N/A", 
+                    "", 
+                    "", 
+                    "", 
+                    "", 
+                    notes, 
+                    selectedDrive, 
+                    "FINANCE", // destination for funds
+                    photoBase64 != null ? photoBase64 : "" 
             );
 
             Client.Response response = Client.parseResponse(responseXml);

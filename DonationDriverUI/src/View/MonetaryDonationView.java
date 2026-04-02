@@ -18,6 +18,7 @@ public class MonetaryDonationView {
     public JLabel photoStatusLabel;
     public JTextField amountField;
     public JTextField transactionIdField;
+    public JComboBox<String> paymentMethodDropdown;
     public JComboBox<String> donationDriveDropdown;
 
     private File selectedPhotoFile;
@@ -220,34 +221,45 @@ public class MonetaryDonationView {
         monetaryMainCard.add(paymentMethod);
 
         String[] paymentOptions = { "Select", "BDO", "BPI", "Paymaya", "Gcash", "Gotyme" };
-        JComboBox PaymentOptions = new JComboBox(paymentOptions);
-        PaymentOptions.setFont(new Font("Arial", Font.BOLD, 14));
-        PaymentOptions.setBackground(new Color(245, 245, 245));
-        PaymentOptions.setBounds(150, 140, 300, 30);
-        monetaryMainCard.add(PaymentOptions);
+        paymentMethodDropdown = new JComboBox<>(paymentOptions);
+        paymentMethodDropdown.setFont(new Font("Arial", Font.BOLD, 14));
+        paymentMethodDropdown.setBackground(new Color(245, 245, 245));
+        paymentMethodDropdown.setBounds(150, 140, 300, 30);
+        monetaryMainCard.add(paymentMethodDropdown);
+
+        JLabel transIdLabel = new JLabel("Transaction ID (Optional/Ref)");
+        transIdLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        transIdLabel.setForeground(Color.BLACK);
+        transIdLabel.setBounds(150, 170, 300, 30);
+        monetaryMainCard.add(transIdLabel);
+
+        transactionIdField = new JTextField();
+        transactionIdField.setFont(new Font("Arial", Font.PLAIN, 14));
+        transactionIdField.setBounds(150, 200, 300, 30);
+        monetaryMainCard.add(transactionIdField);
 
         JLabel donationDriveLabel = new JLabel("Donation Drive");
         donationDriveLabel.setFont(new Font("Arial", Font.BOLD, 14));
         donationDriveLabel.setForeground(Color.BLACK);
-        donationDriveLabel.setBounds(150, 170, 300, 30);
+        donationDriveLabel.setBounds(150, 230, 300, 30);
         monetaryMainCard.add(donationDriveLabel);
 
         donationDriveDropdown = new JComboBox<>();
         donationDriveDropdown.addItem("Select");
         donationDriveDropdown.setFont(new Font("Arial", Font.BOLD, 14));
         donationDriveDropdown.setBackground(new Color(245, 245, 245));
-        donationDriveDropdown.setBounds(150, 250, 300, 30);
+        donationDriveDropdown.setBounds(150, 260, 300, 30);
         monetaryMainCard.add(donationDriveDropdown);
 
-        uploadPhotoBtn = new JButton("Upload photo (JPG)");
+        uploadPhotoBtn = new JButton("Upload Receipt/Proof (JPG)");
         uploadPhotoBtn.setFont(new Font("Arial", Font.PLAIN, 12));
-        uploadPhotoBtn.setBounds(150, 200, 180, 28);
+        uploadPhotoBtn.setBounds(150, 300, 180, 28);
         monetaryMainCard.add(uploadPhotoBtn);
 
         photoStatusLabel = new JLabel("No photo selected");
         photoStatusLabel.setFont(new Font("Arial", Font.PLAIN, 12));
         photoStatusLabel.setForeground(Color.GRAY);
-        photoStatusLabel.setBounds(340, 200, 200, 22);
+        photoStatusLabel.setBounds(340, 300, 200, 22);
         monetaryMainCard.add(photoStatusLabel);
 
         uploadPhotoBtn.addActionListener(e -> {
