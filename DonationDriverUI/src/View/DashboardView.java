@@ -224,59 +224,6 @@ public class DashboardView {
         donationText.setEditable(false);
         donationPanel.add(donationText);
 
-        JPanel notifCard = new JPanel();
-        notifCard.setLayout(null);
-        notifCard.setBounds(450, 490, 450, 250);
-        notifCard.setBackground(new Color(245, 245, 245));
-        notifCard.setBorder(BorderFactory.createLineBorder(Color.WHITE));
-        frame.add(notifCard);
-
-        JLabel notification = new JLabel("Notifications");
-        notification.setForeground(Color.BLACK);
-        notification.setFont(new Font("Arial", Font.BOLD, 18));
-        notification.setBounds(10, 20, 250, 20);
-        notifCard.add(notification);
-
-        JLabel deliveryLocationNotification = new JLabel("Baguio City - Tacloban");
-        deliveryLocationNotification.setForeground(Color.BLACK);
-        deliveryLocationNotification.setFont(new Font("Arial", Font.PLAIN, 14));
-        deliveryLocationNotification.setBounds(10, 48, 165, 20);
-        notifCard.add(deliveryLocationNotification);
-
-        JButton viewAllNotif = new JButton("View All");
-        viewAllNotif.setBounds(350, 25, 100, 20);
-        viewAllNotif.setForeground(Color.BLACK);
-        viewAllNotif.setContentAreaFilled(false);
-        viewAllNotif.setBorderPainted(false);
-        notifCard.add(viewAllNotif);
-
-        JLabel Transit = new JLabel("Donation Delivered");
-        Transit.setForeground(Color.BLACK);
-        Transit.setFont(new Font("Arial", Font.PLAIN, 14));
-        Transit.setBounds(305, 40, 200, 35);
-        notifCard.add(Transit);
-
-        ImageIcon deliveryicon = new ImageIcon("Resources/Images/deliveryIcon.png");
-        scaledImg = deliveryicon.getImage().getScaledInstance(65, 65, Image.SCALE_SMOOTH);
-        JLabel deliveryIcon = new JLabel(new ImageIcon(scaledImg));
-        deliveryIcon.setBounds(50, 125, 65, 65);
-        notifCard.add(deliveryIcon);
-
-        JLabel boxAmount = new JLabel("Box Amount: 3");
-        boxAmount.setForeground(Color.BLACK);
-        boxAmount.setFont(new Font("Arial", Font.BOLD, 14));
-        boxAmount.setBounds(125, 125, 165, 35);
-        notifCard.add(boxAmount);
-
-        JButton transitStatus = new JButton(
-                "<html>3:09 PM Feb 21, Status: Delivered <br> Your donation has been successfully delivered</html>");
-        transitStatus.setForeground(Color.BLACK);
-        transitStatus.setBackground(Color.LIGHT_GRAY);
-        transitStatus.setBorderPainted(false);
-        transitStatus.setFont(new Font("Arial", Font.PLAIN, 14));
-        transitStatus.setBounds(120, 160, 280, 50);
-        notifCard.add(transitStatus);
-
         frame.add(donationPanel);
 
         frame.setVisible(true);

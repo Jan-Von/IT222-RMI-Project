@@ -275,14 +275,14 @@ public class MonetaryDonationView {
         donateNow.setFont(new Font("Arial", Font.BOLD, 14));
         donateNow.setForeground(Color.WHITE);
         donateNow.setBackground(new Color(20, 35, 100));
-        donateNow.setBounds(150, 300, 300, 30);
+        donateNow.setBounds(150, 340, 300, 30);
         monetaryMainCard.add(donateNow);
 
         JLabel instructionText = new JLabel("<html>Note: Please send the monetary donation first and Enter" +
                 "the reference number from the bank transfer</html> ");
         instructionText.setFont(new Font("Arial", Font.BOLD, 16));
         instructionText.setForeground(Color.BLACK);
-        instructionText.setBounds(150, 310, 300, 150);
+        instructionText.setBounds(150, 330, 300, 150);
         monetaryMainCard.add(instructionText);
 
         frame.setVisible(true);

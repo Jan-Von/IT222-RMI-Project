@@ -161,4 +161,9 @@ public class AdminDashboardView {
             cardLayout.show(contentPanel, cardName);
         }
     }
+
+    public static void main(String[] args) {
+        new AdminDashboardView();
+    }
+
 }
