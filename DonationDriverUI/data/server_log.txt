@@ -106,3 +106,8 @@
 [2026-04-01 19:00:46] [AUTH] user=cholo | Login successful. Role=DONOR
 [2026-04-01 19:00:47] [CRUD] user=SYSTEM | readDonationDrives | count=2
 [2026-04-01 19:00:53] [CRUD] user=SYSTEM | readDonationDrives | count=2
+[2026-04-02 14:28:48] [INFO] user=SYSTEM | RMI Server started and bound on port 5267
+[2026-04-02 14:33:29] [AUTH] user=cholo | Login successful. Role=DONOR
+[2026-04-02 14:33:30] [CRUD] user=SYSTEM | readDonationDrives | count=2
+[2026-04-02 14:33:32] [CRUD] user=SYSTEM | readDonationDrives | count=2
+[2026-04-02 14:33:33] [CRUD] user=SYSTEM | readDonationDrives | count=2

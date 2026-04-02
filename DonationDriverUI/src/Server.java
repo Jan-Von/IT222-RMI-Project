@@ -368,12 +368,12 @@ public class Server extends JFrame implements DonationDriverService {
     }
 
     private static List<String> parseJsonObjects(String jsonArray) {
-        // Extract top-level {...} objects from a JSON array string.
         List<String> out = new ArrayList<>();
         int idx = jsonArray.indexOf('{');
         while (idx >= 0) {
             int depth = 0;
             int start = idx;
+            boolean foundEnd = false;
             for (int i = idx; i < jsonArray.length(); i++) {
                 char c = jsonArray.charAt(i);
                 if (c == '{') depth++;
@@ -382,20 +382,46 @@ public class Server extends JFrame implements DonationDriverService {
                     if (depth == 0) {
                         out.add(jsonArray.substring(start, i + 1));
                         idx = jsonArray.indexOf('{', i + 1);
+                        foundEnd = true;
                         break;
                     }
                 }
             }
+            if (!foundEnd) break; // Truncated/malformed
         }
         return out;
     }
 
-    private static List<String> parseJsonStringArray(String jsonArray) {
+    private static List<String> parseJsonStringArray(String json) {
         List<String> out = new ArrayList<>();
-        // Matches "...." strings, handling escapes.
-        Matcher m = Pattern.compile("\"((?:\\\\.|[^\"\\\\])*)\"").matcher(jsonArray);
-        while (m.find()) {
-            out.add(unescapeJsonString(m.group(1)));
+        if (json == null || json.isEmpty()) return out;
+        int idx = json.indexOf('"');
+        while (idx >= 0) {
+            StringBuilder sb = new StringBuilder();
+            boolean escaped = false;
+            int closingQuote = -1;
+            for (int i = idx + 1; i < json.length(); i++) {
+                char c = json.charAt(i);
+                if (escaped) {
+                    if (c == 'n') sb.append('\n');
+                    else if (c == 'r') sb.append('\r');
+                    else if (c == 't') sb.append('\t');
+                    else if (c == '"') sb.append('"');
+                    else if (c == '\\') sb.append('\\');
+                    else sb.append(c);
+                    escaped = false;
+                } else if (c == '\\') {
+                    escaped = true;
+                } else if (c == '"') {
+                    closingQuote = i;
+                    break;
+                } else {
+                    sb.append(c);
+                }
+            }
+            if (closingQuote == -1) break; // Truncated
+            out.add(sb.toString());
+            idx = json.indexOf('"', closingQuote + 1);
         }
         return out;
     }
@@ -511,22 +537,13 @@ public class Server extends JFrame implements DonationDriverService {
                 .replace("\t", "\\t");
     }
 
-    private static String unescapeJsonString(String s) {
-        if (s == null) return "";
-        // Not perfect, but good enough for our stored strings.
-        return s.replace("\\\"", "\"")
-                .replace("\\\\", "\\")
-                .replace("\\n", "\n")
-                .replace("\\r", "\r")
-                .replace("\\t", "\t");
-    }
-
     private static List<String> extractJsonObjects(String jsonArray) {
         List<String> out = new ArrayList<>();
         int idx = jsonArray.indexOf('{');
         while (idx >= 0) {
             int depth = 0;
             int start = idx;
+            boolean foundEnd = false;
             for (int i = idx; i < jsonArray.length(); i++) {
                 char c = jsonArray.charAt(i);
                 if (c == '{') depth++;
@@ -535,19 +552,49 @@ public class Server extends JFrame implements DonationDriverService {
                     if (depth == 0) {
                         out.add(jsonArray.substring(start, i + 1));
                         idx = jsonArray.indexOf('{', i + 1);
+                        foundEnd = true;
                         break;
                     }
                 }
             }
+            if (!foundEnd) break;
         }
         return out;
     }
 
     private static String extractJsonStringField(String obj, String field) {
-        Pattern p = Pattern.compile("\"" + Pattern.quote(field) + "\"\\s*:\\s*\"((?:\\\\.|[^\"\\\\])*)\"");
-        Matcher m = p.matcher(obj);
-        if (!m.find()) return "";
-        return unescapeJsonString(m.group(1));
+        if (obj == null || field == null) return "";
+        String key = "\"" + field + "\"";
+        int keyPos = obj.indexOf(key);
+        if (keyPos == -1) return "";
+
+        int colonPos = obj.indexOf(":", keyPos + key.length());
+        if (colonPos == -1) return "";
+
+        int startQuote = obj.indexOf("\"", colonPos);
+        if (startQuote == -1) return "";
+
+        StringBuilder sb = new StringBuilder();
+        boolean escaped = false;
+        for (int i = startQuote + 1; i < obj.length(); i++) {
+            char c = obj.charAt(i);
+            if (escaped) {
+                if (c == 'n') sb.append('\n');
+                else if (c == 'r') sb.append('\r');
+                else if (c == 't') sb.append('\t');
+                else if (c == '"') sb.append('"');
+                else if (c == '\\') sb.append('\\');
+                else sb.append(c);
+                escaped = false;
+            } else if (c == '\\') {
+                escaped = true;
+            } else if (c == '"') {
+                break;
+            } else {
+                sb.append(c);
+            }
+        }
+        return sb.toString();
     }
 
     private static String driveToXml(String title, String description) {
@@ -943,8 +990,9 @@ public class Server extends JFrame implements DonationDriverService {
                 for (Ticket t : filtered) xml.append(ticketToXml(t));
                 log("CRUD", userId == null ? "SYSTEM" : userId, "readTickets | status=" + status + " count=" + filtered.size());
                 return ok(xml.toString(), "");
-            } catch (Exception e) {
-                return error("readTickets failed: " + e.getMessage());
+            } catch (Throwable t) {
+                t.printStackTrace();
+                return error("readTickets failed: " + t.getMessage());
             }
         }
     }
@@ -1160,8 +1208,9 @@ public class Server extends JFrame implements DonationDriverService {
                 for (Drive d : drives) xml.append(driveToXml(d));
                 log("CRUD", "SYSTEM", "readDonationDrives | count=" + drives.size());
                 return ok(xml.toString(), "");
-            } catch (Exception e) {
-                return error("readDonationDrives failed: " + e.getMessage());
+            } catch (Throwable t) {
+                t.printStackTrace();
+                return error("readDonationDrives failed: " + t.getMessage());
             }
         }
     }
