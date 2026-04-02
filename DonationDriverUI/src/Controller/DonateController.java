@@ -21,6 +21,8 @@ public class DonateController {
         });
         view.notifBtn.addActionListener(e -> openNotificaton());
         view.donationBtn.addActionListener(e -> openDonations());
+        view.settingsBtn.addActionListener(e -> openSettings());
+
         view.helpBtn.addActionListener(e -> openHelp());
 
         setupCardClick(view.card1, "The Sunflower Center");
@@ -49,6 +51,13 @@ public class DonateController {
                 view.frame.repaint();
             }
         });
+    }
+
+    private void openSettings(){
+        SettingsView Settingview = new SettingsView();
+        new SettingsController(Settingview);
+        Settingview.frame.setVisible(true);
+        view.frame.dispose();
     }
 
     private void openMonetaryDonation() {

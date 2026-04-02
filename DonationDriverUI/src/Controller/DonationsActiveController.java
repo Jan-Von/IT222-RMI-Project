@@ -24,6 +24,7 @@ public class DonationsActiveController {
         view.DeliveredButton.addActionListener(e -> openDonationsDelivered());
         view.RejectedButton.addActionListener(e -> openDonationsRejected());
         view.DonateBtn.addActionListener(e -> openDonate());
+        view.settingsBtn.addActionListener(e -> openSettings());
         view.PendingButton.addActionListener(e -> openDonationPending());
         view.helpBtn.addActionListener(e -> openHelp());
         view.changePickupTimeBtn.addActionListener(e -> showReschedulePickupDialog());
@@ -33,6 +34,8 @@ public class DonationsActiveController {
         refreshTimer = new Timer(5000, e -> loadActiveTickets());
         refreshTimer.start();
     }
+
+
     private void loadActiveTickets() {
         String userId = LoginController.currentUserEmail;
         if (userId == null || userId.trim().isEmpty()) {
@@ -157,6 +160,13 @@ public class DonationsActiveController {
             return null;
         }
         return xml.substring(i + open.length(), j).trim();
+    }
+
+    private void openSettings(){
+        SettingsView Settingview = new SettingsView();
+        new SettingsController(Settingview);
+        Settingview.frame.setVisible(true);
+        view.frame.dispose();
     }
 
     private void openDashBoard(){

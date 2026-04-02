@@ -1190,3 +1190,73 @@
 [2026-04-02 15:35:25] [CRUD] user=SYSTEM | readDonationDrives | count=1
 [2026-04-02 15:35:30] [CRUD] user=SYSTEM | readDonationDrives | count=1
 [2026-04-02 15:35:31] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-02 15:39:31] [AUTH] user=cholo | Login failed: user already logged in.
+[2026-04-02 15:39:31] [AUTH] user=cholo | Login successful. Role=DONOR
+[2026-04-02 15:39:32] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-02 15:39:33] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-02 15:39:35] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-02 15:39:36] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-02 15:39:41] [CRUD] user=cholo | readTickets | status= count=0
+[2026-04-02 15:39:44] [CRUD] user=cholo | readTickets | status=ACCEPTED count=0
+[2026-04-02 15:39:44] [CRUD] user=cholo | readTickets | status=PICKED_UP count=0
+[2026-04-02 15:39:50] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-02 15:41:24] [AUTH] user=cholo | Login failed: user already logged in.
+[2026-04-02 15:41:24] [AUTH] user=cholo | Login successful. Role=DONOR
+[2026-04-02 15:41:25] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-02 15:41:28] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-02 15:41:32] [CRUD] user=cholo | readTickets | status=ACCEPTED count=0
+[2026-04-02 15:41:32] [CRUD] user=cholo | readTickets | status=PICKED_UP count=0
+[2026-04-02 15:41:34] [CRUD] user=cholo | readTickets | status= count=0
+[2026-04-02 15:41:39] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-02 15:41:40] [CRUD] user=cholo | readTickets | status= count=0
+[2026-04-02 15:41:42] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-02 15:41:43] [CRUD] user=cholo | readTickets | status=ACCEPTED count=0
+[2026-04-02 15:41:43] [CRUD] user=cholo | readTickets | status=PICKED_UP count=0
+[2026-04-02 15:42:31] [AUTH] user=cholo | Login failed: user already logged in.
+[2026-04-02 15:42:31] [AUTH] user=cholo | Login successful. Role=DONOR
+[2026-04-02 15:42:32] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-02 15:42:33] [CRUD] user=cholo | readTickets | status=ACCEPTED count=0
+[2026-04-02 15:42:33] [CRUD] user=cholo | readTickets | status=PICKED_UP count=0
+[2026-04-02 15:42:38] [CRUD] user=cholo | readTickets | status=ACCEPTED count=0
+[2026-04-02 15:42:38] [CRUD] user=cholo | readTickets | status=PICKED_UP count=0
+[2026-04-02 15:42:59] [CRUD] user=cholo | readTickets | status=ACCEPTED count=0
+[2026-04-02 15:42:59] [CRUD] user=cholo | readTickets | status=PICKED_UP count=0
+[2026-04-02 15:43:04] [CRUD] user=cholo | readTickets | status=ACCEPTED count=0
+[2026-04-02 15:43:04] [CRUD] user=cholo | readTickets | status=PICKED_UP count=0
+[2026-04-02 15:43:09] [CRUD] user=cholo | readTickets | status=ACCEPTED count=0
+[2026-04-02 15:43:09] [CRUD] user=cholo | readTickets | status=PICKED_UP count=0
+[2026-04-02 15:43:14] [CRUD] user=cholo | readTickets | status=ACCEPTED count=0
+[2026-04-02 15:43:14] [CRUD] user=cholo | readTickets | status=PICKED_UP count=0
+[2026-04-02 15:43:19] [CRUD] user=cholo | readTickets | status=ACCEPTED count=0
+[2026-04-02 15:43:19] [CRUD] user=cholo | readTickets | status=PICKED_UP count=0
+[2026-04-02 15:43:24] [CRUD] user=cholo | readTickets | status=ACCEPTED count=0
+[2026-04-02 15:43:24] [CRUD] user=cholo | readTickets | status=PICKED_UP count=0
+[2026-04-02 15:43:29] [CRUD] user=cholo | readTickets | status=ACCEPTED count=0
+[2026-04-02 15:43:29] [CRUD] user=cholo | readTickets | status=PICKED_UP count=0
+[2026-04-02 15:43:34] [CRUD] user=cholo | readTickets | status=ACCEPTED count=0
+[2026-04-02 15:43:34] [CRUD] user=cholo | readTickets | status=PICKED_UP count=0
+[2026-04-02 15:43:39] [CRUD] user=cholo | readTickets | status=ACCEPTED count=0
+[2026-04-02 15:43:39] [CRUD] user=cholo | readTickets | status=PICKED_UP count=0
+[2026-04-02 15:43:44] [CRUD] user=cholo | readTickets | status=ACCEPTED count=0
+[2026-04-02 15:43:44] [CRUD] user=cholo | readTickets | status=PICKED_UP count=0
+[2026-04-02 15:43:49] [CRUD] user=cholo | readTickets | status=ACCEPTED count=0
+[2026-04-02 15:43:49] [CRUD] user=cholo | readTickets | status=PICKED_UP count=0
+[2026-04-02 15:43:54] [CRUD] user=cholo | readTickets | status=ACCEPTED count=0
+[2026-04-02 15:43:54] [CRUD] user=cholo | readTickets | status=PICKED_UP count=0
+[2026-04-02 15:43:59] [CRUD] user=cholo | readTickets | status=ACCEPTED count=0
+[2026-04-02 15:43:59] [CRUD] user=cholo | readTickets | status=PICKED_UP count=0
+[2026-04-02 15:44:04] [CRUD] user=cholo | readTickets | status=ACCEPTED count=0
+[2026-04-02 15:44:04] [CRUD] user=cholo | readTickets | status=PICKED_UP count=0
+[2026-04-02 15:44:09] [CRUD] user=cholo | readTickets | status=ACCEPTED count=0
+[2026-04-02 15:44:09] [CRUD] user=cholo | readTickets | status=PICKED_UP count=0
+[2026-04-02 15:44:19] [AUTH] user=cholo | Login failed: user already logged in.
+[2026-04-02 15:44:19] [AUTH] user=cholo | Login successful. Role=DONOR
+[2026-04-02 15:44:20] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-02 15:44:21] [CRUD] user=cholo | readTickets | status=ACCEPTED count=0
+[2026-04-02 15:44:21] [CRUD] user=cholo | readTickets | status=PICKED_UP count=0
+[2026-04-02 15:44:23] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-02 15:44:26] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-02 15:44:26] [CRUD] user=cholo | readTickets | status=ACCEPTED count=0
+[2026-04-02 15:44:26] [CRUD] user=cholo | readTickets | status=PICKED_UP count=0
+[2026-04-02 15:44:26] [CRUD] user=cholo | readTickets | status= count=0
+[2026-04-02 15:44:29] [CRUD] user=SYSTEM | readDonationDrives | count=1

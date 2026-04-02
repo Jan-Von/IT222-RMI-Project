@@ -298,8 +298,4 @@ public class MonetaryDonationView {
             photoStatusLabel.setText("No photo selected");
         }
     }
-
-    public static void main(String[] args) {
-        new MonetaryDonationView();
-    }
 }

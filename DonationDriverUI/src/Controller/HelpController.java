@@ -14,7 +14,15 @@ public class HelpController {
         view.notifBtn.addActionListener(e -> openNotification());
         view.donationBtn.addActionListener(e ->openDonations());
         view.DonateBtn.addActionListener(e -> openDonate());
+        view.settingsBtn.addActionListener(e -> openSettings());
 
+    }
+
+    private void openSettings(){
+        SettingsView Settingview = new SettingsView();
+        new SettingsController(Settingview);
+        Settingview.frame.setVisible(true);
+        view.frame.dispose();
     }
 
     private void openDashBoard(){
