@@ -1,4 +1,5 @@
 import Network.DonationDriverService;
+
 import javax.swing.*;
 import java.awt.*;
 import java.io.File;
@@ -33,7 +34,7 @@ public class Server extends JFrame implements DonationDriverService {
 
     // Gson init (optional at runtime; we also support a Gson-free fallback).
     private static final Object GSON = initGson();
-    
+
     private static final Object FILE_LOCK = new Object();
 
     private static Object initGson() {
@@ -42,7 +43,8 @@ public class Server extends JFrame implements DonationDriverService {
             Object builder = gsonBuilderCls.getConstructor().newInstance();
             try {
                 gsonBuilderCls.getMethod("disableHtmlEscaping").invoke(builder);
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
             return gsonBuilderCls.getMethod("create").invoke(builder);
         } catch (Throwable ignored) {
             return null;
@@ -100,15 +102,33 @@ public class Server extends JFrame implements DonationDriverService {
         return fallback;
     }
 
-    private static File usersFile() { return new File(DATA_DIR, "users.json"); }
-    private static File ticketsFile() { return new File(DATA_DIR, "tickets.json"); }
-    private static File drivesFile() { return new File(DATA_DIR, "drives.json"); }
+    private static File usersFile() {
+        return new File(DATA_DIR, "users.json");
+    }
 
-    private static File availableRidersFile() { return new File(DATA_DIR, "available_riders.json"); }
+    private static File ticketsFile() {
+        return new File(DATA_DIR, "tickets.json");
+    }
 
-    private static File serverLogsFile() { return new File(DATA_DIR, "server_logs.json"); }
-    private static File archivedTicketsFile() { return new File(DATA_DIR, "archived_tickets.json"); }
-    private static File serverSettingsFile() { return new File(DATA_DIR, "server_settings.json"); }
+    private static File drivesFile() {
+        return new File(DATA_DIR, "drives.json");
+    }
+
+    private static File availableRidersFile() {
+        return new File(DATA_DIR, "available_riders.json");
+    }
+
+    private static File serverLogsFile() {
+        return new File(DATA_DIR, "server_logs.json");
+    }
+
+    private static File archivedTicketsFile() {
+        return new File(DATA_DIR, "archived_tickets.json");
+    }
+
+    private static File serverSettingsFile() {
+        return new File(DATA_DIR, "server_settings.json");
+    }
 
     private void initDataFiles() {
         DATA_DIR.mkdirs();
@@ -119,6 +139,22 @@ public class Server extends JFrame implements DonationDriverService {
         ensureEmptyArrayFile(new File(DATA_DIR, "server_logs.json"));
         ensureEmptyArrayFile(archivedTicketsFile());
         ensureEmptyObjectFile(new File(DATA_DIR, "server_settings.json"), "{\"maintenanceEnabled\":false}");
+
+        synchronized (FILE_LOCK) {
+            try {
+                List<User> users = loadList(usersFile(), User.class);
+                if (users.isEmpty()) {
+                    User admin = new User();
+                    admin.email = "admin@donationdriver.com";
+                    admin.password = "password123";
+                    admin.role = "ADMIN";
+                    users.add(admin);
+                    saveList(usersFile(), users);
+                    log("AUTH", "SYSTEM", "Default admin account created: admin@donationdriver.com");
+                }
+            } catch (Exception ignored) {
+            }
+        }
     }
 
     private static void ensureEmptyArrayFile(File f) {
@@ -128,7 +164,8 @@ public class Server extends JFrame implements DonationDriverService {
                 if (parent != null) parent.mkdirs();
                 Files.writeString(f.toPath(), "[]", StandardCharsets.UTF_8);
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
     }
 
     private static void ensureEmptyObjectFile(File f, String defaultJson) {
@@ -138,7 +175,8 @@ public class Server extends JFrame implements DonationDriverService {
                 if (parent != null) parent.mkdirs();
                 Files.writeString(f.toPath(), defaultJson, StandardCharsets.UTF_8);
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
     }
 
     private static <T> List<T> loadList(File file, Class<T> elementClass) {
@@ -151,7 +189,7 @@ public class Server extends JFrame implements DonationDriverService {
                     List<Object> rawList = (List<Object>) gson.getClass()
                             .getMethod("fromJson", String.class, Class.class)
                             .invoke(gson, Files.readString(file.toPath(), StandardCharsets.UTF_8), List.class);
-    
+
                     List<T> out = new ArrayList<>();
                     for (Object rawEl : rawList) {
                         if (rawEl == null) continue;
@@ -164,7 +202,7 @@ public class Server extends JFrame implements DonationDriverService {
                     }
                     return out;
                 }
-    
+
                 // Gson-free fallback
                 return loadListFallback(file, elementClass);
             } catch (Exception e) {
@@ -496,7 +534,8 @@ public class Server extends JFrame implements DonationDriverService {
             File parent = file.getParentFile();
             if (parent != null) parent.mkdirs();
             Files.writeString(file.toPath(), sb.toString(), StandardCharsets.UTF_8);
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
     }
 
     private static List<User> loadUsers() {
@@ -652,7 +691,8 @@ public class Server extends JFrame implements DonationDriverService {
                     return u.role == null ? "DONOR" : u.role;
                 }
             }
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
         return "DONOR";
     }
 
@@ -735,7 +775,7 @@ public class Server extends JFrame implements DonationDriverService {
 
     private void log(String type, String userId, String message) {
         String timestamp = LocalDateTime.now().format(LOG_FMT);
-        String line = "[" + timestamp + "] [" + (type == null ? "INFO" : type.toUpperCase()) + "] "+ "user=" + (userId == null || userId.isBlank() ? "SYSTEM" : userId)+ " | " + (message == null ? "" : message);
+        String line = "[" + timestamp + "] [" + (type == null ? "INFO" : type.toUpperCase()) + "] " + "user=" + (userId == null || userId.isBlank() ? "SYSTEM" : userId) + " | " + (message == null ? "" : message);
 
         SwingUtilities.invokeLater(() -> logArea.append(message + "\n"));
 
@@ -744,7 +784,8 @@ public class Server extends JFrame implements DonationDriverService {
             try (FileWriter fw = new FileWriter(logFile, true);
                  PrintWriter pw = new PrintWriter(fw)) {
                 pw.println(line);
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
         }
     }
 
@@ -813,7 +854,7 @@ public class Server extends JFrame implements DonationDriverService {
 
     @Override
     public String register(String firstName, String lastName, String middleName, String dateOfBirth,
-                               String address, String phone, String email, String password, String role) throws RemoteException {
+                           String address, String phone, String email, String password, String role) throws RemoteException {
         synchronized (FILE_LOCK) {
             if (email == null || password == null) return error("Missing email or password.");
             maintenanceMode = isMaintenanceEnabled();
@@ -890,8 +931,8 @@ public class Server extends JFrame implements DonationDriverService {
 
     @Override
     public String createTicket(String userId, String itemCategory, int quantity, String condition,
-                                 String expirationDate, String pickupDateTime, String pickupLocation,
-                                 String photoPath, String notes, String photoBase64) throws RemoteException {
+                               String expirationDate, String pickupDateTime, String pickupLocation,
+                               String photoPath, String notes, String photoBase64) throws RemoteException {
         return createTicket(userId, itemCategory, quantity, condition,
                 expirationDate, pickupDateTime, pickupLocation, photoPath, notes,
                 "", "", photoBase64);
@@ -899,9 +940,9 @@ public class Server extends JFrame implements DonationDriverService {
 
     @Override
     public String createTicket(String userId, String itemCategory, int quantity, String condition,
-                                 String expirationDate, String pickupDateTime, String pickupLocation,
-                                 String photoPath, String notes, String donationDrive,
-                                 String deliveryDestination, String photoBase64) throws RemoteException {
+                               String expirationDate, String pickupDateTime, String pickupLocation,
+                               String photoPath, String notes, String donationDrive,
+                               String deliveryDestination, String photoBase64) throws RemoteException {
         synchronized (FILE_LOCK) {
             try {
                 if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
@@ -1117,7 +1158,7 @@ public class Server extends JFrame implements DonationDriverService {
                 List<Ticket> archived = loadList(archivedTicketsFile(), Ticket.class);
                 Ticket target = null;
                 List<Ticket> remaining = new ArrayList<>();
-                
+
                 for (Ticket t : active) {
                     if (t != null && t.ticketId != null && t.ticketId.equalsIgnoreCase(ticketId)) {
                         target = t;
@@ -1157,7 +1198,8 @@ public class Server extends JFrame implements DonationDriverService {
                     if (targetAmount != null && !targetAmount.trim().isEmpty()) {
                         target = Double.parseDouble(targetAmount.trim());
                     }
-                } catch (NumberFormatException ignored) {}
+                } catch (NumberFormatException ignored) {
+                }
 
                 List<Drive> drives = loadList(drivesFile(), Drive.class);
                 Drive existing = null;

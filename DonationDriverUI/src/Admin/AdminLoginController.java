@@ -36,6 +36,15 @@ public class AdminLoginController {
             String message = response != null ? response.message : "";
 
             if ("OK".equalsIgnoreCase(status)) {
+                String role = response != null ? response.role : "";
+                if (!"ADMIN".equalsIgnoreCase(role)) {
+                    JOptionPane.showMessageDialog(view.frame,
+                            "Access Denied: You do not have administrator privileges.",
+                            "Admin Login",
+                            JOptionPane.ERROR_MESSAGE);
+                    return;
+                }
+
                 JOptionPane.showMessageDialog(view.frame,
                         "Admin login successful!",
                         "Admin Login",
