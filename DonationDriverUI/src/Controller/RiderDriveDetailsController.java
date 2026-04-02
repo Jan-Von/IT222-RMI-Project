@@ -62,14 +62,32 @@ public class RiderDriveDetailsController {
                         String drive = extract(ticketXml, "donationDrive");
                         String notes = extract(ticketXml, "notes");
 
+                        String parsedDrive = drive;
+
+                        if ((parsedDrive == null || parsedDrive.trim().isEmpty()) && notes != null) {
+                            String marker = "Goods donation \u2013 ";
+                            int startIdx = notes.indexOf(marker);
+                            if (startIdx < 0) {
+                                marker = "Goods donation - ";
+                                startIdx = notes.indexOf(marker);
+                            }
+                            
+                            if (startIdx >= 0) {
+                                startIdx += marker.length();
+                                int endIdx = notes.indexOf(" | Deliver to: ", startIdx);
+                                if (endIdx >= 0) {
+                                    parsedDrive = notes.substring(startIdx, endIdx).trim();
+                                } else {
+                                    parsedDrive = notes.substring(startIdx).trim();
+                                }
+                            }
+                        }
+
                         boolean match = false;
                         if (driveName == null) {
                             match = true;
-                        } else {
-                            String target = driveName.trim().toLowerCase();
-                            if (drive != null && drive.trim().toLowerCase().contains(target)) {
-                                match = true;
-                            } else if (notes != null && notes.trim().toLowerCase().contains(target)) {
+                        } else if (parsedDrive != null) {
+                            if (parsedDrive.trim().equalsIgnoreCase(driveName.trim())) {
                                 match = true;
                             }
                         }
@@ -77,10 +95,10 @@ public class RiderDriveDetailsController {
                         if (match) {
                             filteredList.add(new RiderDashboard.TicketStub(
                                     ticketId,
-                                    category != null && !category.isEmpty() ? category : "Item",
+                                    category != null && !category.isEmpty() ? category : "Assorted Goods",
                                     quantity != null ? quantity : "1",
                                     location != null ? location : "Location N/A",
-                                    drive != null && !drive.isEmpty() ? drive : driveName));
+                                    parsedDrive != null && !parsedDrive.isEmpty() ? parsedDrive : driveName));
                         }
 
                         idx = end + "</ticket>".length();
