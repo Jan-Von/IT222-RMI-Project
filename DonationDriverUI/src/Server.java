@@ -834,7 +834,7 @@ public class Server extends JFrame implements DonationDriverService {
                     synchronized (activeSessions) {
                         if (activeSessions.contains(emailNorm)) {
                             log("AUTH", emailNorm, "Login failed: user already logged in.");
-                            // return error("User is already logged in.");
+                            return error("Account is already logged in on another session.");
                         }
                         activeSessions.add(emailNorm);
                     }
