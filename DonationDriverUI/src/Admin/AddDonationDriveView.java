@@ -25,40 +25,51 @@ public class AddDonationDriveView {
         frame.setLocationRelativeTo(parent);
         frame.setLayout(new BorderLayout());
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+        ImageIcon frameIcon = new ImageIcon("Resources/Images/logoicon.png");
+        frame.setIconImage(frameIcon.getImage());
 
         JPanel content = new JPanel();
         content.setLayout(new BoxLayout(content, BoxLayout.Y_AXIS));
         content.setBorder(new EmptyBorder(20, 20, 20, 20));
         content.setBackground(Color.WHITE);
 
-        content.add(createLabel("Drive Title"));
+        JLabel titleLabel = createLabel("Drive Title");
+        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        content.add(titleLabel);
         titleField = new JTextField();
         content.add(titleField);
         content.add(Box.createVerticalStrut(15));
 
-        content.add(createLabel("Description"));
+        JLabel descLabel = createLabel("Description");
+        descLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        content.add(descLabel);
         descriptionArea = new JTextArea(5, 20);
         descriptionArea.setLineWrap(true);
         descriptionArea.setWrapStyleWord(true);
         content.add(new JScrollPane(descriptionArea));
         content.add(Box.createVerticalStrut(15));
 
-        content.add(createLabel("Target Amount (PHP)"));
+        JLabel amountLabel = createLabel("Target Amount (PHP)");
+        amountLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        content.add(amountLabel);
         targetAmountField = new JTextField();
         content.add(targetAmountField);
         content.add(Box.createVerticalStrut(15));
 
-        content.add(createLabel("Cover Photo (JPG)"));
-        JPanel photoPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+        JLabel coverPhotoLabel = createLabel("Cover Photo");
+        coverPhotoLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        content.add(coverPhotoLabel);
+        JPanel photoPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 0, 0));
         photoPanel.setBackground(Color.WHITE);
-        photoPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        photoPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
         
         uploadPhotoBtn = new JButton("Choose Photo");
+        uploadPhotoBtn.setAlignmentX(Component.CENTER_ALIGNMENT);
         uploadPhotoBtn.setFont(new Font("Arial", Font.PLAIN, 12));
         photoPanel.add(uploadPhotoBtn);
         
         photoPreviewLabel = new JLabel();
-        photoPreviewLabel.setAlignmentX(Component.LEFT_ALIGNMENT);
+        photoPreviewLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
         photoPreviewLabel.setPreferredSize(new Dimension(100, 60));
         photoPreviewLabel.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
         photoPreviewLabel.setVisible(false);
@@ -89,7 +100,7 @@ public class AddDonationDriveView {
         content.add(photoPanel);
         content.add(Box.createVerticalStrut(25));
 
-        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT));
+        JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 0));
         buttonPanel.setBackground(Color.WHITE);
 
         cancelBtn = new JButton("Cancel");
