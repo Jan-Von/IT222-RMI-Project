@@ -2,7 +2,6 @@ package Admin;
 
 import Controller.LoginController;
 import Network.Client;
-import View.LoginView;
 
 import javax.swing.*;
 import java.io.IOException;
@@ -10,6 +9,7 @@ import java.io.IOException;
 public class AdminLoginController {
 
     private final AdminLoginView view;
+
     public AdminLoginController(AdminLoginView view) {
         this.view = view;
         this.view.loginBtn.addActionListener(e -> handleLogin());
@@ -20,7 +20,6 @@ public class AdminLoginController {
         String email = view.emailField.getText();
         String password = new String(view.passField.getPassword());
 
-        // Check if placeholder text is still present
         if (email == null || email.trim().isEmpty() || email.equals("Admin Email")
                 || password == null || password.trim().isEmpty() || password.equals("Password")) {
             JOptionPane.showMessageDialog(view.frame,
@@ -45,6 +44,10 @@ public class AdminLoginController {
                     return;
                 }
 
+                LoginController.currentUserEmail = email;
+                LoginController.currentUserRole = "ADMIN";
+                LoginController.setReconnectToMainLoginAfterDisconnect(false);
+
                 JOptionPane.showMessageDialog(view.frame,
                         "Admin login successful!",
                         "Admin Login",
@@ -53,9 +56,14 @@ public class AdminLoginController {
 
                 AdminDashboardView adminDashboardView = new AdminDashboardView();
                 adminDashboardView.logoutBtn.addActionListener(e -> {
+                    adminDashboardView.stopAllTimers();
+                    Client.getInstance().logoutQuiet(email);
+                    LoginController.currentUserEmail = null;
+                    LoginController.currentUserRole = null;
+                    LoginController.setReconnectToMainLoginAfterDisconnect(true);
                     adminDashboardView.frame.dispose();
-                    LoginView loginView = new LoginView();
-                    new LoginController(loginView);
+                    AdminLoginView adminLoginView = new AdminLoginView();
+                    new AdminLoginController(adminLoginView);
                 });
             } else {
                 JOptionPane.showMessageDialog(view.frame,
@@ -66,7 +74,10 @@ public class AdminLoginController {
                         JOptionPane.ERROR_MESSAGE);
             }
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            JOptionPane.showMessageDialog(view.frame,
+                    "Cannot contact server. Make sure the DonationDriver server is running.",
+                    "Connection Error",
+                    JOptionPane.ERROR_MESSAGE);
         }
     }
 }

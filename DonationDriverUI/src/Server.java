@@ -34,6 +34,7 @@ public class Server extends JFrame implements DonationDriverService {
 
     // Gson init (optional at runtime; we also support a Gson-free fallback).
     private static final Object GSON = initGson();
+    private static final Object PRETTY_GSON = initPrettyGson();
 
     private static final Object FILE_LOCK = new Object();
 
@@ -43,6 +44,24 @@ public class Server extends JFrame implements DonationDriverService {
             Object builder = gsonBuilderCls.getConstructor().newInstance();
             try {
                 gsonBuilderCls.getMethod("disableHtmlEscaping").invoke(builder);
+            } catch (Exception ignored) {
+            }
+            return gsonBuilderCls.getMethod("create").invoke(builder);
+        } catch (Throwable ignored) {
+            return null;
+        }
+    }
+
+    private static Object initPrettyGson() {
+        try {
+            Class<?> gsonBuilderCls = Class.forName("com.google.gson.GsonBuilder");
+            Object builder = gsonBuilderCls.getConstructor().newInstance();
+            try {
+                gsonBuilderCls.getMethod("disableHtmlEscaping").invoke(builder);
+            } catch (Exception ignored) {
+            }
+            try {
+                gsonBuilderCls.getMethod("setPrettyPrinting").invoke(builder);
             } catch (Exception ignored) {
             }
             return gsonBuilderCls.getMethod("create").invoke(builder);
@@ -218,7 +237,11 @@ public class Server extends JFrame implements DonationDriverService {
             if (list == null) list = new ArrayList<>();
             try {
                 if (GSON != null) {
-                    String json = (String) GSON.getClass().getMethod("toJson", Object.class).invoke(GSON, list);
+                    Object gsonForWrite = GSON;
+                    if ("server_logs.json".equalsIgnoreCase(file.getName()) && PRETTY_GSON != null) {
+                        gsonForWrite = PRETTY_GSON;
+                    }
+                    String json = (String) gsonForWrite.getClass().getMethod("toJson", Object.class).invoke(gsonForWrite, list);
                     File parent = file.getParentFile();
                     if (parent != null) parent.mkdirs();
                     Files.writeString(file.toPath(), json, StandardCharsets.UTF_8);
@@ -385,8 +408,20 @@ public class Server extends JFrame implements DonationDriverService {
             }
             sb.append("]");
             json = sb.toString();
+        } else if ("server_logs.json".equals(name)) {
+            StringBuilder sb = new StringBuilder();
+            sb.append("[\n");
+            boolean first = true;
+            for (T el : list) {
+                if (!(el instanceof String)) continue;
+                if (!first) sb.append(",\n");
+                first = false;
+                sb.append("  \"").append(escapeJsonString(String.valueOf(el))).append("\"");
+            }
+            sb.append("\n]");
+            json = sb.toString();
         } else {
-            // available_riders.json, server_logs.json => array of strings
+            // available_riders.json => array of strings (compact)
             StringBuilder sb = new StringBuilder();
             sb.append("[");
             boolean first = true;
@@ -823,7 +858,6 @@ public class Server extends JFrame implements DonationDriverService {
         synchronized (FILE_LOCK) {
             if (email == null || password == null) return error("Missing email or password.");
             maintenanceMode = isMaintenanceEnabled();
-            if (maintenanceMode) return error("Server is in maintenance mode.");
             String emailNorm = email.trim().toLowerCase();
 
             List<User> users = loadUsers();
@@ -831,6 +865,9 @@ public class Server extends JFrame implements DonationDriverService {
                 if (u == null || u.email == null) continue;
                 if (u.email.trim().toLowerCase().equals(emailNorm) && password.equals(u.password)) {
                     String role = (u.role == null || u.role.isEmpty()) ? "DONOR" : u.role;
+                    if (maintenanceMode && !"ADMIN".equalsIgnoreCase(role)) {
+                        return error("Server is in maintenance mode.");
+                    }
                     synchronized (activeSessions) {
                         if (activeSessions.contains(emailNorm)) {
                             log("AUTH", emailNorm, "Login failed: user already logged in.");

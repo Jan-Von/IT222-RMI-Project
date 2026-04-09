@@ -1,29 +1,94 @@
 package Network;
 
+import Util.RmiClientConfig;
+
+import javax.swing.JOptionPane;
 import java.io.*;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Client {
 
-    private static final String DEFAULT_HOST = "localhost";
-    private static final int DEFAULT_PORT = 5267;
+    private static final String DEFAULT_HOST = RmiClientConfig.DEFAULT_HOST;
+    private static final int DEFAULT_PORT = RmiClientConfig.DEFAULT_PORT;
 
     private static Client instance;
-    private final String host;
-    private final int port;
+    private volatile String host;
+    private volatile int port;
 
     private transient DonationDriverService service;
+
+    /** Prevents multiple concurrent "return to login" flows from pollers (dashboard / rider). */
+    private static final AtomicBoolean disconnectedSessionHandling = new AtomicBoolean(false);
+
+    private static final Object ERROR_DIALOG_LOCK = new Object();
+    private static volatile long lastErrorDialogAtMs;
+    private static final long ERROR_DIALOG_COOLDOWN_MS = 4000L;
 
     private Client(String host, int port) {
         this.host = host;
         this.port = port;
     }
+
+    private static void showErrorDialogWithCooldown(String message, String title) {
+        long now = System.currentTimeMillis();
+        synchronized (ERROR_DIALOG_LOCK) {
+            if (now - lastErrorDialogAtMs < ERROR_DIALOG_COOLDOWN_MS) {
+                return;
+            }
+            lastErrorDialogAtMs = now;
+        }
+        JOptionPane.showMessageDialog(null, message, title, JOptionPane.ERROR_MESSAGE);
+    }
+
     public static synchronized Client getInstance() {
         if (instance == null) {
-            instance = new Client(DEFAULT_HOST, DEFAULT_PORT);
+            RmiClientConfig.Endpoint ep = RmiClientConfig.load();
+            instance = new Client(ep.host, ep.port);
         }
         return instance;
+    }
+
+    /**
+     * Point the client at a new registry endpoint and drop any cached stub.
+     * Does not persist; use {@link RmiClientConfig#save} from settings when the user saves.
+     */
+    public static synchronized void configure(String newHost, int newPort) {
+        String h = (newHost == null || newHost.trim().isEmpty()) ? DEFAULT_HOST : newHost.trim();
+        int p = (newPort < 1 || newPort > 65535) ? DEFAULT_PORT : newPort;
+        if (instance == null) {
+            instance = new Client(h, p);
+        } else {
+            instance.host = h;
+            instance.port = p;
+            clearCachedService();
+        }
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public int getPort() {
+        return port;
+    }
+
+    /**
+     * Try a single lookup and {@link DonationDriverService#ping()} without mutating {@link #getInstance()}.
+     */
+    public static boolean tryPingEndpoint(String endpointHost, int endpointPort) {
+        if (endpointHost == null || endpointHost.trim().isEmpty() || endpointPort < 1 || endpointPort > 65535) {
+            return false;
+        }
+        try {
+            String url = "rmi://" + endpointHost.trim() + ":" + endpointPort + "/DonationDriverService";
+            DonationDriverService s = (DonationDriverService) Naming.lookup(url);
+            String pong = s.ping();
+            return pong != null;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public static Client getDefault() {
@@ -31,6 +96,10 @@ public class Client {
     }
 
     public String sendRequest(String requestXml) throws IOException {
+        return sendRequest(requestXml, true);
+    }
+
+    public String sendRequest(String requestXml, boolean notifyOnFailure) throws IOException {
         if (requestXml == null) return null;
 
         String action = extractTagValue(requestXml, "action");
@@ -38,7 +107,7 @@ public class Client {
             throw new IOException("Missing <action> in request.");
         }
 
-        DonationDriverService svc = getService();
+        DonationDriverService svc = getService(notifyOnFailure);
 
         try {
             switch (action) {
@@ -227,27 +296,56 @@ public class Client {
                 case "PING": {
                     return svc.ping();
                 }
+                case "LOGOUT": {
+                    String logoutEmail = unescapeXml(extractTagValue(requestXml, "email"));
+                    return svc.logout(logoutEmail);
+                }
                 default:
                     throw new IOException("Unsupported action: " + action);
             }
         } catch (RemoteException e) {
-            javax.swing.JOptionPane.showMessageDialog(null,
-                    "Server connection lost. Please verify the server is running.",
-                    "Network Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+            clearCachedService();
+            if (notifyOnFailure) {
+                showErrorDialogWithCooldown(
+                        "Server connection lost. Please verify the server is running.",
+                        "Network Error");
+            }
             throw new IOException("RMI call failed", e);
         }
     }
 
+    /** Drop cached RMI stub so the next call performs a fresh registry lookup. */
+    public static void clearCachedService() {
+        Client c = instance;
+        if (c != null) {
+            c.service = null;
+        }
+    }
+
+    public static boolean tryAcquireDisconnectedSessionHandling() {
+        return disconnectedSessionHandling.compareAndSet(false, true);
+    }
+
+    public static void resetDisconnectedSessionHandling() {
+        disconnectedSessionHandling.set(false);
+    }
+
     public DonationDriverService getService() throws IOException {
+        return getService(true);
+    }
+
+    public DonationDriverService getService(boolean notifyLookupFailure) throws IOException {
         if (service != null) return service;
         try {
             String url = "rmi://" + host + ":" + port + "/DonationDriverService";
             service = (DonationDriverService) Naming.lookup(url);
             return service;
         } catch (Exception e) {
-            javax.swing.JOptionPane.showMessageDialog(null,
-                    "Cannot contact RMI server at " + host + ":" + port + ".\nPlease make sure the server is started.",
-                    "Connection Error", javax.swing.JOptionPane.ERROR_MESSAGE);
+            if (notifyLookupFailure) {
+                showErrorDialogWithCooldown(
+                        "Cannot contact RMI server at " + host + ":" + port + ".\nPlease make sure the server is started.",
+                        "Connection Error");
+            }
             throw new IOException("Cannot contact RMI server at " + host + ":" + port, e);
         }
     }
@@ -379,13 +477,21 @@ public class Client {
     }
 
     public String readTickets(String userId, String status) throws IOException {
+        return readTickets(userId, status, true);
+    }
+
+    public String readTicketsSilently(String userId, String status) throws IOException {
+        return readTickets(userId, status, false);
+    }
+
+    private String readTickets(String userId, String status, boolean notifyOnFailure) throws IOException {
         String request = "<request><action>READ_TICKETS</action>"
                 + "<userId>" + escapeXml(userId) + "</userId>";
         if (status != null) {
             request += "<status>" + escapeXml(status) + "</status>";
         }
         request += "</request>";
-        return sendRequest(request);
+        return sendRequest(request, notifyOnFailure);
     }
 
     public String updateTicket(String userId, String ticketId, String status) throws IOException {
@@ -414,8 +520,7 @@ public class Client {
     }
 
     /**
-     * Update only pickup date and time of a ticket and status is same nyahaha
-     * Format: yyyy-MM-dd HH:mm (e.g. 2026-02-20 14:30)
+     * Update pickup date and time only (no status change). Format: {@code yyyy-MM-dd HH:mm} (e.g. 2026-02-20 14:30).
      */
     public String updateTicketPickupTime(String userId, String ticketId, String pickupDateTime) throws IOException {
         StringBuilder request = new StringBuilder();
@@ -476,6 +581,10 @@ public class Client {
 
     public String readDonationDrives() throws IOException {
         return sendRequest("<request><action>READ_DONATION_DRIVES</action><userId></userId></request>");
+    }
+
+    public String readDonationDrivesSilently() throws IOException {
+        return sendRequest("<request><action>READ_DONATION_DRIVES</action><userId></userId></request>", false);
     }
 
     public String updateDriveAmount(String driveTitle, double amount) throws IOException {
@@ -562,6 +671,27 @@ public class Client {
 
     public String ping() throws IOException {
         return sendRequest("<request><action>PING</action><userId></userId></request>");
+    }
+
+    /** Live server check without showing {@code Client}'s default connection error dialog. */
+    public String pingSilent() throws IOException {
+        return sendRequest("<request><action>PING</action><userId></userId></request>", false);
+    }
+
+    public String logout(String email) throws IOException {
+        String request = "<request><action>LOGOUT</action><userId></userId>"
+                + "<email>" + escapeXml(email != null ? email : "") + "</email></request>";
+        return sendRequest(request);
+    }
+
+    /** Best-effort session cleanup; ignores failures (e.g. server already down). */
+    public void logoutQuiet(String email) {
+        try {
+            String request = "<request><action>LOGOUT</action><userId></userId>"
+                    + "<email>" + escapeXml(email != null ? email : "") + "</email></request>";
+            sendRequest(request, false);
+        } catch (IOException ignored) {
+        }
     }
 
     /** Mark the rider as available (go online). User must be logged in. */

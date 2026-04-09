@@ -98,6 +98,9 @@ public class AdminNotificationsPanel extends JPanel {
 
     // fetch data and populate
     public void refreshData() {
+        if (!AdminServerWatch.pingOrReturnToLogin(this)) {
+            return;
+        }
         monetaryTableModel.setRowCount(0);
         donationBoxesTableModel.setRowCount(0);
 

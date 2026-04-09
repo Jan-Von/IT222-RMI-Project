@@ -1,6 +1,5 @@
 package Controller;
 
-import Network.DonationDriverService;
 import View.*;
 import Network.Client;
 
@@ -49,17 +48,19 @@ public class RiderController {
         });
 
         setRiderAvailable();
-        buildDriveCards(); // build cards first, then load counts
+        if (!buildDriveCards()) {
+            return;
+        }
         loadDashboardData();
 
         refreshTimer = new Timer(5000, e -> refreshDashboard());
         refreshTimer.start();
     }
 
-    private void buildDriveCards() {
+    private boolean buildDriveCards() {
         try {
-            DonationDriverService svc = Client.getInstance().getService();
-            String responseXml = svc.readDonationDrives();
+            Client client = Client.getDefault();
+            String responseXml = client.readDonationDrivesSilently();
             Client.Response response = Client.parseResponse(responseXml);
             if (response != null && response.isOk()) {
                 String drivesXml = Client.unescapeXml(response.message);
@@ -84,8 +85,10 @@ public class RiderController {
                     }
                 }
             }
-        } catch (IOException ignored) {
-            /* server unavailable */
+            return true;
+        } catch (IOException ex) {
+            LoginController.scheduleReturnToLoginAfterDisconnect(view.frame);
+            return false;
         }
     }
 
@@ -105,10 +108,10 @@ public class RiderController {
                 Client client = Client.getDefault();
                 String userId = LoginController.currentUserEmail;
 
-                String pendingXml = client.readTickets("rider", "PENDING");
+                String pendingXml = client.readTicketsSilently("rider", "PENDING");
                 Client.Response pendingResponse = Client.parseResponse(pendingXml);
 
-                String myTicketsXml = client.readTickets(userId != null ? userId : "", null);
+                String myTicketsXml = client.readTicketsSilently(userId != null ? userId : "", null);
                 Client.Response myTicketsResponse = Client.parseResponse(myTicketsXml);
 
                 int pendingCount = 0;
@@ -188,7 +191,12 @@ public class RiderController {
                 });
 
             } catch (IOException e) {
-                e.printStackTrace();
+                final Timer timerRef = refreshTimer;
+                LoginController.scheduleReturnToLoginAfterDisconnect(view.frame, () -> {
+                    if (timerRef != null) {
+                        timerRef.stop();
+                    }
+                });
             }
         }).start();
     }

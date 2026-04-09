@@ -394,6 +394,9 @@ public class AdminDonationsPanel extends JPanel {
     public void refreshData() {
         if (donationsTableModel == null)
             return;
+        if (!AdminServerWatch.pingOrReturnToLogin(this)) {
+            return;
+        }
         donationsTableModel.setRowCount(0);
         photoBase64ByRow.clear();
         pickupDateTimeByRow.clear();

@@ -5,6 +5,9 @@ import java.awt.*;
 
 public class AdminDashboardView {
 
+    /** Stored on {@link #frame} so child panels can call {@link #stopAllTimers()} on disconnect. */
+    public static final String FRAME_PROP_KEY = "AdminDashboardView.ref";
+
     public static final String CARD_HOME = "HOME";
     public static final String CARD_NOTIFICATIONS = "NOTIFICATIONS";
     public static final String CARD_DONATIONS = "DONATIONS";
@@ -29,9 +32,22 @@ public class AdminDashboardView {
     public AdminDashboardView() {
         initFrame();
         initHeader();
+        frame.getRootPane().putClientProperty(FRAME_PROP_KEY, this);
         initSidebarAndContent();
 
         frame.setVisible(true);
+    }
+
+    public void stopAllTimers() {
+        if (homePanel != null) {
+            homePanel.stopTimer();
+        }
+        if (notificationsPanel != null) {
+            notificationsPanel.stopTimer();
+        }
+        if (donationsPanel != null) {
+            donationsPanel.stopTimer();
+        }
     }
 
     private void initFrame() {
@@ -64,10 +80,6 @@ public class AdminDashboardView {
 
         logoutBtn = new JButton("Logout");
         logoutBtn.setFocusPainted(false);
-        logoutBtn.addActionListener(e -> {
-            if (homePanel != null) homePanel.stopTimer();
-            frame.dispose();
-        });
         header.add(logoutBtn, BorderLayout.EAST);
 
         frame.add(header, BorderLayout.NORTH);
@@ -163,7 +175,11 @@ public class AdminDashboardView {
     }
 
     public static void main(String[] args) {
-        new AdminDashboardView();
+        AdminDashboardView v = new AdminDashboardView();
+        v.logoutBtn.addActionListener(e -> {
+            v.stopAllTimers();
+            v.frame.dispose();
+        });
     }
 
 }

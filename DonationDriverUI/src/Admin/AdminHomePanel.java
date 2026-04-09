@@ -122,6 +122,9 @@ public class AdminHomePanel extends JPanel {
     }
 
     public void refreshData() {
+        if (!AdminServerWatch.pingOrReturnToLogin(this)) {
+            return;
+        }
         Metrics m = loadMetricsFromServer();
 
         if (shippedValueLabel != null) {

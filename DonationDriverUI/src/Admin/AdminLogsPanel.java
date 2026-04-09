@@ -93,17 +93,15 @@ public class AdminLogsPanel extends JPanel {
     }
 
     public void refreshData() {
+        if (!AdminServerWatch.pingOrReturnToLogin(this)) {
+            return;
+        }
         try {
             Client client = Client.getDefault();
             String response = client.getService().getServerLogs();
             Client.Response resp = Client.parseResponse(response);
             if (resp != null && resp.isOk() && resp.message != null) {
                 logsArea.setText(resp.message);
-
-                // Adjust switch state if modified outside
-                if (resp.message.contains("offline")) {
-                    // Do nothing or sync state accurately
-                }
             }
         } catch (Exception e) {
             logsArea.setText("Failed to fetch logs: " + e.getMessage());

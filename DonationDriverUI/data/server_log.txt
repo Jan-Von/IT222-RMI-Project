@@ -3799,3 +3799,718 @@
 [2026-04-02 21:37:15] [CRUD] user=SYSTEM | readDonationDrives | count=1
 [2026-04-02 21:37:16] [CRUD] user=SYSTEM | readDonationDrives | count=1
 [2026-04-02 21:37:17] [CRUD] user=novs@gmail.com | readTickets | status= count=0
+[2026-04-09 09:00:48] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:00:50] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:00:50] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:00:50] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:00:50] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:00:50] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:00:51] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:00:54] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:00:55] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:00:55] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:00:55] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:00:55] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:00:55] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:00:57] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:01:00] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:01:00] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:01:00] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:01:00] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:01:00] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:01:00] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:01:03] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:01:05] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:01:05] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:01:05] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:01:05] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:01:05] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:01:06] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:01:09] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:01:10] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:01:10] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:01:10] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:01:10] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:01:10] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:01:12] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:01:15] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:01:15] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:01:15] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:01:15] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:01:15] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:01:15] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:01:18] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:01:20] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:01:20] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:01:20] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:01:20] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:01:20] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:01:21] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:01:24] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:01:25] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:01:25] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:01:25] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:01:25] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:01:25] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:01:27] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:01:30] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:01:30] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:01:30] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:01:30] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:01:30] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:01:30] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:01:33] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:01:35] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:01:35] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:01:35] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:01:35] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:01:35] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:01:36] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:01:39] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:01:40] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:01:40] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:01:40] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:01:40] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:01:40] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:01:42] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:01:45] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:01:45] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:01:45] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:01:45] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:01:45] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:01:45] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:01:48] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:01:50] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:01:50] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:01:50] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:01:50] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:01:50] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:01:51] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:01:54] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:01:55] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:01:55] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:01:55] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:01:55] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:01:55] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:01:56] [AUTH] user=admin12345 | Login failed: invalid credentials.
+[2026-04-09 09:01:57] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:02:00] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:02:00] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:02:00] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:02:00] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:02:00] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:02:00] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:02:03] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:02:03] [AUTH] user=admin12345 | Login failed: invalid credentials.
+[2026-04-09 09:02:05] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:02:05] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:02:05] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:02:05] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:02:05] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:02:06] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:02:09] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:02:10] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:02:10] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:02:10] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:02:10] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:02:10] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:02:12] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:02:15] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:02:15] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:02:15] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:02:15] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:02:15] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:02:15] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:02:18] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:02:20] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:02:20] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:02:20] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:02:20] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:02:20] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:02:21] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:02:24] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:02:25] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:02:25] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:02:25] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:02:25] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:02:25] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:02:27] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:02:30] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:02:30] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:02:30] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:02:30] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:02:30] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:02:30] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:02:33] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:02:35] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:02:35] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:02:35] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:02:35] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:02:35] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:02:36] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:02:39] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:02:40] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:02:40] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:02:40] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:02:40] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:02:40] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:02:42] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:02:45] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:02:45] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:02:45] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:02:45] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:02:45] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:02:45] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:02:48] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:02:50] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:02:50] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:02:50] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:02:50] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:02:50] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:02:51] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:02:54] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:02:55] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:02:55] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:02:55] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:02:55] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:02:55] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:02:55] [AUTH] user=admin@donationdriver.com | Login successful. Role=ADMIN
+[2026-04-09 09:02:57] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:02:57] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:03:00] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:03:00] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:03:00] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:03:00] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:03:00] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:03:00] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:03:02] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:03:03] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:03:05] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:03:05] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:03:05] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:03:05] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:03:05] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:03:06] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:03:07] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:03:09] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:03:10] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:03:10] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:03:10] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:03:10] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:03:10] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:03:12] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:03:12] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:03:15] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:03:15] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:03:15] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:03:15] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:03:15] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:03:15] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:03:17] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:03:18] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:03:20] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:03:20] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:03:20] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:03:20] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:03:20] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:03:21] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:03:22] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:03:24] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:03:25] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:03:25] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:03:25] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:03:25] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:03:25] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:03:27] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:03:27] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:03:30] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:03:30] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:03:30] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:03:30] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:03:30] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:03:30] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:03:32] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:03:33] [INFO] user=SYSTEM | getServerLogs | entries=0
+[2026-04-09 09:03:35] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:03:35] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:03:35] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:03:35] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:03:35] [CRUD] user=Admin12345 | readTickets | status= count=0
+[2026-04-09 09:04:27] [INFO] user=SYSTEM | RMI Server started and bound on port 5267
+[2026-04-09 09:04:55] [AUTH] user=admin@donationdriver.com | Login successful. Role=ADMIN
+[2026-04-09 09:04:56] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:04:57] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:04:57] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:04:57] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:04:57] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:04:57] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:04:57] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:04:57] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:04:57] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:05:00] [INFO] user=SYSTEM | getServerLogs | entries=34
+[2026-04-09 09:05:02] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:05:02] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:05:02] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:05:02] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:05:02] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:05:02] [MAINTENANCE] user=SYSTEM | setServerMaintenanceMode | enabled=true
+[2026-04-09 09:05:02] [INFO] user=SYSTEM | getServerLogs | entries=35
+[2026-04-09 09:05:03] [INFO] user=SYSTEM | getServerLogs | entries=35
+[2026-04-09 09:05:03] [MAINTENANCE] user=SYSTEM | setServerMaintenanceMode | enabled=false
+[2026-04-09 09:05:03] [INFO] user=SYSTEM | getServerLogs | entries=36
+[2026-04-09 09:05:06] [INFO] user=SYSTEM | getServerLogs | entries=36
+[2026-04-09 09:05:07] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:05:07] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:05:07] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:05:07] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:05:07] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:05:09] [INFO] user=SYSTEM | getServerLogs | entries=36
+[2026-04-09 09:05:12] [INFO] user=SYSTEM | getServerLogs | entries=36
+[2026-04-09 09:05:12] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:05:12] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:05:12] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:05:12] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:05:12] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:05:15] [INFO] user=SYSTEM | getServerLogs | entries=36
+[2026-04-09 09:05:17] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:05:17] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:05:17] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:05:17] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:05:17] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:05:18] [INFO] user=SYSTEM | getServerLogs | entries=36
+[2026-04-09 09:05:21] [INFO] user=SYSTEM | getServerLogs | entries=36
+[2026-04-09 09:05:22] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:05:22] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:05:22] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:05:22] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:05:22] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:05:24] [INFO] user=SYSTEM | getServerLogs | entries=36
+[2026-04-09 09:05:27] [INFO] user=SYSTEM | getServerLogs | entries=36
+[2026-04-09 09:05:27] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:05:27] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:05:27] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:05:27] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:05:27] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:05:30] [INFO] user=SYSTEM | getServerLogs | entries=36
+[2026-04-09 09:05:32] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:05:32] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:05:32] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:05:32] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:05:32] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:05:33] [INFO] user=SYSTEM | getServerLogs | entries=36
+[2026-04-09 09:05:36] [INFO] user=SYSTEM | getServerLogs | entries=36
+[2026-04-09 09:05:36] [MAINTENANCE] user=SYSTEM | setServerMaintenanceMode | enabled=true
+[2026-04-09 09:05:36] [INFO] user=SYSTEM | getServerLogs | entries=37
+[2026-04-09 09:05:39] [INFO] user=SYSTEM | getServerLogs | entries=37
+[2026-04-09 09:05:42] [INFO] user=SYSTEM | getServerLogs | entries=37
+[2026-04-09 09:05:45] [INFO] user=SYSTEM | getServerLogs | entries=37
+[2026-04-09 09:05:48] [INFO] user=SYSTEM | getServerLogs | entries=37
+[2026-04-09 09:05:48] [MAINTENANCE] user=SYSTEM | setServerMaintenanceMode | enabled=false
+[2026-04-09 09:05:48] [INFO] user=SYSTEM | getServerLogs | entries=38
+[2026-04-09 09:05:51] [INFO] user=SYSTEM | getServerLogs | entries=38
+[2026-04-09 09:05:52] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:05:52] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:05:52] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:05:52] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:05:52] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:05:54] [INFO] user=SYSTEM | getServerLogs | entries=38
+[2026-04-09 09:05:57] [INFO] user=SYSTEM | getServerLogs | entries=38
+[2026-04-09 09:05:57] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:05:57] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:05:57] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:05:57] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:05:57] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:06:00] [INFO] user=SYSTEM | getServerLogs | entries=38
+[2026-04-09 09:06:02] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:06:02] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:06:02] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:06:02] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:06:02] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:06:03] [INFO] user=SYSTEM | getServerLogs | entries=38
+[2026-04-09 09:06:06] [INFO] user=SYSTEM | getServerLogs | entries=38
+[2026-04-09 09:06:07] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:06:07] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:06:07] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:06:07] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:06:07] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:06:09] [INFO] user=SYSTEM | getServerLogs | entries=38
+[2026-04-09 09:06:12] [INFO] user=SYSTEM | getServerLogs | entries=38
+[2026-04-09 09:06:12] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:06:12] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:06:12] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:06:12] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:06:12] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:06:15] [INFO] user=SYSTEM | getServerLogs | entries=38
+[2026-04-09 09:06:17] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:06:17] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:06:17] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:06:17] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:06:17] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:06:18] [INFO] user=SYSTEM | getServerLogs | entries=38
+[2026-04-09 09:06:21] [INFO] user=SYSTEM | getServerLogs | entries=38
+[2026-04-09 09:06:22] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:06:22] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:06:22] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:06:22] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:06:22] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:06:24] [INFO] user=SYSTEM | getServerLogs | entries=38
+[2026-04-09 09:06:27] [INFO] user=SYSTEM | getServerLogs | entries=38
+[2026-04-09 09:06:27] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:06:27] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:06:27] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:06:27] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:06:27] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:06:30] [INFO] user=SYSTEM | getServerLogs | entries=38
+[2026-04-09 09:06:32] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:06:32] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:06:32] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:06:32] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:06:32] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:06:33] [INFO] user=SYSTEM | getServerLogs | entries=38
+[2026-04-09 09:06:36] [INFO] user=SYSTEM | getServerLogs | entries=38
+[2026-04-09 09:06:37] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:06:37] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:06:37] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:06:37] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:06:37] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:06:39] [INFO] user=SYSTEM | getServerLogs | entries=38
+[2026-04-09 09:06:42] [INFO] user=SYSTEM | getServerLogs | entries=38
+[2026-04-09 09:06:42] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:06:42] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:06:42] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:06:42] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:06:42] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:06:45] [INFO] user=SYSTEM | getServerLogs | entries=38
+[2026-04-09 09:06:47] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:06:47] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:06:47] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:06:47] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:06:47] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:06:48] [INFO] user=SYSTEM | getServerLogs | entries=38
+[2026-04-09 09:06:51] [INFO] user=SYSTEM | getServerLogs | entries=38
+[2026-04-09 09:06:52] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:06:52] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:06:52] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:06:52] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:06:52] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:06:54] [INFO] user=SYSTEM | getServerLogs | entries=38
+[2026-04-09 09:06:57] [INFO] user=SYSTEM | getServerLogs | entries=38
+[2026-04-09 09:06:57] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:06:57] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:06:57] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:06:57] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:06:57] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:07:00] [INFO] user=SYSTEM | getServerLogs | entries=38
+[2026-04-09 09:07:02] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:07:02] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:07:02] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:07:02] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:07:02] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:07:03] [INFO] user=SYSTEM | getServerLogs | entries=38
+[2026-04-09 09:07:04] [MAINTENANCE] user=SYSTEM | setServerMaintenanceMode | enabled=true
+[2026-04-09 09:07:04] [INFO] user=SYSTEM | getServerLogs | entries=39
+[2026-04-09 09:07:06] [INFO] user=SYSTEM | getServerLogs | entries=39
+[2026-04-09 09:07:06] [MAINTENANCE] user=SYSTEM | setServerMaintenanceMode | enabled=false
+[2026-04-09 09:07:06] [INFO] user=SYSTEM | getServerLogs | entries=40
+[2026-04-09 09:07:07] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:07:07] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:07:07] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:07:07] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:07:07] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:07:09] [INFO] user=SYSTEM | getServerLogs | entries=40
+[2026-04-09 09:07:12] [INFO] user=SYSTEM | getServerLogs | entries=40
+[2026-04-09 09:07:12] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:07:12] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:07:12] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:07:12] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:07:12] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:07:15] [INFO] user=SYSTEM | getServerLogs | entries=40
+[2026-04-09 09:07:17] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:07:17] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:07:17] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:07:17] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:07:17] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:07:18] [INFO] user=SYSTEM | getServerLogs | entries=40
+[2026-04-09 09:07:21] [INFO] user=SYSTEM | getServerLogs | entries=40
+[2026-04-09 09:07:22] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:07:22] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:07:22] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:07:22] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:07:22] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:07:24] [INFO] user=SYSTEM | getServerLogs | entries=40
+[2026-04-09 09:07:27] [INFO] user=SYSTEM | getServerLogs | entries=40
+[2026-04-09 09:07:27] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:07:27] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:07:27] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:07:27] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:07:27] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:07:30] [INFO] user=SYSTEM | getServerLogs | entries=40
+[2026-04-09 09:07:32] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:07:32] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:07:32] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:07:32] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:07:32] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:07:33] [INFO] user=SYSTEM | getServerLogs | entries=40
+[2026-04-09 09:07:36] [INFO] user=SYSTEM | getServerLogs | entries=40
+[2026-04-09 09:07:37] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:07:37] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:07:37] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:07:37] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:07:37] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:07:39] [INFO] user=SYSTEM | getServerLogs | entries=40
+[2026-04-09 09:07:42] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:07:42] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:07:42] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:07:42] [INFO] user=SYSTEM | getServerLogs | entries=40
+[2026-04-09 09:07:42] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:07:42] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:07:45] [INFO] user=SYSTEM | getServerLogs | entries=40
+[2026-04-09 09:07:47] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:07:47] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:07:47] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:07:47] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:07:47] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:07:48] [INFO] user=SYSTEM | getServerLogs | entries=40
+[2026-04-09 09:07:51] [INFO] user=SYSTEM | getServerLogs | entries=40
+[2026-04-09 09:07:52] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:07:52] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:07:52] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:07:52] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:07:52] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:07:54] [INFO] user=SYSTEM | getServerLogs | entries=40
+[2026-04-09 09:07:57] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:07:57] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:07:57] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:07:57] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:07:57] [INFO] user=SYSTEM | getServerLogs | entries=40
+[2026-04-09 09:07:57] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:08:00] [INFO] user=SYSTEM | getServerLogs | entries=40
+[2026-04-09 09:08:01] [INFO] user=SYSTEM | RMI Server stopped.
+[2026-04-09 09:30:32] [INFO] user=SYSTEM | RMI Server started and bound on port 5267
+[2026-04-09 09:30:48] [AUTH] user=admin@donationdriver.com | Login failed: invalid credentials.
+[2026-04-09 09:30:54] [AUTH] user=admin@donationdriver.com | Login successful. Role=ADMIN
+[2026-04-09 09:30:55] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:30:56] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:30:56] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:30:56] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:30:56] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:30:56] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:30:56] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:30:56] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:30:56] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:30:59] [MAINTENANCE] user=SYSTEM | setServerMaintenanceMode | enabled=true
+[2026-04-09 09:30:59] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:30:59] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:31:02] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:31:05] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:31:08] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:31:11] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:31:14] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:31:17] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:31:20] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:31:23] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:31:26] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:31:29] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:31:32] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:31:35] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:31:38] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:31:41] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:31:44] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:31:47] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:31:50] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:31:53] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:31:56] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:31:59] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:32:02] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:32:05] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:32:08] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:32:11] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:32:14] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:32:17] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:32:20] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:32:23] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:32:26] [AUTH] user=admin@donationdriver.com | Login failed: user already logged in.
+[2026-04-09 09:32:26] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:32:29] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:32:32] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:32:35] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:32:38] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:32:41] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:32:44] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:32:47] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:32:50] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:32:53] [INFO] user=SYSTEM | getServerLogs | entries=41
+[2026-04-09 09:32:54] [MAINTENANCE] user=SYSTEM | setServerMaintenanceMode | enabled=false
+[2026-04-09 09:32:54] [INFO] user=SYSTEM | getServerLogs | entries=42
+[2026-04-09 09:32:56] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:32:56] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:32:56] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:32:56] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:32:56] [INFO] user=SYSTEM | getServerLogs | entries=42
+[2026-04-09 09:32:56] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:32:59] [INFO] user=SYSTEM | getServerLogs | entries=42
+[2026-04-09 09:33:01] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:33:01] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:33:01] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:33:01] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:33:01] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:33:02] [INFO] user=SYSTEM | getServerLogs | entries=42
+[2026-04-09 09:33:06] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:33:06] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:33:07] [AUTH] user=admin@donationdriver.com | Login failed: user already logged in.
+[2026-04-09 09:33:11] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:33:11] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:33:16] [AUTH] user=admin@donationdriver.com | Login failed: user already logged in.
+[2026-04-09 09:40:26] [INFO] user=SYSTEM | RMI Server started and bound on port 5267
+[2026-04-09 09:40:29] [AUTH] user=admin@donationdriver.com | Login successful. Role=ADMIN
+[2026-04-09 09:40:34] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:40:34] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:40:34] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:40:34] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:40:34] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:40:34] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:40:34] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:40:34] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:40:34] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:40:37] [INFO] user=SYSTEM | getServerLogs | entries=42
+[2026-04-09 09:40:39] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:40:39] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:40:39] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:40:39] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:40:39] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:40:40] [INFO] user=SYSTEM | getServerLogs | entries=42
+[2026-04-09 09:40:43] [INFO] user=SYSTEM | getServerLogs | entries=42
+[2026-04-09 09:40:44] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:40:44] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:40:44] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:40:44] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:40:44] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:40:46] [MAINTENANCE] user=SYSTEM | setServerMaintenanceMode | enabled=true
+[2026-04-09 09:40:46] [INFO] user=SYSTEM | getServerLogs | entries=43
+[2026-04-09 09:40:46] [INFO] user=SYSTEM | getServerLogs | entries=43
+[2026-04-09 09:40:49] [INFO] user=SYSTEM | getServerLogs | entries=43
+[2026-04-09 09:40:52] [INFO] user=SYSTEM | getServerLogs | entries=43
+[2026-04-09 09:40:55] [INFO] user=SYSTEM | getServerLogs | entries=43
+[2026-04-09 09:40:58] [INFO] user=SYSTEM | getServerLogs | entries=43
+[2026-04-09 09:41:01] [INFO] user=SYSTEM | getServerLogs | entries=43
+[2026-04-09 09:41:04] [INFO] user=SYSTEM | getServerLogs | entries=43
+[2026-04-09 09:41:07] [INFO] user=SYSTEM | getServerLogs | entries=43
+[2026-04-09 09:41:10] [MAINTENANCE] user=SYSTEM | setServerMaintenanceMode | enabled=false
+[2026-04-09 09:41:10] [INFO] user=SYSTEM | getServerLogs | entries=44
+[2026-04-09 09:41:10] [INFO] user=SYSTEM | getServerLogs | entries=44
+[2026-04-09 09:41:13] [INFO] user=SYSTEM | getServerLogs | entries=44
+[2026-04-09 09:41:14] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:41:14] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:41:14] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:41:14] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:41:14] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:41:16] [INFO] user=SYSTEM | getServerLogs | entries=44
+[2026-04-09 09:41:19] [INFO] user=SYSTEM | getServerLogs | entries=44
+[2026-04-09 09:41:19] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:41:19] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:41:19] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:41:19] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:41:19] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:41:22] [INFO] user=SYSTEM | getServerLogs | entries=44
+[2026-04-09 09:41:24] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:41:24] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:41:24] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:41:24] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:41:24] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:41:25] [INFO] user=SYSTEM | getServerLogs | entries=44
+[2026-04-09 09:41:28] [INFO] user=SYSTEM | getServerLogs | entries=44
+[2026-04-09 09:41:29] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:41:29] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:41:29] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:41:29] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:41:29] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:41:31] [INFO] user=SYSTEM | getServerLogs | entries=44
+[2026-04-09 09:41:34] [INFO] user=SYSTEM | getServerLogs | entries=44
+[2026-04-09 09:41:34] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:41:34] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:41:34] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:41:34] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:41:34] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:41:37] [INFO] user=SYSTEM | getServerLogs | entries=44
+[2026-04-09 09:41:39] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:41:39] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:41:39] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:41:39] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:41:39] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:41:40] [INFO] user=SYSTEM | getServerLogs | entries=44
+[2026-04-09 09:41:43] [INFO] user=SYSTEM | getServerLogs | entries=44
+[2026-04-09 09:41:44] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:41:44] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:41:44] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:41:44] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:41:44] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:41:46] [INFO] user=SYSTEM | getServerLogs | entries=44
+[2026-04-09 09:41:49] [INFO] user=SYSTEM | getServerLogs | entries=44
+[2026-04-09 09:41:49] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:41:49] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:41:49] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:41:49] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:41:49] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:41:52] [INFO] user=SYSTEM | getServerLogs | entries=44
+[2026-04-09 09:41:54] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:41:54] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:41:54] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:41:54] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:41:54] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:41:55] [INFO] user=SYSTEM | getServerLogs | entries=44
+[2026-04-09 09:41:58] [INFO] user=SYSTEM | getServerLogs | entries=44
+[2026-04-09 09:41:59] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:41:59] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:41:59] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:41:59] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:41:59] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:42:01] [INFO] user=SYSTEM | getServerLogs | entries=44
+[2026-04-09 09:42:04] [INFO] user=SYSTEM | getServerLogs | entries=44
+[2026-04-09 09:42:04] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:42:04] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:42:04] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:42:04] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:42:04] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:42:07] [INFO] user=SYSTEM | getServerLogs | entries=44
+[2026-04-09 09:42:09] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:42:09] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:42:09] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:42:09] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:42:09] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:42:10] [INFO] user=SYSTEM | getServerLogs | entries=44
+[2026-04-09 09:42:13] [INFO] user=SYSTEM | getServerLogs | entries=44
+[2026-04-09 09:42:14] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:42:14] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:42:14] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:42:14] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:42:14] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:42:16] [INFO] user=SYSTEM | getServerLogs | entries=44
+[2026-04-09 09:42:19] [INFO] user=SYSTEM | getServerLogs | entries=44
+[2026-04-09 09:42:19] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:42:19] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:42:19] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:42:19] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:42:19] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:42:22] [INFO] user=SYSTEM | getServerLogs | entries=44
+[2026-04-09 09:42:24] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:42:24] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:42:24] [CRUD] user=admin | readTickets | status= count=0
+[2026-04-09 09:42:24] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:42:24] [CRUD] user=admin@donationdriver.com | readTickets | status= count=0
+[2026-04-09 09:42:25] [INFO] user=SYSTEM | getServerLogs | entries=44
+[2026-04-09 09:42:39] [AUTH] user=admin@donationdriver.com | Login failed: user already logged in.
+[2026-04-09 09:43:46] [AUTH] user=cholo | Login successful. Role=DONOR
+[2026-04-09 09:43:48] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:43:53] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:44:01] [AUTH] user=cholo | Login failed: user already logged in.
+[2026-04-09 09:44:34] [AUTH] user=cholo | Login failed: user already logged in.
+[2026-04-09 09:44:40] [INFO] user=SYSTEM | RMI Server stopped.
+[2026-04-09 09:44:45] [INFO] user=SYSTEM | RMI Server started and bound on port 5267
+[2026-04-09 09:44:46] [AUTH] user=cholo | Login failed: user already logged in.
+[2026-04-09 09:45:27] [INFO] user=SYSTEM | RMI Server started and bound on port 5267
+[2026-04-09 09:45:31] [AUTH] user=cholo | Login successful. Role=DONOR
+[2026-04-09 09:45:32] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:45:37] [CRUD] user=SYSTEM | readDonationDrives | count=1
+[2026-04-09 09:45:38] [INFO] user=SYSTEM | RMI Server stopped.
+[2026-04-09 09:46:07] [INFO] user=SYSTEM | RMI Server started and bound on port 5267
+[2026-04-09 09:46:13] [AUTH] user=cholo | Login failed: user already logged in.

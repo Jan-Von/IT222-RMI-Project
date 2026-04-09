@@ -58,7 +58,7 @@ public class DashboardController {
 
         try {
             Client client = Client.getDefault();
-            String responseXml = client.readDonationDrives();
+            String responseXml = client.readDonationDrivesSilently();
             Client.Response response = Client.parseResponse(responseXml);
             if (response != null && response.isOk()) {
                 String drivesXml = response.message;
@@ -85,7 +85,8 @@ public class DashboardController {
                 }
             }
         } catch (IOException ex) {
-            // Server not available
+            stopTimer();
+            LoginController.scheduleReturnToLoginAfterDisconnect(view.frame);
         }
 
         view.driveCardsPanel.revalidate();
