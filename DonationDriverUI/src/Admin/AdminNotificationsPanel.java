@@ -22,6 +22,10 @@ public class AdminNotificationsPanel extends JPanel {
     private JLabel connectionStatusLabel;
     private final List<AdminNotif> allNotifs = new ArrayList<>();
 
+    private DefaultListModel<AdminNotif> systemModel;
+    private JList<AdminNotif> systemList;
+    private final List<AdminNotif> allSystemNotifs = new ArrayList<>();
+
     private JTable monetaryTable;
     private DefaultTableModel monetaryTableModel;
     private JTable donationBoxesTable;
@@ -51,6 +55,7 @@ public class AdminNotificationsPanel extends JPanel {
         JTabbedPane tabs = new JTabbedPane();
         tabs.setBorder(BorderFactory.createEmptyBorder(0, 20, 20, 20));
         tabs.addTab("Activity", buildActivityTab());
+        tabs.addTab("System activity", buildSystemActivityTab());
         tabs.addTab("Monetary", buildMonetaryTab());
         tabs.addTab("Boxes", buildBoxesTab());
         add(tabs, BorderLayout.CENTER);
@@ -174,6 +179,22 @@ public class AdminNotificationsPanel extends JPanel {
         return p;
     }
 
+    private JPanel buildSystemActivityTab() {
+        JPanel panel = new JPanel(new BorderLayout(10, 10));
+        panel.setOpaque(false);
+
+        systemModel = new DefaultListModel<>();
+        systemList = new JList<>(systemModel);
+        systemList.setCellRenderer(new AdminNotifRenderer());
+        systemList.setVisibleRowCount(12);
+        systemList.setFixedCellHeight(-1);
+
+        JScrollPane scroll = new JScrollPane(systemList);
+        scroll.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220), 1));
+        panel.add(scroll, BorderLayout.CENTER);
+        return panel;
+    }
+
     // fetch data and populate
     public void refreshData() {
         if (!AdminServerWatch.pingOrReturnToLogin(this)) {
@@ -284,6 +305,101 @@ public class AdminNotificationsPanel extends JPanel {
                 connectionStatusLabel.setText("Server unreachable — retrying…");
             }
         }
+
+        // System activity is best-effort and should never break the main view.
+        refreshSystemActivity();
+    }
+
+    private void refreshSystemActivity() {
+        if (systemModel == null) return;
+        try {
+            Client client = Client.getDefault();
+            String responseXml = client.getService(false).getServerLogs();
+            Client.Response resp = Client.parseResponse(responseXml);
+            if (resp == null || !resp.isOk() || resp.message == null) {
+                return;
+            }
+            String raw = resp.message;
+            if (raw.trim().isEmpty()) {
+                allSystemNotifs.clear();
+                allSystemNotifs.add(AdminNotif.info("No system activity yet", "No server log entries.", "", null));
+            } else {
+                allSystemNotifs.clear();
+                String[] lines = raw.split("\\r?\\n");
+                // Newest last in logs; show newest first.
+                for (int i = lines.length - 1; i >= 0 && allSystemNotifs.size() < 60; i--) {
+                    String line = lines[i];
+                    if (line == null) continue;
+                    line = line.trim();
+                    if (line.isEmpty()) continue;
+                    AdminNotif n = notifFromServerLogLine(line);
+                    if (n != null) allSystemNotifs.add(n);
+                }
+                if (allSystemNotifs.isEmpty()) {
+                    allSystemNotifs.add(AdminNotif.info("No system activity yet", "No parsable server log entries.", "", null));
+                }
+            }
+
+            systemModel.clear();
+            for (AdminNotif n : allSystemNotifs) systemModel.addElement(n);
+        } catch (Exception ignored) {
+            // keep previous system activity visible
+        }
+    }
+
+    private AdminNotif notifFromServerLogLine(String line) {
+        // Examples:
+        // CREATE_TICKET | <id> by <email>
+        // UPDATE_TICKET | <id> -> DELIVERED
+        // UPDATE_DRIVE_AMOUNT | <drive> +<amount>
+        if (line.startsWith("CREATE_TICKET |")) {
+            String rest = line.substring("CREATE_TICKET |".length()).trim();
+            String title = "New donation created";
+            String details = rest;
+            String meta = "";
+            int byIdx = rest.indexOf(" by ");
+            if (byIdx >= 0) {
+                String ticketId = rest.substring(0, byIdx).trim();
+                String user = rest.substring(byIdx + 4).trim();
+                details = shortName(user) + " created a donation request";
+                meta = "Ticket: " + ticketId;
+            }
+            return AdminNotif.info(title, details, meta, null);
+        }
+        if (line.startsWith("UPDATE_TICKET |")) {
+            String rest = line.substring("UPDATE_TICKET |".length()).trim();
+            String title = "Donation status updated";
+            String details = rest;
+            String meta = "";
+            int arrow = rest.indexOf("->");
+            if (arrow >= 0) {
+                String ticketId = rest.substring(0, arrow).trim();
+                String status = rest.substring(arrow + 2).trim();
+                title = "Status: " + status;
+                details = "Ticket updated";
+                meta = "Ticket: " + ticketId;
+            }
+            return AdminNotif.info(title, details, meta, null);
+        }
+        if (line.startsWith("UPDATE_DRIVE_AMOUNT |")) {
+            String rest = line.substring("UPDATE_DRIVE_AMOUNT |".length()).trim();
+            return AdminNotif.info("Funds updated", rest, "", null);
+        }
+        if (line.startsWith("MAINTENANCE_MODE |")) {
+            String rest = line.substring("MAINTENANCE_MODE |".length()).trim();
+            return AdminNotif.warn("Maintenance mode changed", rest, "", null);
+        }
+        if (line.startsWith("RIDER_SET_AVAILABLE |")) {
+            String rest = line.substring("RIDER_SET_AVAILABLE |".length()).trim();
+            return AdminNotif.info("Rider online", shortName(rest) + " is now available", "", null);
+        }
+        if (line.startsWith("RIDER_SET_UNAVAILABLE |")) {
+            String rest = line.substring("RIDER_SET_UNAVAILABLE |".length()).trim();
+            return AdminNotif.info("Rider offline", shortName(rest) + " is now unavailable", "", null);
+        }
+
+        // fallback: show raw
+        return AdminNotif.info("System event", line, "", null);
     }
 
     private List<Ticket> loadTicketsFromServer() throws Exception {
@@ -300,6 +416,10 @@ public class AdminNotificationsPanel extends JPanel {
         if (ticketsXml == null || ticketsXml.isEmpty())
             return list;
         ticketsXml = Client.unescapeXml(ticketsXml);
+        // Defensive: some responses end up double-escaped in transit.
+        if (ticketsXml.contains("&lt;ticket&gt;") || ticketsXml.contains("&amp;lt;ticket&amp;gt;")) {
+            ticketsXml = Client.unescapeXml(ticketsXml);
+        }
 
         int idx = 0;
         while (true) {

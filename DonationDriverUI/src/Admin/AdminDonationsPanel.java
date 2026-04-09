@@ -502,6 +502,10 @@ public class AdminDonationsPanel extends JPanel {
             return rows;
         }
         ticketsXml = Client.unescapeXml(ticketsXml);
+        // Defensive: some responses end up double-escaped in transit.
+        if (ticketsXml.contains("&lt;ticket&gt;") || ticketsXml.contains("&amp;lt;ticket&amp;gt;")) {
+            ticketsXml = Client.unescapeXml(ticketsXml);
+        }
 
         // build these in sync with rows, then assigned by refreshData() after successful fetch
         List<String> photoTmp = new ArrayList<>();

@@ -681,11 +681,21 @@ public class Client {
     public static String unescapeXml(String s) {
         if (s == null)
             return "";
-        return s.replace("&lt;", "<")
-                .replace("&gt;", ">")
-                .replace("&quot;", "\"")
-                .replace("&apos;", "'")
-                .replace("&amp;", "&");
+        // Handle normal and double-escaped XML (e.g. "&amp;lt;ticket&amp;gt;").
+        String out = s;
+        for (int i = 0; i < 3; i++) {
+            String prev = out;
+            // Decode '&' first so double-escaped sequences become decodable in the same pass.
+            out = out.replace("&amp;", "&")
+                    .replace("&lt;", "<")
+                    .replace("&gt;", ">")
+                    .replace("&quot;", "\"")
+                    .replace("&apos;", "'");
+            if (out.equals(prev)) {
+                break;
+            }
+        }
+        return out;
     }
 
     public String ping() throws IOException {
