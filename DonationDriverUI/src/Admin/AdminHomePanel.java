@@ -161,7 +161,7 @@ public class AdminHomePanel extends JPanel {
             boolean hasNotif = false;
             
             if (response != null && response.isOk() && response.message != null) {
-                String ticketsXml = response.message;
+                String ticketsXml = Client.unescapeXml(response.message);
                 int idx = 0;
                 while (true) {
                     int start = ticketsXml.indexOf("<ticket>", idx);

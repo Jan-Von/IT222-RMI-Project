@@ -3,13 +3,13 @@ package Admin;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.RowFilter;
 import javax.swing.table.TableRowSorter;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import Network.Client;
-import Controller.LoginController;
 
 public class AdminDonationsPanel extends JPanel {
 
@@ -131,7 +131,41 @@ public class AdminDonationsPanel extends JPanel {
     }
 
     private void applyTableFilter() {
-        refreshData();
+        if (tableSorter == null) return;
+
+        final String statusFilter = statusFilterCombo != null ? (String) statusFilterCombo.getSelectedItem() : null;
+        final String keyword = searchField != null ? searchField.getText().trim().toLowerCase() : "";
+
+        tableSorter.setRowFilter(new RowFilter<DefaultTableModel, Integer>() {
+            @Override
+            public boolean include(Entry<? extends DefaultTableModel, ? extends Integer> entry) {
+                // If the table is showing the "No data" placeholder row, keep it visible.
+                Object idObj = entry.getValue(0);
+                if (idObj == null || "-".equals(String.valueOf(idObj))) {
+                    return true;
+                }
+
+                // Status filter
+                if (statusFilter != null && !FILTER_STATUS_ALL.equals(statusFilter)) {
+                    Object statusObj = entry.getValue(4);
+                    String st = statusObj != null ? String.valueOf(statusObj) : "";
+                    if (!statusFilter.equalsIgnoreCase(st)) {
+                        return false;
+                    }
+                }
+
+                // Keyword filter (ID or Donor)
+                if (keyword != null && !keyword.isEmpty()) {
+                    Object id = entry.getValue(0);
+                    Object donor = entry.getValue(2);
+                    String idStr = id != null ? String.valueOf(id).toLowerCase() : "";
+                    String donorStr = donor != null ? String.valueOf(donor).toLowerCase() : "";
+                    return idStr.contains(keyword) || donorStr.contains(keyword);
+                }
+
+                return true;
+            }
+        });
     }
 
     private JPanel buildActionsPanel() {
@@ -407,30 +441,21 @@ public class AdminDonationsPanel extends JPanel {
             photoBase64ByRow.add(null);
             pickupDateTimeByRow.add("");
         } else {
-            String statusFilter = (String) statusFilterCombo.getSelectedItem();
             for (Object[] row : rows) {
-                if (statusFilter == null || FILTER_STATUS_ALL.equals(statusFilter) || statusFilter.equalsIgnoreCase(String.valueOf(row[4]))) {
-                    donationsTableModel.addRow(row);
-                }
+                donationsTableModel.addRow(row);
             }
         }
+
+        // Apply status + search filters on top of the fresh data.
+        applyTableFilter();
     }
 
     private List<Object[]> loadDonationsFromServer() {
         List<Object[]> rows = new ArrayList<>();
         try {
             Client client = Client.getDefault();
-            String userId = LoginController.currentUserEmail;
-            if (userId == null || userId.isEmpty()) {
-                userId = "admin@donationdriver.com";
-            }
-            String keyword = searchField.getText().trim();
-            String responseXml;
-            if (!keyword.isEmpty() && !keyword.equals("Search donations...")) {
-                responseXml = client.getService().searchTickets(keyword);
-            } else {
-                responseXml = client.readTickets(userId, null);
-            }
+            // Admin view should load all tickets; filtering is handled locally via the table sorter.
+            String responseXml = client.readTickets("admin", null);
             Client.Response response = Client.parseResponse(responseXml);
             if (response == null || !response.isOk()) {
                 return rows;
