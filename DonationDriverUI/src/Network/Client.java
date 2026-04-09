@@ -208,8 +208,12 @@ public class Client {
                 }
                 case "READ_TICKETS": {
                     String userId = unescapeXml(extractTagValue(requestXml, "userId"));
-                    String status = unescapeXml(extractTagValue(requestXml, "status"));
-                    if (status == null) {
+                    String statusRaw = extractTagValue(requestXml, "status");
+                    if (statusRaw == null) {
+                        return svc.readTickets(userId);
+                    }
+                    String status = unescapeXml(statusRaw);
+                    if (status == null || status.trim().isEmpty()) {
                         return svc.readTickets(userId);
                     }
                     return svc.readTickets(userId, status);

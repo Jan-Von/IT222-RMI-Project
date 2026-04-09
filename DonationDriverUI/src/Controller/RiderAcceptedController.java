@@ -93,7 +93,6 @@ public class RiderAcceptedController {
             String quantity = getTag(oneTicket, "quantity");
             String location = getTag(oneTicket, "pickupLocation");
             String destination = getTag(oneTicket, "deliveryDestination");
-            String donor = getTag(oneTicket, "userId");
             String summary = String.format("ID %s | %s x%s | %s -> %s",
                     or(ticketId, "?"), or(category, "-"), or(quantity, "1"),
                     or(location, "N/A"), or(destination, "N/A"));
@@ -122,24 +121,27 @@ public class RiderAcceptedController {
     }
 
     private void rejectSelectedTicket() {
-        updateSelectedTicketStatus("REJECTED");
+        if (updateSelectedTicketStatus("REJECTED")) {
+            // Immediately show the rejected list so the rider sees the update.
+            openRejected();
+        }
     }
 
-    private void updateSelectedTicketStatus(String newStatus) {
+    private boolean updateSelectedTicketStatus(String newStatus) {
         int idx = view.ticketsList.getSelectedIndex();
         if (idx < 0 || idx >= ticketIds.size()) {
             JOptionPane.showMessageDialog(view.frame, "Please select a pickup first.");
-            return;
+            return false;
         }
         String ticketId = ticketIds.get(idx);
         if (ticketId == null || ticketId.isEmpty()) {
             JOptionPane.showMessageDialog(view.frame, "Invalid ticket selected.");
-            return;
+            return false;
         }
         String userId = LoginController.currentUserEmail;
         if (userId == null || userId.trim().isEmpty()) {
             JOptionPane.showMessageDialog(view.frame, "Please log in to update ticket.");
-            return;
+            return false;
         }
         try {
             Client client = Client.getDefault();
@@ -148,14 +150,17 @@ public class RiderAcceptedController {
             if (resp != null && resp.isOk()) {
                 JOptionPane.showMessageDialog(view.frame, "Ticket updated to " + newStatus + ".");
                 loadAcceptedTickets();
+                return true;
             } else {
                 JOptionPane.showMessageDialog(view.frame,
                         resp != null && resp.message != null ? resp.message : "Update failed.",
                         "Error", JOptionPane.ERROR_MESSAGE);
+                return false;
             }
         } catch (IOException ex) {
             ex.printStackTrace();
             JOptionPane.showMessageDialog(view.frame, "Unable to contact server.", "Error", JOptionPane.ERROR_MESSAGE);
+            return false;
         }
     }
 
