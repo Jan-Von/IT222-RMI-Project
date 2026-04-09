@@ -128,19 +128,37 @@ public class AdminNotificationsPanel extends JPanel {
 
                 String text = t.notes;
                 if (text != null) {
+                    // Try old format
                     int amtIdx = text.indexOf("Amount=");
                     if (amtIdx >= 0) {
                         int end = text.indexOf(";", amtIdx);
                         if (end < 0)
                             end = text.length();
                         amount = text.substring(amtIdx + 7, end).trim();
+                    } else {
+                        // Try new format: "Amount: 100.0"
+                        amtIdx = text.indexOf("Amount:");
+                        if (amtIdx >= 0) {
+                            int end = text.indexOf("|", amtIdx);
+                            if (end < 0) end = text.length();
+                            amount = text.substring(amtIdx + 7, end).trim();
+                        }
                     }
+                    
                     int txnIdx = text.indexOf("TransactionId=");
                     if (txnIdx >= 0) {
                         int end = text.indexOf(";", txnIdx);
                         if (end < 0)
                             end = text.length();
                         transactionId = text.substring(txnIdx + 14, end).trim();
+                    } else {
+                        // Try new format: "ID: 12345"
+                        txnIdx = text.indexOf("ID:");
+                        if (txnIdx >= 0) {
+                            int end = text.indexOf("|", txnIdx);
+                            if (end < 0) end = text.length();
+                            transactionId = text.substring(txnIdx + 3, end).trim();
+                        }
                     }
                 }
 
@@ -190,6 +208,7 @@ public class AdminNotificationsPanel extends JPanel {
             String ticketsXml = response.message;
             if (ticketsXml == null || ticketsXml.isEmpty())
                 return list;
+            ticketsXml = Client.unescapeXml(ticketsXml);
 
             int idx = 0;
             while (true) {

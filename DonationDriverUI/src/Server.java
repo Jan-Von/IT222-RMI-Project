@@ -94,6 +94,7 @@ public class Server extends JFrame implements DonationDriverService {
         public String photoBase64;
         public String qualityStatus;
         public String qualityReason;
+        public String createdAt;
     }
 
     static class Drive {
@@ -181,7 +182,7 @@ public class Server extends JFrame implements DonationDriverService {
             if (!f.exists() || f.length() == 0) {
                 File parent = f.getParentFile();
                 if (parent != null) parent.mkdirs();
-                Files.writeString(f.toPath(), "[]", StandardCharsets.UTF_8);
+                Files.write(f.toPath(), "[]".getBytes(StandardCharsets.UTF_8));
             }
         } catch (Exception ignored) {
         }
@@ -192,7 +193,7 @@ public class Server extends JFrame implements DonationDriverService {
             if (!f.exists() || f.length() == 0) {
                 File parent = f.getParentFile();
                 if (parent != null) parent.mkdirs();
-                Files.writeString(f.toPath(), defaultJson, StandardCharsets.UTF_8);
+                Files.write(f.toPath(), (defaultJson == null ? "" : defaultJson).getBytes(StandardCharsets.UTF_8));
             }
         } catch (Exception ignored) {
         }
@@ -207,7 +208,7 @@ public class Server extends JFrame implements DonationDriverService {
                     @SuppressWarnings("unchecked")
                     List<Object> rawList = (List<Object>) gson.getClass()
                             .getMethod("fromJson", String.class, Class.class)
-                            .invoke(gson, Files.readString(file.toPath(), StandardCharsets.UTF_8), List.class);
+                            .invoke(gson, new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8), List.class);
 
                     List<T> out = new ArrayList<>();
                     for (Object rawEl : rawList) {
@@ -244,7 +245,7 @@ public class Server extends JFrame implements DonationDriverService {
                     String json = (String) gsonForWrite.getClass().getMethod("toJson", Object.class).invoke(gsonForWrite, list);
                     File parent = file.getParentFile();
                     if (parent != null) parent.mkdirs();
-                    Files.writeString(file.toPath(), json, StandardCharsets.UTF_8);
+                    Files.write(file.toPath(), (json == null ? "" : json).getBytes(StandardCharsets.UTF_8));
                     return;
                 }
                 saveListFallback(file, list);
@@ -255,7 +256,7 @@ public class Server extends JFrame implements DonationDriverService {
     }
 
     private static <T> List<T> loadListFallback(File file, Class<T> elementClass) throws Exception {
-        String json = Files.readString(file.toPath(), StandardCharsets.UTF_8).trim();
+        String json = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8).trim();
         if (json.isEmpty() || "[]".equals(json)) return new ArrayList<>();
 
         if (elementClass == String.class) {
@@ -318,6 +319,7 @@ public class Server extends JFrame implements DonationDriverService {
             t.photoBase64 = extractJsonStringField(obj, "photoBase64");
             t.qualityStatus = extractJsonStringField(obj, "qualityStatus");
             t.qualityReason = extractJsonStringField(obj, "qualityReason");
+            t.createdAt = extractJsonStringField(obj, "createdAt");
             out.add(t);
         }
         return out;
@@ -384,7 +386,8 @@ public class Server extends JFrame implements DonationDriverService {
                         .append("\"deliveryDestination\":\"").append(escapeJsonString(t.deliveryDestination)).append("\",")
                         .append("\"photoBase64\":\"").append(escapeJsonString(t.photoBase64)).append("\",")
                         .append("\"qualityStatus\":\"").append(escapeJsonString(t.qualityStatus)).append("\",")
-                        .append("\"qualityReason\":\"").append(escapeJsonString(t.qualityReason)).append("\"")
+                        .append("\"qualityReason\":\"").append(escapeJsonString(t.qualityReason)).append("\",")
+                        .append("\"createdAt\":\"").append(escapeJsonString(t.createdAt)).append("\"")
                         .append("}");
             }
             sb.append("]");
@@ -437,7 +440,7 @@ public class Server extends JFrame implements DonationDriverService {
 
         File parent = file.getParentFile();
         if (parent != null) parent.mkdirs();
-        Files.writeString(file.toPath(), json, StandardCharsets.UTF_8);
+        Files.write(file.toPath(), (json == null ? "" : json).getBytes(StandardCharsets.UTF_8));
     }
 
     private static List<String> parseJsonObjects(String jsonArray) {
@@ -525,7 +528,7 @@ public class Server extends JFrame implements DonationDriverService {
         // We only need Users for registration/login in this minimal fix.
         if (file == null || !file.exists()) return new ArrayList<>();
         try {
-            String json = Files.readString(file.toPath(), StandardCharsets.UTF_8).trim();
+            String json = new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8).trim();
             if (json.isEmpty() || "[]".equals(json)) return new ArrayList<>();
 
             if (elementClass != User.class) {
@@ -568,7 +571,7 @@ public class Server extends JFrame implements DonationDriverService {
             sb.append("]");
             File parent = file.getParentFile();
             if (parent != null) parent.mkdirs();
-            Files.writeString(file.toPath(), sb.toString(), StandardCharsets.UTF_8);
+            Files.write(file.toPath(), sb.toString().getBytes(StandardCharsets.UTF_8));
         } catch (Exception ignored) {
         }
     }
@@ -683,7 +686,7 @@ public class Server extends JFrame implements DonationDriverService {
             try {
                 File f = serverSettingsFile();
                 if (f == null || !f.exists() || f.length() == 0) return false;
-                String json = Files.readString(f.toPath(), StandardCharsets.UTF_8);
+                String json = new String(Files.readAllBytes(f.toPath()), StandardCharsets.UTF_8);
                 if (json == null) return false;
                 String compact = json.replaceAll("\\s+", "");
                 return compact.toLowerCase().contains("\"maintenanceenabled\":true");
@@ -718,6 +721,7 @@ public class Server extends JFrame implements DonationDriverService {
     private static String getUserRole(String email) {
         if (email == null) return "DONOR";
         String e = email.trim().toLowerCase();
+        if (e.equals("admin") || e.equals("admin@donationdriver.com")) return "ADMIN";
         try {
             List<User> users = loadList(usersFile(), User.class);
             for (User u : users) {
@@ -754,6 +758,7 @@ public class Server extends JFrame implements DonationDriverService {
                 + "<photoBase64>" + safe(t.photoBase64) + "</photoBase64>"
                 + "<qualityStatus>" + safe(qStatus) + "</qualityStatus>"
                 + "<qualityReason>" + safe(qReason) + "</qualityReason>"
+                + "<createdAt>" + safe(t.createdAt) + "</createdAt>"
                 + "</ticket>";
     }
 
@@ -810,7 +815,7 @@ public class Server extends JFrame implements DonationDriverService {
 
     private void log(String type, String userId, String message) {
         String timestamp = LocalDateTime.now().format(LOG_FMT);
-        String line = "[" + timestamp + "] [" + (type == null ? "INFO" : type.toUpperCase()) + "] " + "user=" + (userId == null || userId.isBlank() ? "SYSTEM" : userId) + " | " + (message == null ? "" : message);
+        String line = "[" + timestamp + "] [" + (type == null ? "INFO" : type.toUpperCase()) + "] " + "user=" + (userId == null || userId.trim().isEmpty() ? "SYSTEM" : userId) + " | " + (message == null ? "" : message);
 
         SwingUtilities.invokeLater(() -> logArea.append(message + "\n"));
 
@@ -1003,6 +1008,7 @@ public class Server extends JFrame implements DonationDriverService {
                 t.photoBase64 = photoBase64;
                 t.qualityStatus = "";
                 t.qualityReason = "";
+                t.createdAt = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss").format(java.time.LocalDateTime.now());
 
                 List<Ticket> tickets = loadList(ticketsFile(), Ticket.class);
                 tickets.add(t);
@@ -1032,6 +1038,9 @@ public class Server extends JFrame implements DonationDriverService {
                 boolean riderQuery = "rider".equalsIgnoreCase(userNorm);
 
                 List<Ticket> tickets = loadList(ticketsFile(), Ticket.class);
+                try {
+                    tickets.addAll(loadList(archivedTicketsFile(), Ticket.class));
+                } catch (Exception ignored) {}
                 List<Ticket> filtered = new ArrayList<>();
 
                 String userRole = null;
@@ -1120,12 +1129,17 @@ public class Server extends JFrame implements DonationDriverService {
                     appendServerLog("UPDATE_TICKET | " + t.ticketId + " -> " + status);
                     log("CRUD", userId == null ? "SYSTEM" : userId, "updateTicket | ticketId=" + ticketId + " status=" + status);
 
-                    // Requirement 8: Archive accepted donations
-                    if ("ACCEPTED".equalsIgnoreCase(status) || "DELIVERED".equalsIgnoreCase(status) || "REJECTED".equalsIgnoreCase(status) || "CANCELLED".equalsIgnoreCase(status)) {
+                    // Archive only when the ticket reaches a terminal state.
+                    // Archiving on ACCEPTED breaks later rider updates (PICKED_UP/DELIVERED)
+                    // because updateTicket primarily edits the active tickets list.
+                    if ("DELIVERED".equalsIgnoreCase(status)
+                            || "REJECTED".equalsIgnoreCase(status)
+                            || "CANCELLED".equalsIgnoreCase(status)) {
                         archiveTicket(ticketId);
+                        return ok("Ticket updated and archived.", "");
                     }
 
-                    return ok("Ticket updated and archived.", "");
+                    return ok("Ticket updated.", "");
                 }
                 return error("Ticket not found.");
             } catch (Exception e) {
@@ -1375,6 +1389,9 @@ public class Server extends JFrame implements DonationDriverService {
                 String kw = keyword == null ? "" : keyword.trim().toLowerCase();
 
                 List<Ticket> tickets = loadList(ticketsFile(), Ticket.class);
+                try {
+                    tickets.addAll(loadList(archivedTicketsFile(), Ticket.class));
+                } catch (Exception ignored) {}
                 StringBuilder xml = new StringBuilder();
                 for (Ticket t : tickets) {
                     if (t == null) continue;
@@ -1499,7 +1516,7 @@ public class Server extends JFrame implements DonationDriverService {
             try {
                 DATA_DIR.mkdirs();
                 String json = "{\"maintenanceEnabled\":" + (enabled ? "true" : "false") + "}";
-                Files.writeString(new File(DATA_DIR, "server_settings.json").toPath(), json, StandardCharsets.UTF_8);
+                Files.write(new File(DATA_DIR, "server_settings.json").toPath(), (json == null ? "" : json).getBytes(StandardCharsets.UTF_8));
                 maintenanceMode = enabled;
                 appendServerLog("MAINTENANCE_MODE | enabled=" + enabled);
                 log("MAINTENANCE", "SYSTEM", "setServerMaintenanceMode | enabled=" + enabled);

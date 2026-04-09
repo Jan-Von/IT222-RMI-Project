@@ -6,6 +6,9 @@
 *.iml
 out/
 out_bin/
+DonationDriverUI/out/
+DonationDriverUI/out_bin/
+DonationDriverUI/out_plan_compile/
 
 # OS
 .DS_Store

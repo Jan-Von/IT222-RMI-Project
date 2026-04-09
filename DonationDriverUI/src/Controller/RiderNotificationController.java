@@ -17,6 +17,7 @@ import javax.swing.Box;
 public class RiderNotificationController {
 
     private RiderNotificationView view;
+    private javax.swing.Timer refreshTimer;
 
     public RiderNotificationController(RiderNotificationView view) {
         this.view = view;
@@ -26,6 +27,15 @@ public class RiderNotificationController {
         view.settingsBtn.addActionListener(e -> openSettings());
 
         loadNotifications();
+
+        refreshTimer = new javax.swing.Timer(5000, e -> loadNotifications());
+        refreshTimer.start();
+    }
+
+    private void stopTimer() {
+        if (refreshTimer != null) {
+            refreshTimer.stop();
+        }
     }
 
     private void loadNotifications() {
@@ -41,7 +51,7 @@ public class RiderNotificationController {
             boolean hasNotifs = false;
 
             if (response != null && response.isOk() && response.message != null) {
-                String ticketsXml = response.message;
+                String ticketsXml = Client.unescapeXml(response.message);
                 int idx = 0;
                 while (true) {
                     int start = ticketsXml.indexOf("<ticket>", idx);
@@ -122,6 +132,7 @@ public class RiderNotificationController {
     }
 
     private void openHome() {
+        stopTimer();
         RiderDashboard riderDashboard = new RiderDashboard();
         new RiderController(riderDashboard);
         riderDashboard.frame.setVisible(true);
@@ -129,6 +140,7 @@ public class RiderNotificationController {
     }
 
     private void openPickups() {
+        stopTimer();
         RiderAcceptedView acceptedView = new RiderAcceptedView();
         new RiderAcceptedController(acceptedView);
         acceptedView.frame.setVisible(true);
@@ -136,12 +148,14 @@ public class RiderNotificationController {
     }
 
     private void openHelp() {
+        stopTimer();
         View.RiderHelpView helpView = new View.RiderHelpView();
         new RiderHelpController(helpView);
         view.frame.dispose();
     }
 
     private void openSettings() {
+        stopTimer();
         SettingsView settingsView = new SettingsView();
         new SettingsController(settingsView);
         settingsView.frame.setVisible(true);

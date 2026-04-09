@@ -108,21 +108,51 @@ public class DonationsPendingController {
         String status = getTag(ticketXml, "status");
         String category = getTag(ticketXml, "itemCategory");
         String quantity = getTag(ticketXml, "quantity");
+        String notes = getTag(ticketXml, "notes");
         String location = getTag(ticketXml, "pickupLocation");
         String drive = getTag(ticketXml, "donationDrive");
         String destination = getTag(ticketXml, "deliveryDestination");
+
+        String displayQty = or(quantity, "1");
+        String displayCategory = or(category, "Unknown");
+        if (category != null && category.toLowerCase().contains("monetary")) {
+            String amount = parseAmountFromNotes(notes);
+            if (amount != null && !amount.trim().isEmpty()) {
+                displayQty = amount.startsWith("₱") ? amount : ("₱" + amount);
+            } else {
+                displayQty = "₱—";
+            }
+            displayCategory = "Monetary";
+        }
 
         String extra = "";
         if ((drive != null && !drive.isEmpty()) || (destination != null && !destination.isEmpty())) {
             extra = " | " + or(drive, "—") + " → " + or(destination, "—");
         }
-        return String.format("ID %s | %s x%s | Status: %s | Location: %s%s",
+        return String.format("ID %s | %s %s | Status: %s | Location: %s%s",
                 or(id, "?"),
-                or(category, "Unknown"),
-                or(quantity, "1"),
+                displayCategory,
+                displayQty,
                 or(status, "—"),
                 or(location, "N/A"),
                 extra);
+    }
+
+    private String parseAmountFromNotes(String notes) {
+        if (notes == null) return null;
+        int amtIdx = notes.indexOf("Amount=");
+        if (amtIdx >= 0) {
+            int end = notes.indexOf(";", amtIdx);
+            if (end < 0) end = notes.length();
+            return notes.substring(amtIdx + 7, end).trim();
+        }
+        amtIdx = notes.indexOf("Amount:");
+        if (amtIdx >= 0) {
+            int end = notes.indexOf("|", amtIdx);
+            if (end < 0) end = notes.length();
+            return notes.substring(amtIdx + 7, end).trim();
+        }
+        return null;
     }
 
     private String getTag(String xml, String tagName) {

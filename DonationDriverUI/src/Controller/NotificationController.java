@@ -63,16 +63,28 @@ public class NotificationController {
             extractTagValue(ticketXml, "ticketId");
             String status = extractTagValue(ticketXml, "status");
             String category = extractTagValue(ticketXml, "itemCategory");
-            extractTagValue(ticketXml, "quantity");
             String quantity = extractTagValue(ticketXml, "quantity");
             String drive = extractTagValue(ticketXml, "donationDrive");
             String pickupLoc = extractTagValue(ticketXml, "pickupLocation");
-            extractTagValue(ticketXml, "qualityStatus");
             String qualityReason = extractTagValue(ticketXml, "qualityReason");
+            String notes = extractTagValue(ticketXml, "notes");
 
             String timeStr = LocalDateTime.now().format(DateTimeFormatter.ofPattern("h:mm a MMM dd"));
             
-            String message = "Your donation of " + quantity + " " + category + " for '" + drive + "' ";
+            String amountOrQty = quantity;
+            String categoryLabel = category;
+            if (category != null && category.toLowerCase().contains("monetary")) {
+                categoryLabel = "monetary donation";
+                String amount = parseAmountFromNotes(notes);
+                if (amount != null && !amount.trim().isEmpty()) {
+                    amountOrQty = amount.startsWith("₱") ? amount : ("₱" + amount);
+                } else {
+                    amountOrQty = "a monetary amount";
+                }
+            }
+
+            String driveLabel = (drive != null && !drive.isEmpty()) ? drive : "a donation drive";
+            String message = "Your " + categoryLabel + " of " + amountOrQty + " for '" + driveLabel + "' ";
             
             if ("PENDING".equalsIgnoreCase(status)) {
                 message += "is currently pending review.";
@@ -93,6 +105,23 @@ public class NotificationController {
 
             idx = end + "</ticket>".length();
         }
+    }
+
+    private String parseAmountFromNotes(String notes) {
+        if (notes == null) return null;
+        int amtIdx = notes.indexOf("Amount=");
+        if (amtIdx >= 0) {
+            int end = notes.indexOf(";", amtIdx);
+            if (end < 0) end = notes.length();
+            return notes.substring(amtIdx + 7, end).trim();
+        }
+        amtIdx = notes.indexOf("Amount:");
+        if (amtIdx >= 0) {
+            int end = notes.indexOf("|", amtIdx);
+            if (end < 0) end = notes.length();
+            return notes.substring(amtIdx + 7, end).trim();
+        }
+        return null;
     }
 
     private String extractTagValue(String xml, String tag) {

@@ -21,6 +21,7 @@ public class RiderNotificationView {
         frame.getContentPane().setBackground(Color.WHITE);
         ImageIcon frameIcon = new ImageIcon("Resources/Images/logoicon.png");
         frame.setIconImage(frameIcon.getImage());
+        frame.repaint();
 
         JPanel header = new JPanel();
         header.setLayout(null);

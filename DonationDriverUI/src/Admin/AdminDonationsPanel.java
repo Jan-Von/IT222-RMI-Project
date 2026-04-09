@@ -463,9 +463,28 @@ public class AdminDonationsPanel extends JPanel {
                 String photoBase64 = extractPhotoBase64(ticketXml);
                 String pickupDateTime = extractTagValue(ticketXml, "pickupDateTime");
 
-                String amountOrQty = (quantity != null && !quantity.isEmpty())
-                        ? quantity + " boxes"
-                        : "-";
+                String amountOrQty = "-";
+                if (type != null && type.toLowerCase().contains("monetary")) {
+                    String notes = extractTagValue(ticketXml, "notes");
+                    if (notes != null) {
+                        int amtIdx = notes.indexOf("Amount=");
+                        if (amtIdx >= 0) {
+                            int endIdx = notes.indexOf(";", amtIdx);
+                            if (endIdx < 0) endIdx = notes.length();
+                            amountOrQty = notes.substring(amtIdx + 7, endIdx).trim();
+                        } else {
+                            amtIdx = notes.indexOf("Amount:");
+                            if (amtIdx >= 0) {
+                                int endIdx = notes.indexOf("|", amtIdx);
+                                if (endIdx < 0) endIdx = notes.length();
+                                amountOrQty = notes.substring(amtIdx + 7, endIdx).trim();
+                            }
+                        }
+                    }
+                    if (!amountOrQty.startsWith("₱") && !amountOrQty.equals("-")) amountOrQty = "₱" + amountOrQty;
+                } else if (quantity != null && !quantity.isEmpty() && !quantity.equals("0")) {
+                    amountOrQty = quantity + " boxes";
+                }
 
                 String dest = "-";
                 if (drive != null && !drive.isEmpty() && destination != null && !destination.isEmpty()) {

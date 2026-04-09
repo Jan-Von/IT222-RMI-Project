@@ -335,7 +335,7 @@ public class AdminHomePanel extends JPanel {
             if (resp == null || !resp.isOk())
                 return list;
 
-            String drivesXml = resp.message;
+            String drivesXml = Client.unescapeXml(resp.message);
             if (drivesXml == null)
                 return list;
 

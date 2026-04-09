@@ -127,9 +127,22 @@ public class DonationsActiveController {
             String status       = extractTagValue(ticketXml, "status");
             String itemCategory = extractTagValue(ticketXml, "itemCategory");
             String quantity     = extractTagValue(ticketXml, "quantity");
+            String notes        = extractTagValue(ticketXml, "notes");
             String pickupLoc    = extractTagValue(ticketXml, "pickupLocation");
             String drive        = extractTagValue(ticketXml, "donationDrive");
             String destination  = extractTagValue(ticketXml, "deliveryDestination");
+
+            String displayQty = (quantity != null && !quantity.isEmpty()) ? quantity : "1";
+            String displayCategory = itemCategory != null ? itemCategory : "Unknown";
+            if (itemCategory != null && itemCategory.toLowerCase().contains("monetary")) {
+                String amount = parseAmountFromNotes(notes);
+                if (amount != null && !amount.trim().isEmpty()) {
+                    displayQty = amount.startsWith("₱") ? amount : ("₱" + amount);
+                } else {
+                    displayQty = "₱—";
+                }
+                displayCategory = "Monetary";
+            }
 
             String extra = "";
             if ((drive != null && !drive.isEmpty()) || (destination != null && !destination.isEmpty())) {
@@ -138,8 +151,8 @@ public class DonationsActiveController {
             String summary = String.format(
                     "ID %s | %s x%s | Status: %s | Location: %s%s",
                     ticketId != null ? ticketId : "?",
-                    itemCategory != null ? itemCategory : "Unknown",
-                    (quantity != null && !quantity.isEmpty()) ? quantity : "1",
+                    displayCategory,
+                    displayQty,
                     status != null ? status : "UNKNOWN",
                     pickupLoc != null ? pickupLoc : "N/A",
                     extra
@@ -149,6 +162,23 @@ public class DonationsActiveController {
             idx = end + "</ticket>".length();
         }
         return list;
+    }
+
+    private String parseAmountFromNotes(String notes) {
+        if (notes == null) return null;
+        int amtIdx = notes.indexOf("Amount=");
+        if (amtIdx >= 0) {
+            int end = notes.indexOf(";", amtIdx);
+            if (end < 0) end = notes.length();
+            return notes.substring(amtIdx + 7, end).trim();
+        }
+        amtIdx = notes.indexOf("Amount:");
+        if (amtIdx >= 0) {
+            int end = notes.indexOf("|", amtIdx);
+            if (end < 0) end = notes.length();
+            return notes.substring(amtIdx + 7, end).trim();
+        }
+        return null;
     }
 
     private String extractTagValue(String xml, String tag) {
