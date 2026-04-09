@@ -170,40 +170,26 @@ public class AdminNotificationsPanel extends JPanel {
                 hasMonetary = true;
                 String amount = "N/A";
                 String transactionId = t.ticketId;
+                String paymentMode = "N/A";
 
                 String text = t.notes;
                 if (text != null) {
-                    // Try old format
-                    int amtIdx = text.indexOf("Amount=");
-                    if (amtIdx >= 0) {
-                        int end = text.indexOf(";", amtIdx);
-                        if (end < 0)
-                            end = text.length();
-                        amount = text.substring(amtIdx + 7, end).trim();
-                    } else {
-                        // Try new format: "Amount: 100.0"
-                        amtIdx = text.indexOf("Amount:");
-                        if (amtIdx >= 0) {
-                            int end = text.indexOf("|", amtIdx);
-                            if (end < 0) end = text.length();
-                            amount = text.substring(amtIdx + 7, end).trim();
-                        }
+                    String amt = parseAmountFromNotes(text);
+                    if (amt != null && !amt.trim().isEmpty()) {
+                        amount = amt.trim();
                     }
-                    
-                    int txnIdx = text.indexOf("TransactionId=");
-                    if (txnIdx >= 0) {
-                        int end = text.indexOf(";", txnIdx);
-                        if (end < 0)
-                            end = text.length();
-                        transactionId = text.substring(txnIdx + 14, end).trim();
-                    } else {
-                        // Try new format: "ID: 12345"
-                        txnIdx = text.indexOf("ID:");
-                        if (txnIdx >= 0) {
-                            int end = text.indexOf("|", txnIdx);
-                            if (end < 0) end = text.length();
-                            transactionId = text.substring(txnIdx + 3, end).trim();
-                        }
+
+                    String txn = parseNotesField(text, "TransactionId");
+                    if (txn == null) txn = parseNotesField(text, "ID");
+                    if (txn != null && !txn.trim().isEmpty()) {
+                        transactionId = txn.trim();
+                    }
+
+                    String pm = parseNotesField(text, "Mode");
+                    if (pm == null) pm = parseNotesField(text, "PaymentMode");
+                    if (pm == null) pm = parseNotesField(text, "MOP");
+                    if (pm != null && !pm.trim().isEmpty()) {
+                        paymentMode = pm.trim();
                     }
                 }
 
@@ -211,17 +197,21 @@ public class AdminNotificationsPanel extends JPanel {
                         name,
                         amount != null && !amount.startsWith("₱") && !"N/A".equalsIgnoreCase(amount) ? "₱" + amount : amount,
                         transactionId,
-                        t.donationDrive != null ? t.donationDrive : "N/A",
+                        paymentMode != null ? paymentMode : "N/A",
                         date
                 });
             } else {
                 hasBoxes = true;
                 // Donation Boxes
+                String location = t.pickupLocation;
+                if (location == null || location.trim().isEmpty()) {
+                    location = t.deliveryDestination;
+                }
                 donationBoxesTableModel.addRow(new Object[] {
                         name,
                         t.quantity != null ? t.quantity : "1",
                         t.ticketId,
-                        t.pickupLocation != null ? t.pickupLocation : "N/A",
+                        location != null && !location.trim().isEmpty() ? location : "N/A",
                         date
                 });
             }
@@ -513,6 +503,26 @@ public class AdminNotificationsPanel extends JPanel {
             int end = notes.indexOf("|", amtIdx);
             if (end < 0) end = notes.length();
             return notes.substring(amtIdx + 7, end).trim();
+        }
+        return null;
+    }
+
+    private String parseNotesField(String notes, String key) {
+        if (notes == null || key == null || key.trim().isEmpty()) return null;
+        String k = key.trim();
+
+        // Support both "Key=value;" and "Key: value|" formats.
+        int idx = notes.indexOf(k + "=");
+        if (idx >= 0) {
+            int end = notes.indexOf(";", idx);
+            if (end < 0) end = notes.length();
+            return notes.substring(idx + k.length() + 1, end).trim();
+        }
+        idx = notes.indexOf(k + ":");
+        if (idx >= 0) {
+            int end = notes.indexOf("|", idx);
+            if (end < 0) end = notes.length();
+            return notes.substring(idx + k.length() + 1, end).trim();
         }
         return null;
     }
