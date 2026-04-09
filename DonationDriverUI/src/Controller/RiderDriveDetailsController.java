@@ -43,7 +43,7 @@ public class RiderDriveDetailsController {
                 List<RiderDashboard.TicketStub> filteredList = new ArrayList<>();
 
                 if (response != null && response.isOk() && response.message != null) {
-                    String ticketsXml = Client.unescapeXml(response.message);
+                    String ticketsXml = response.message;
 
                     int idx = 0;
                     while (true) {
