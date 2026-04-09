@@ -35,6 +35,12 @@ public class AdminDashboardView {
         frame.getRootPane().putClientProperty(FRAME_PROP_KEY, this);
         initSidebarAndContent();
 
+        new javax.swing.Timer(5000, e -> {
+            if (notificationsPanel != null) {
+                notificationsPanel.refreshData();
+            }
+        }).start();
+
         frame.setVisible(true);
     }
 
