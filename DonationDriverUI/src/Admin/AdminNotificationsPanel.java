@@ -28,8 +28,8 @@ public class AdminNotificationsPanel extends JPanel {
 
     private JTable monetaryTable;
     private DefaultTableModel monetaryTableModel;
-    private JTable donationBoxesTable;
-    private DefaultTableModel donationBoxesTableModel;
+    private JTable goodsTable;
+    private DefaultTableModel goodsTableModel;
     private Timer refreshTimer;
 
     public AdminNotificationsPanel() {
@@ -52,29 +52,30 @@ public class AdminNotificationsPanel extends JPanel {
 
         add(header, BorderLayout.NORTH);
 
-        JTabbedPane tabs = new JTabbedPane();
-        tabs.setBorder(BorderFactory.createEmptyBorder(0, 20, 20, 20));
-        tabs.addTab("System activity", buildSystemActivityTab());
-        tabs.addTab("Monetary", buildMonetaryTab());
-        tabs.addTab("Boxes", buildBoxesTab());
-        add(tabs, BorderLayout.CENTER);
-
-        String[] monetaryColumns = { "Name", "Amount", "Reference No.", "Mode of Payment", "Date" };
+        // Build tables first so tabs attach the actual components (not null placeholders).
+        String[] monetaryColumns = { "Donor", "Amount", "Reference No.", "Payment Method", "Date", "Ticket" };
         monetaryTableModel = new DefaultTableModel(monetaryColumns, 0) {
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
 
-        String[] boxesColumns = { "Name", "Boxes", "Reference No.", "Location", "Date" };
-        donationBoxesTableModel = new DefaultTableModel(boxesColumns, 0) {
+        String[] goodsColumns = { "Donor", "Category", "Quantity", "Pickup", "Destination", "Status", "Date", "Ticket" };
+        goodsTableModel = new DefaultTableModel(goodsColumns, 0) {
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
 
         monetaryTable = createStyledTable(monetaryTableModel);
-        donationBoxesTable = createStyledTable(donationBoxesTableModel);
+        goodsTable = createStyledTable(goodsTableModel);
+
+        JTabbedPane tabs = new JTabbedPane();
+        tabs.setBorder(BorderFactory.createEmptyBorder(0, 20, 20, 20));
+        tabs.addTab("System activity", buildSystemActivityTab());
+        tabs.addTab("Monetary", buildMonetaryTab());
+        tabs.addTab("Goods", buildGoodsTab());
+        add(tabs, BorderLayout.CENTER);
 
         refreshData();
 
@@ -114,10 +115,10 @@ public class AdminNotificationsPanel extends JPanel {
         return p;
     }
 
-    private JPanel buildBoxesTab() {
+    private JPanel buildGoodsTab() {
         JPanel p = new JPanel(new BorderLayout());
         p.setOpaque(false);
-        JScrollPane sp = new JScrollPane(donationBoxesTable);
+        JScrollPane sp = new JScrollPane(goodsTable);
         sp.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220), 1));
         p.add(sp, BorderLayout.CENTER);
         return p;
@@ -148,19 +149,17 @@ public class AdminNotificationsPanel extends JPanel {
             List<Ticket> tickets = loadTicketsFromServer();
 
             monetaryTableModel.setRowCount(0);
-            donationBoxesTableModel.setRowCount(0);
+            goodsTableModel.setRowCount(0);
 
             boolean hasMonetary = false;
-            boolean hasBoxes = false;
+            boolean hasGoods = false;
             List<AdminNotif> generated = buildNotifsFromCurrentState(tickets);
 
             for (Ticket t : tickets) {
             String name = t.userId;
             if (name == null)
                 name = "Unknown";
-            if (name.contains("@")) {
-                name = name.split("@")[0];
-            }
+            String donor = shortName(name);
 
             String date = t.createdAt;
             if (date != null && date.length() > 10)
@@ -194,34 +193,44 @@ public class AdminNotificationsPanel extends JPanel {
                 }
 
                 monetaryTableModel.addRow(new Object[] {
-                        name,
+                        donor,
                         amount != null && !amount.startsWith("₱") && !"N/A".equalsIgnoreCase(amount) ? "₱" + amount : amount,
                         transactionId,
                         paymentMode != null ? paymentMode : "N/A",
                         date
+                        , t.ticketId
                 });
             } else {
-                hasBoxes = true;
-                // Donation Boxes
-                String location = t.pickupLocation;
-                if (location == null || location.trim().isEmpty()) {
-                    location = t.deliveryDestination;
-                }
-                donationBoxesTableModel.addRow(new Object[] {
-                        name,
-                        t.quantity != null ? t.quantity : "1",
-                        t.ticketId,
-                        location != null && !location.trim().isEmpty() ? location : "N/A",
-                        date
+                hasGoods = true;
+                String category = t.itemCategory != null && !t.itemCategory.trim().isEmpty() ? t.itemCategory.trim() : "Goods";
+                String qty = t.quantity != null && !t.quantity.trim().isEmpty() ? t.quantity.trim() : "1";
+                String pickupLoc = t.pickupLocation != null ? t.pickupLocation.trim() : "";
+                String pickupDt = t.pickupDateTime != null ? t.pickupDateTime.trim() : "";
+                String pickup = (pickupLoc.isEmpty() ? "N/A" : pickupLoc) + (pickupDt.isEmpty() ? "" : (" • " + pickupDt));
+
+                String drive = t.donationDrive != null && !t.donationDrive.trim().isEmpty() ? t.donationDrive.trim() : "No drive";
+                String dest = t.deliveryDestination != null && !t.deliveryDestination.trim().isEmpty() ? t.deliveryDestination.trim() : "No destination";
+                String destination = drive + " → " + dest;
+
+                String st = t.status != null && !t.status.trim().isEmpty() ? t.status.trim() : "-";
+                goodsTableModel.addRow(new Object[] {
+                        donor,
+                        category,
+                        qty,
+                        pickup,
+                        destination,
+                        st,
+                        date,
+                        t.ticketId
                 });
             }
             }
 
             if (!hasMonetary) {
-                monetaryTableModel.addRow(new Object[] { "-", "-", "-", "-", "-" });
+                monetaryTableModel.addRow(new Object[] { "-", "-", "-", "-", "-", "-" });
             }
-            if (!hasBoxes) {
-                donationBoxesTableModel.addRow(new Object[] { "-", "-", "-", "-", "-" });
+            if (!hasGoods) {
+                goodsTableModel.addRow(new Object[] { "-", "-", "-", "-", "-", "-", "-", "-" });
             }
 
             // Update the activity feed.
@@ -375,6 +384,7 @@ public class AdminNotificationsPanel extends JPanel {
             t.status = extract(ticketXml, "status");
             t.createdAt = extract(ticketXml, "createdAt");
             t.pickupLocation = extract(ticketXml, "pickupLocation");
+            t.pickupDateTime = extract(ticketXml, "pickupDateTime");
             t.donationDrive = extract(ticketXml, "donationDrive");
             t.deliveryDestination = extract(ticketXml, "deliveryDestination");
             t.deleteReason = extract(ticketXml, "deleteReason");
@@ -634,6 +644,7 @@ public class AdminNotificationsPanel extends JPanel {
         String status;
         String createdAt;
         String pickupLocation;
+        String pickupDateTime;
         String donationDrive;
         String deliveryDestination;
         String deleteReason;
