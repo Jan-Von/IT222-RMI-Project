@@ -7,9 +7,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import java.awt.*;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class AdminNotificationsPanel extends JPanel {
 
@@ -21,15 +19,13 @@ public class AdminNotificationsPanel extends JPanel {
     private JList<AdminNotif> notifList;
     private JTextField searchField;
     private JComboBox<String> filterCombo;
+    private final List<AdminNotif> allNotifs = new ArrayList<>();
 
     private JTable monetaryTable;
     private DefaultTableModel monetaryTableModel;
     private JTable donationBoxesTable;
     private DefaultTableModel donationBoxesTableModel;
     private Timer refreshTimer;
-
-    // Used to detect changes between refreshes (status updates, reschedules, etc).
-    private final Map<String, TicketSnapshot> lastSnapshotByTicketId = new HashMap<>();
 
     public AdminNotificationsPanel() {
         setLayout(new BorderLayout(16, 16));
@@ -183,7 +179,7 @@ public class AdminNotificationsPanel extends JPanel {
 
         boolean hasMonetary = false;
         boolean hasBoxes = false;
-        List<AdminNotif> generated = generateNotifications(tickets);
+        List<AdminNotif> generated = buildNotifsFromCurrentState(tickets);
 
         for (Ticket t : tickets) {
             String name = t.userId;
@@ -267,12 +263,8 @@ public class AdminNotificationsPanel extends JPanel {
 
         // Update the activity feed.
         if (notifModel != null) {
-            notifModel.clear();
-            if (generated.isEmpty()) {
-                notifModel.addElement(AdminNotif.info("No recent activity", "No ticket changes detected yet.", ""));
-            } else {
-                for (AdminNotif n : generated) notifModel.addElement(n);
-            }
+            allNotifs.clear();
+            allNotifs.addAll(generated);
             applyNotifFilter();
         }
     }
@@ -313,7 +305,6 @@ public class AdminNotificationsPanel extends JPanel {
                 t.status = extract(ticketXml, "status");
                 t.createdAt = extract(ticketXml, "createdAt");
                 t.pickupLocation = extract(ticketXml, "pickupLocation");
-                t.pickupDateTime = extract(ticketXml, "pickupDateTime");
                 t.donationDrive = extract(ticketXml, "donationDrive");
                 t.deliveryDestination = extract(ticketXml, "deliveryDestination");
                 t.deleteReason = extract(ticketXml, "deleteReason");
@@ -341,22 +332,11 @@ public class AdminNotificationsPanel extends JPanel {
     private void applyNotifFilter() {
         if (notifModel == null || notifList == null) return;
 
-        // We filter by rebuilding a filtered view in-place (simple + reliable for small feeds).
-        // Keep the most recent generated list by storing it as client properties on the list.
-        Object allObj = notifList.getClientProperty("allNotifs");
-        @SuppressWarnings("unchecked")
-        List<AdminNotif> all = allObj instanceof List ? (List<AdminNotif>) allObj : null;
-        if (all == null) {
-            all = new ArrayList<>();
-            for (int i = 0; i < notifModel.size(); i++) all.add(notifModel.get(i));
-            notifList.putClientProperty("allNotifs", all);
-        }
-
         String filter = filterCombo != null ? (String) filterCombo.getSelectedItem() : FILTER_ALL;
         String q = searchField != null ? searchField.getText().trim().toLowerCase() : "";
 
         notifModel.clear();
-        for (AdminNotif n : all) {
+        for (AdminNotif n : allNotifs) {
             if (FILTER_ACTION_REQUIRED.equals(filter) && !n.actionRequired) continue;
             if (FILTER_ACTIVITY.equals(filter) && n.actionRequired) continue;
             if (q != null && !q.isEmpty()) {
@@ -367,99 +347,60 @@ public class AdminNotificationsPanel extends JPanel {
         }
 
         if (notifModel.isEmpty()) {
-            notifModel.addElement(AdminNotif.info("No matches", "Try clearing the filter/search.", ""));
+            if (allNotifs.isEmpty()) {
+                notifModel.addElement(AdminNotif.info("No notifications yet", "Create a donation or update a ticket status to see activity.", ""));
+            } else {
+                notifModel.addElement(AdminNotif.info("No matches", "Try clearing the filter/search.", ""));
+            }
         }
     }
 
-    private List<AdminNotif> generateNotifications(List<Ticket> tickets) {
+    private List<AdminNotif> buildNotifsFromCurrentState(List<Ticket> tickets) {
         List<AdminNotif> out = new ArrayList<>();
-
-        // Build current snapshot map (and generate diffs vs previous snapshot).
-        Map<String, TicketSnapshot> next = new HashMap<>();
         for (Ticket t : tickets) {
             if (t == null || t.ticketId == null) continue;
-            TicketSnapshot snap = TicketSnapshot.from(t);
-            next.put(t.ticketId, snap);
-
-            TicketSnapshot prev = lastSnapshotByTicketId.get(t.ticketId);
-            if (prev == null) {
-                // New ticket seen
-                out.add(buildNewTicketNotif(t));
-            } else {
-                if (!eq(prev.status, snap.status)) {
-                    out.add(buildStatusChangeNotif(t, prev.status, snap.status));
-                } else if (!eq(prev.pickupDateTime, snap.pickupDateTime) && snap.pickupDateTime != null && !snap.pickupDateTime.trim().isEmpty()) {
-                    out.add(AdminNotif.info(
-                            "Pickup rescheduled",
-                            summarizeTicket(t) + " → " + snap.pickupDateTime,
-                            "Ticket: " + t.ticketId));
-                }
-            }
-
-            // Always add “action required” entry for pending tickets (keeps admin on top of workload).
-            if (t.status != null && "PENDING".equalsIgnoreCase(t.status)) {
-                out.add(AdminNotif.action(
-                        "Pending donation request",
-                        summarizeTicket(t),
-                        "Ticket: " + t.ticketId));
-            }
+            out.add(buildStateNotif(t));
         }
 
-        lastSnapshotByTicketId.clear();
-        lastSnapshotByTicketId.putAll(next);
-
-        // Sort: action required first, then newest-ish (createdAt as best available).
+        // Sort: action required first, then newest first (best-effort).
         out.sort((a, b) -> {
             if (a.actionRequired != b.actionRequired) return a.actionRequired ? -1 : 1;
-            // Desc by meta time string if present (fallback stable).
-            return 0;
+            if (a.createdAt == null && b.createdAt == null) return 0;
+            if (a.createdAt == null) return 1;
+            if (b.createdAt == null) return -1;
+            return b.createdAt.compareTo(a.createdAt);
         });
-
-        // Store the full list for filtering.
-        if (notifList != null) {
-            notifList.putClientProperty("allNotifs", out);
-        }
         return out;
     }
 
-    private AdminNotif buildNewTicketNotif(Ticket t) {
-        String qty = formatAmountOrQty(t);
-        String who = shortName(t.userId);
-        String what = (t.itemCategory != null ? t.itemCategory : "Donation");
-        String title = "New request: " + what;
-        String details = who + " • " + qty + " • " + (t.donationDrive != null ? t.donationDrive : "No drive")
-                + (t.deliveryDestination != null && !t.deliveryDestination.trim().isEmpty() ? " → " + t.deliveryDestination : "");
-        return AdminNotif.info(title, details, "Ticket: " + safe(t.ticketId));
-    }
-
-    private AdminNotif buildStatusChangeNotif(Ticket t, String from, String to) {
-        String fromU = from != null ? from.toUpperCase() : "-";
-        String toU = to != null ? to.toUpperCase() : "-";
-
-        String who = shortName(t.userId);
+    private AdminNotif buildStateNotif(Ticket t) {
+        String st = t.status != null ? t.status.trim().toUpperCase() : "";
         String rider = t.riderId != null && !t.riderId.trim().isEmpty() ? shortName(t.riderId) : null;
-        String base = summarizeTicket(t);
         String meta = "Ticket: " + safe(t.ticketId) + (rider != null ? " • Rider: " + rider : "");
 
-        if ("CANCELLED".equalsIgnoreCase(toU)) {
+        if ("PENDING".equals(st)) {
+            return AdminNotif.action("Pending donation request", summarizeTicket(t), meta, t.createdAt);
+        }
+        if ("CANCELLED".equals(st)) {
             String reason = t.deleteReason != null && !t.deleteReason.trim().isEmpty() ? t.deleteReason.trim() : "No reason provided";
-            return AdminNotif.warn("User cancelled donation", base + " • " + who + " • " + reason, meta);
+            return AdminNotif.warn("User cancelled donation", summarizeTicket(t) + " • " + reason, meta, t.createdAt);
         }
-        if ("REJECTED".equalsIgnoreCase(toU)) {
+        if ("REJECTED".equals(st)) {
             String qr = t.qualityReason != null && !t.qualityReason.trim().isEmpty() ? t.qualityReason.trim() : "No reason provided";
-            return AdminNotif.warn("Donation rejected", base + " • " + "Reason: " + qr, meta);
+            return AdminNotif.warn("Donation rejected", summarizeTicket(t) + " • " + "Reason: " + qr, meta, t.createdAt);
         }
-        if ("ACCEPTED".equalsIgnoreCase(toU)) {
-            return AdminNotif.info("Pickup accepted", base + (rider != null ? " • Accepted by " + rider : ""), meta);
+        if ("ACCEPTED".equals(st)) {
+            return AdminNotif.info("Pickup accepted", summarizeTicket(t) + (rider != null ? " • " + rider : ""), meta, t.createdAt);
         }
-        if ("PICKED_UP".equalsIgnoreCase(toU)) {
-            return AdminNotif.info("Donation picked up", base + (rider != null ? " • Picked up by " + rider : ""), meta);
+        if ("PICKED_UP".equals(st)) {
+            return AdminNotif.info("Donation picked up", summarizeTicket(t) + (rider != null ? " • " + rider : ""), meta, t.createdAt);
         }
-        if ("DELIVERED".equalsIgnoreCase(toU)) {
-            return AdminNotif.info("Donation delivered", base + (rider != null ? " • Delivered by " + rider : ""), meta);
+        if ("DELIVERED".equals(st)) {
+            return AdminNotif.info("Donation delivered", summarizeTicket(t) + (rider != null ? " • " + rider : ""), meta, t.createdAt);
         }
 
-        return AdminNotif.info("Status changed (" + fromU + " → " + toU + ")", base, meta);
+        String title = st.isEmpty() ? "Donation update" : ("Status: " + st);
+        return AdminNotif.info(title, summarizeTicket(t) + (rider != null ? " • " + rider : ""), meta, t.createdAt);
     }
 
     private String summarizeTicket(Ticket t) {
@@ -499,12 +440,6 @@ public class AdminNotificationsPanel extends JPanel {
         return null;
     }
 
-    private boolean eq(String a, String b) {
-        if (a == null && b == null) return true;
-        if (a == null || b == null) return false;
-        return a.equals(b);
-    }
-
     private String shortName(String email) {
         if (email == null) return "Unknown";
         int at = email.indexOf("@");
@@ -519,25 +454,31 @@ public class AdminNotificationsPanel extends JPanel {
         final String meta;
         final boolean actionRequired;
         final int level; // 0 info, 1 warn
+        final String createdAt;
 
-        private AdminNotif(String title, String details, String meta, boolean actionRequired, int level) {
+        private AdminNotif(String title, String details, String meta, boolean actionRequired, int level, String createdAt) {
             this.title = title;
             this.details = details;
             this.meta = meta;
             this.actionRequired = actionRequired;
             this.level = level;
+            this.createdAt = createdAt;
         }
 
         static AdminNotif info(String title, String details, String meta) {
-            return new AdminNotif(title, details, meta, false, 0);
+            return new AdminNotif(title, details, meta, false, 0, null);
         }
 
-        static AdminNotif warn(String title, String details, String meta) {
-            return new AdminNotif(title, details, meta, false, 1);
+        static AdminNotif info(String title, String details, String meta, String createdAt) {
+            return new AdminNotif(title, details, meta, false, 0, createdAt);
         }
 
-        static AdminNotif action(String title, String details, String meta) {
-            return new AdminNotif(title, details, meta, true, 0);
+        static AdminNotif warn(String title, String details, String meta, String createdAt) {
+            return new AdminNotif(title, details, meta, false, 1, createdAt);
+        }
+
+        static AdminNotif action(String title, String details, String meta, String createdAt) {
+            return new AdminNotif(title, details, meta, true, 0, createdAt);
         }
 
         @Override
@@ -596,20 +537,6 @@ public class AdminNotificationsPanel extends JPanel {
         }
     }
 
-    private static class TicketSnapshot {
-        final String status;
-        final String pickupDateTime;
-
-        private TicketSnapshot(String status, String pickupDateTime) {
-            this.status = status;
-            this.pickupDateTime = pickupDateTime;
-        }
-
-        static TicketSnapshot from(Ticket t) {
-            return new TicketSnapshot(t.status, t.pickupDateTime);
-        }
-    }
-
     private static class Ticket {
         String ticketId;
         String userId;
@@ -620,7 +547,6 @@ public class AdminNotificationsPanel extends JPanel {
         String status;
         String createdAt;
         String pickupLocation;
-        String pickupDateTime;
         String donationDrive;
         String deliveryDestination;
         String deleteReason;

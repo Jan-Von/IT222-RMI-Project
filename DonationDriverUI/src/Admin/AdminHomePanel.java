@@ -158,6 +158,7 @@ public class AdminHomePanel extends JPanel {
             String responseXml = client.readTickets("admin", null);
             Client.Response response = Client.parseResponse(responseXml);
             int activeDeliveries = 0;
+            int pendingCount = 0;
             boolean hasNotif = false;
             
             if (response != null && response.isOk() && response.message != null) {
@@ -172,27 +173,39 @@ public class AdminHomePanel extends JPanel {
                     String tXml = ticketsXml.substring(start, end + "</ticket>".length());
                     String status = extractTagValue(tXml, "status");
                     String id = extractTagValue(tXml, "ticketId");
+                    String userId = extractTagValue(tXml, "userId");
+                    String type = extractTagValue(tXml, "itemCategory");
+                    String quantity = extractTagValue(tXml, "quantity");
+                    String notes = extractTagValue(tXml, "notes");
                     String dest = extractTagValue(tXml, "deliveryDestination");
                     if (dest == null || dest.isEmpty()) dest = "Unknown Destination";
                     String drive = extractTagValue(tXml, "donationDrive");
 
                     if ("ACCEPTED".equalsIgnoreCase(status) || "PICKED_UP".equalsIgnoreCase(status)) {
                         activeDeliveries++;
-                    } else if ("DELIVERED".equalsIgnoreCase(status)) {
-                        notificationsListPanel.add(buildNotificationItem("Donation Delivered", (drive != null && !drive.isEmpty() ? drive + " - " : "") + dest, "Ticket: " + id));
-                        notificationsListPanel.add(Box.createVerticalStrut(8));
-                        hasNotif = true;
-                    } else if ("CANCELLED".equalsIgnoreCase(status)) {
-                        notificationsListPanel.add(buildNotificationItem("Donation Cancelled", "Ticket: " + id, "Status updated by user"));
-                        notificationsListPanel.add(Box.createVerticalStrut(8));
-                        hasNotif = true;
+                    }
+
+                    if ("PENDING".equalsIgnoreCase(status)) {
+                        pendingCount++;
+                        if (pendingCount <= 5) {
+                            String who = shortName(userId);
+                            String amtOrQty = formatAmountOrQty(type, quantity, notes);
+                            String path = (drive != null && !drive.trim().isEmpty() ? drive.trim() : "No drive")
+                                    + (dest != null && !dest.trim().isEmpty() ? " → " + dest.trim() : "");
+                            notificationsListPanel.add(buildNotificationItem(
+                                    "Pending donation request",
+                                    who + " • " + amtOrQty + " • " + path,
+                                    "Ticket: " + id));
+                            notificationsListPanel.add(Box.createVerticalStrut(8));
+                            hasNotif = true;
+                        }
                     }
 
                     idx = end + "</ticket>".length();
                 }
             }
             if (!hasNotif) {
-                notificationsListPanel.add(new JLabel(" No recent notifications."));
+                notificationsListPanel.add(new JLabel(" No pending requests."));
             }
             activeDeliveryStatusLabel.setText(activeDeliveries > 0 ? activeDeliveries + " delivery in transit" : "No active deliveries");
         } catch (Exception ex) {
@@ -200,6 +213,40 @@ public class AdminHomePanel extends JPanel {
         }
         notificationsListPanel.revalidate();
         notificationsListPanel.repaint();
+    }
+
+    private String shortName(String email) {
+        if (email == null) return "Unknown";
+        int at = email.indexOf("@");
+        return at > 0 ? email.substring(0, at) : email;
+    }
+
+    private String formatAmountOrQty(String itemCategory, String quantity, String notes) {
+        if (itemCategory != null && itemCategory.toLowerCase().contains("monetary")) {
+            String amt = parseAmountFromNotes(notes);
+            if (amt == null || amt.trim().isEmpty()) return "₱-";
+            amt = amt.trim();
+            return amt.startsWith("₱") ? amt : "₱" + amt;
+        }
+        String q = (quantity != null && !quantity.trim().isEmpty()) ? quantity.trim() : "1";
+        return q + " boxes";
+    }
+
+    private String parseAmountFromNotes(String notes) {
+        if (notes == null) return null;
+        int amtIdx = notes.indexOf("Amount=");
+        if (amtIdx >= 0) {
+            int endIdx = notes.indexOf(";", amtIdx);
+            if (endIdx < 0) endIdx = notes.length();
+            return notes.substring(amtIdx + 7, endIdx).trim();
+        }
+        amtIdx = notes.indexOf("Amount:");
+        if (amtIdx >= 0) {
+            int endIdx = notes.indexOf("|", amtIdx);
+            if (endIdx < 0) endIdx = notes.length();
+            return notes.substring(amtIdx + 7, endIdx).trim();
+        }
+        return null;
     }
 
     private static class Metrics {
@@ -595,6 +642,11 @@ public class AdminHomePanel extends JPanel {
         JButton viewAll = new JButton("View All");
         viewAll.setFocusPainted(false);
         viewAll.setFont(new Font("Arial", Font.PLAIN, 12));
+        viewAll.addActionListener(e -> {
+            if (onShowNotifications != null) {
+                onShowNotifications.run();
+            }
+        });
         header.add(viewAll, BorderLayout.EAST);
         panel.add(header, BorderLayout.NORTH);
 
