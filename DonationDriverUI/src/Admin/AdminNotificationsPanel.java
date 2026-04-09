@@ -54,7 +54,6 @@ public class AdminNotificationsPanel extends JPanel {
 
         JTabbedPane tabs = new JTabbedPane();
         tabs.setBorder(BorderFactory.createEmptyBorder(0, 20, 20, 20));
-        tabs.addTab("Activity", buildActivityTab());
         tabs.addTab("System activity", buildSystemActivityTab());
         tabs.addTab("Monetary", buildMonetaryTab());
         tabs.addTab("Boxes", buildBoxesTab());
@@ -104,61 +103,6 @@ public class AdminNotificationsPanel extends JPanel {
         ((DefaultTableCellRenderer) header.getDefaultRenderer()).setHorizontalAlignment(JLabel.LEFT);
 
         return table;
-    }
-
-    private JPanel buildActivityTab() {
-        JPanel panel = new JPanel(new BorderLayout(10, 10));
-        panel.setOpaque(false);
-
-        JPanel top = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 8));
-        top.setOpaque(true);
-        top.setBackground(Color.WHITE);
-        top.setBorder(BorderFactory.createCompoundBorder(
-                BorderFactory.createLineBorder(new Color(220, 220, 220), 1),
-                BorderFactory.createEmptyBorder(6, 8, 6, 8)));
-
-        top.add(new JLabel("Filter:"));
-        filterCombo = new JComboBox<>(new String[] { FILTER_ALL, FILTER_ACTION_REQUIRED, FILTER_ACTIVITY });
-        filterCombo.addActionListener(e -> applyNotifFilter());
-        top.add(filterCombo);
-
-        top.add(new JLabel("Search:"));
-        searchField = new JTextField(24);
-        searchField.setToolTipText("Search by ticket ID, donor, rider, drive, destination");
-        searchField.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
-            @Override public void insertUpdate(javax.swing.event.DocumentEvent e) { applyNotifFilter(); }
-            @Override public void removeUpdate(javax.swing.event.DocumentEvent e) { applyNotifFilter(); }
-            @Override public void changedUpdate(javax.swing.event.DocumentEvent e) { applyNotifFilter(); }
-        });
-        top.add(searchField);
-
-        JButton clearBtn = new JButton("Clear");
-        clearBtn.addActionListener(e -> {
-            if (filterCombo != null) filterCombo.setSelectedItem(FILTER_ALL);
-            if (searchField != null) searchField.setText("");
-            applyNotifFilter();
-        });
-        top.add(clearBtn);
-
-        connectionStatusLabel = new JLabel("");
-        connectionStatusLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
-        connectionStatusLabel.setForeground(new Color(160, 0, 0));
-        top.add(Box.createHorizontalStrut(10));
-        top.add(connectionStatusLabel);
-
-        panel.add(top, BorderLayout.NORTH);
-
-        notifModel = new DefaultListModel<>();
-        notifList = new JList<>(notifModel);
-        notifList.setCellRenderer(new AdminNotifRenderer());
-        notifList.setVisibleRowCount(12);
-        notifList.setFixedCellHeight(-1);
-
-        JScrollPane scroll = new JScrollPane(notifList);
-        scroll.setBorder(BorderFactory.createLineBorder(new Color(220, 220, 220), 1));
-        panel.add(scroll, BorderLayout.CENTER);
-
-        return panel;
     }
 
     private JPanel buildMonetaryTab() {
