@@ -19,6 +19,7 @@ public class AdminNotificationsPanel extends JPanel {
     private JList<AdminNotif> notifList;
     private JTextField searchField;
     private JComboBox<String> filterCombo;
+    private JLabel connectionStatusLabel;
     private final List<AdminNotif> allNotifs = new ArrayList<>();
 
     private JTable monetaryTable;
@@ -134,6 +135,12 @@ public class AdminNotificationsPanel extends JPanel {
         });
         top.add(clearBtn);
 
+        connectionStatusLabel = new JLabel("");
+        connectionStatusLabel.setFont(new Font("SansSerif", Font.PLAIN, 12));
+        connectionStatusLabel.setForeground(new Color(160, 0, 0));
+        top.add(Box.createHorizontalStrut(10));
+        top.add(connectionStatusLabel);
+
         panel.add(top, BorderLayout.NORTH);
 
         notifModel = new DefaultListModel<>();
@@ -172,16 +179,17 @@ public class AdminNotificationsPanel extends JPanel {
         if (!AdminServerWatch.pingOrReturnToLogin(this)) {
             return;
         }
-        monetaryTableModel.setRowCount(0);
-        donationBoxesTableModel.setRowCount(0);
+        try {
+            List<Ticket> tickets = loadTicketsFromServer();
 
-        List<Ticket> tickets = loadTicketsFromServer();
+            monetaryTableModel.setRowCount(0);
+            donationBoxesTableModel.setRowCount(0);
 
-        boolean hasMonetary = false;
-        boolean hasBoxes = false;
-        List<AdminNotif> generated = buildNotifsFromCurrentState(tickets);
+            boolean hasMonetary = false;
+            boolean hasBoxes = false;
+            List<AdminNotif> generated = buildNotifsFromCurrentState(tickets);
 
-        for (Ticket t : tickets) {
+            for (Ticket t : tickets) {
             String name = t.userId;
             if (name == null)
                 name = "Unknown";
@@ -252,69 +260,74 @@ public class AdminNotificationsPanel extends JPanel {
                         date
                 });
             }
-        }
+            }
 
-        if (!hasMonetary) {
-            monetaryTableModel.addRow(new Object[] { "-", "-", "-", "-", "-" });
-        }
-        if (!hasBoxes) {
-            donationBoxesTableModel.addRow(new Object[] { "-", "-", "-", "-", "-" });
-        }
+            if (!hasMonetary) {
+                monetaryTableModel.addRow(new Object[] { "-", "-", "-", "-", "-" });
+            }
+            if (!hasBoxes) {
+                donationBoxesTableModel.addRow(new Object[] { "-", "-", "-", "-", "-" });
+            }
 
-        // Update the activity feed.
-        if (notifModel != null) {
-            allNotifs.clear();
-            allNotifs.addAll(generated);
-            applyNotifFilter();
+            // Update the activity feed.
+            if (notifModel != null) {
+                allNotifs.clear();
+                allNotifs.addAll(generated);
+                applyNotifFilter();
+            }
+            if (connectionStatusLabel != null) {
+                connectionStatusLabel.setText("");
+            }
+        } catch (Exception ex) {
+            // Offline / transient error: keep last successful data visible.
+            if (connectionStatusLabel != null) {
+                connectionStatusLabel.setText("Server unreachable — retrying…");
+            }
         }
     }
 
-    private List<Ticket> loadTicketsFromServer() {
+    private List<Ticket> loadTicketsFromServer() throws Exception {
         List<Ticket> list = new ArrayList<>();
-        try {
-            Client client = Client.getDefault();
-            // Admin notifications must pull from the global admin view (all tickets).
-            String responseXml = client.readTickets("admin", null);
-            Client.Response response = Client.parseResponse(responseXml);
-            if (response == null || !response.isOk()) {
-                return list;
-            }
+        Client client = Client.getDefault();
+        // Admin notifications must pull from the global admin view (all tickets).
+        String responseXml = client.readTickets("admin", null);
+        Client.Response response = Client.parseResponse(responseXml);
+        if (response == null || !response.isOk()) {
+            throw new Exception(response != null ? response.message : "readTickets failed");
+        }
 
-            String ticketsXml = response.message;
-            if (ticketsXml == null || ticketsXml.isEmpty())
-                return list;
-            ticketsXml = Client.unescapeXml(ticketsXml);
+        String ticketsXml = response.message;
+        if (ticketsXml == null || ticketsXml.isEmpty())
+            return list;
+        ticketsXml = Client.unescapeXml(ticketsXml);
 
-            int idx = 0;
-            while (true) {
-                int start = ticketsXml.indexOf("<ticket>", idx);
-                if (start < 0)
-                    break;
-                int end = ticketsXml.indexOf("</ticket>", start);
-                if (end < 0)
-                    break;
+        int idx = 0;
+        while (true) {
+            int start = ticketsXml.indexOf("<ticket>", idx);
+            if (start < 0)
+                break;
+            int end = ticketsXml.indexOf("</ticket>", start);
+            if (end < 0)
+                break;
 
-                String ticketXml = ticketsXml.substring(start, end + "</ticket>".length());
-                Ticket t = new Ticket();
-                t.ticketId = extract(ticketXml, "ticketId");
-                t.userId = extract(ticketXml, "userId");
-                t.riderId = extract(ticketXml, "riderId");
-                t.itemCategory = extract(ticketXml, "itemCategory");
-                t.quantity = extract(ticketXml, "quantity");
-                t.notes = extract(ticketXml, "notes");
-                t.status = extract(ticketXml, "status");
-                t.createdAt = extract(ticketXml, "createdAt");
-                t.pickupLocation = extract(ticketXml, "pickupLocation");
-                t.donationDrive = extract(ticketXml, "donationDrive");
-                t.deliveryDestination = extract(ticketXml, "deliveryDestination");
-                t.deleteReason = extract(ticketXml, "deleteReason");
-                t.qualityReason = extract(ticketXml, "qualityReason");
-                list.add(t);
+            String ticketXml = ticketsXml.substring(start, end + "</ticket>".length());
+            Ticket t = new Ticket();
+            t.ticketId = extract(ticketXml, "ticketId");
+            t.userId = extract(ticketXml, "userId");
+            t.riderId = extract(ticketXml, "riderId");
+            t.itemCategory = extract(ticketXml, "itemCategory");
+            t.quantity = extract(ticketXml, "quantity");
+            t.notes = extract(ticketXml, "notes");
+            t.status = extract(ticketXml, "status");
+            t.createdAt = extract(ticketXml, "createdAt");
+            t.pickupLocation = extract(ticketXml, "pickupLocation");
+            t.donationDrive = extract(ticketXml, "donationDrive");
+            t.deliveryDestination = extract(ticketXml, "deliveryDestination");
+            t.deleteReason = extract(ticketXml, "deleteReason");
+            t.qualityReason = extract(ticketXml, "qualityReason");
+            list.add(t);
 
-                idx = end + "</ticket>".length();
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+            idx = end + "</ticket>".length();
         }
         return list;
     }

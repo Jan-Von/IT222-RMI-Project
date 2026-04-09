@@ -25,6 +25,7 @@ public class AdminDonationsPanel extends JPanel {
     private TableRowSorter<DefaultTableModel> tableSorter;
     private JComboBox<String> statusFilterCombo;
     private JTextField searchField;
+    private JLabel connectionStatusLabel;
     private List<String> photoBase64ByRow = new ArrayList<>();
     private List<String> pickupDateTimeByRow = new ArrayList<>();
     private Timer refreshTimer;
@@ -121,13 +122,33 @@ public class AdminDonationsPanel extends JPanel {
 
         JButton clearBtn = new JButton("Clear");
         clearBtn.addActionListener(e -> {
-            statusFilterCombo.setSelectedItem(FILTER_STATUS_ALL);
-            searchField.setText("");
-            applyTableFilter();
+            clearFiltersAndRefresh();
         });
         panel.add(clearBtn);
 
+        connectionStatusLabel = new JLabel("");
+        connectionStatusLabel.setFont(new Font("Arial", Font.PLAIN, 12));
+        connectionStatusLabel.setForeground(new Color(160, 0, 0));
+        panel.add(Box.createHorizontalStrut(10));
+        panel.add(connectionStatusLabel);
+
         return panel;
+    }
+
+    private void clearFiltersAndRefresh() {
+        if (statusFilterCombo != null) {
+            statusFilterCombo.setSelectedIndex(0);
+        }
+        if (searchField != null) {
+            searchField.setText("");
+        }
+        if (tableSorter != null) {
+            tableSorter.setRowFilter(null);
+        }
+        refreshData();
+        if (searchField != null) {
+            searchField.requestFocusInWindow();
+        }
     }
 
     private void applyTableFilter() {
@@ -135,6 +156,11 @@ public class AdminDonationsPanel extends JPanel {
 
         final String statusFilter = statusFilterCombo != null ? (String) statusFilterCombo.getSelectedItem() : null;
         final String keyword = searchField != null ? searchField.getText().trim().toLowerCase() : "";
+
+        if ((statusFilter == null || FILTER_STATUS_ALL.equals(statusFilter)) && (keyword == null || keyword.isEmpty())) {
+            tableSorter.setRowFilter(null);
+            return;
+        }
 
         tableSorter.setRowFilter(new RowFilter<DefaultTableModel, Integer>() {
             @Override
@@ -431,112 +457,128 @@ public class AdminDonationsPanel extends JPanel {
         if (!AdminServerWatch.pingOrReturnToLogin(this)) {
             return;
         }
-        donationsTableModel.setRowCount(0);
-        photoBase64ByRow.clear();
-        pickupDateTimeByRow.clear();
+        try {
+            List<Object[]> rows = loadDonationsFromServer();
 
-        List<Object[]> rows = loadDonationsFromServer();
-        if (rows.isEmpty()) {
-            donationsTableModel.addRow(new Object[] { "-", "-", "-", "-", "No data", "-", "-" });
-            photoBase64ByRow.add(null);
-            pickupDateTimeByRow.add("");
-        } else {
-            for (Object[] row : rows) {
-                donationsTableModel.addRow(row);
+            // Success path: rebuild table from fresh data
+            donationsTableModel.setRowCount(0);
+            if (rows.isEmpty()) {
+                donationsTableModel.addRow(new Object[] { "-", "-", "-", "-", "No data", "-", "-" });
+                // keep metadata lists in sync with the placeholder row
+                photoBase64ByRow = new ArrayList<>();
+                pickupDateTimeByRow = new ArrayList<>();
+                photoBase64ByRow.add(null);
+                pickupDateTimeByRow.add("");
+            } else {
+                for (Object[] row : rows) {
+                    donationsTableModel.addRow(row);
+                }
+            }
+            if (connectionStatusLabel != null) {
+                connectionStatusLabel.setText("");
+            }
+
+            // Apply status + search filters on top of the fresh data.
+            applyTableFilter();
+        } catch (Exception ex) {
+            // Offline / transient error: do NOT wipe the last successful view.
+            if (connectionStatusLabel != null) {
+                connectionStatusLabel.setText("Server unreachable — retrying…");
             }
         }
-
-        // Apply status + search filters on top of the fresh data.
-        applyTableFilter();
     }
 
-    private List<Object[]> loadDonationsFromServer() {
+    private List<Object[]> loadDonationsFromServer() throws Exception {
         List<Object[]> rows = new ArrayList<>();
-        try {
-            Client client = Client.getDefault();
-            // Admin view should load all tickets; filtering is handled locally via the table sorter.
-            String responseXml = client.readTickets("admin", null);
-            Client.Response response = Client.parseResponse(responseXml);
-            if (response == null || !response.isOk()) {
-                return rows;
-            }
-            String ticketsXml = response.message;
-            if (ticketsXml == null || ticketsXml.isEmpty()) {
-                return rows;
-            }
-            ticketsXml = Client.unescapeXml(ticketsXml);
+        Client client = Client.getDefault();
+        // Admin view should load all tickets; filtering is handled locally via the table sorter.
+        String responseXml = client.readTickets("admin", null);
+        Client.Response response = Client.parseResponse(responseXml);
+        if (response == null || !response.isOk()) {
+            throw new Exception(response != null ? response.message : "readTickets failed");
+        }
+        String ticketsXml = response.message;
+        if (ticketsXml == null || ticketsXml.isEmpty()) {
+            return rows;
+        }
+        ticketsXml = Client.unescapeXml(ticketsXml);
 
-            int idx = 0;
-            while (true) {
-                int start = ticketsXml.indexOf("<ticket>", idx);
-                if (start < 0)
-                    break;
-                int end = ticketsXml.indexOf("</ticket>", start);
-                if (end < 0)
-                    break;
+        // build these in sync with rows, then assigned by refreshData() after successful fetch
+        List<String> photoTmp = new ArrayList<>();
+        List<String> pickupTmp = new ArrayList<>();
 
-                String ticketXml = ticketsXml.substring(start, end + "</ticket>".length());
+        int idx = 0;
+        while (true) {
+            int start = ticketsXml.indexOf("<ticket>", idx);
+            if (start < 0)
+                break;
+            int end = ticketsXml.indexOf("</ticket>", start);
+            if (end < 0)
+                break;
 
-                String id = extractTagValue(ticketXml, "ticketId");
-                String type = extractTagValue(ticketXml, "itemCategory");
-                String donor = extractTagValue(ticketXml, "userId");
-                String quantity = extractTagValue(ticketXml, "quantity");
-                String status = extractTagValue(ticketXml, "status");
-                String createdAt = extractTagValue(ticketXml, "createdAt");
-                String drive = extractTagValue(ticketXml, "donationDrive");
-                String destination = extractTagValue(ticketXml, "deliveryDestination");
-                String photoBase64 = extractPhotoBase64(ticketXml);
-                String pickupDateTime = extractTagValue(ticketXml, "pickupDateTime");
+            String ticketXml = ticketsXml.substring(start, end + "</ticket>".length());
 
-                String amountOrQty = "-";
-                if (type != null && type.toLowerCase().contains("monetary")) {
-                    String notes = extractTagValue(ticketXml, "notes");
-                    if (notes != null) {
-                        int amtIdx = notes.indexOf("Amount=");
+            String id = extractTagValue(ticketXml, "ticketId");
+            String type = extractTagValue(ticketXml, "itemCategory");
+            String donor = extractTagValue(ticketXml, "userId");
+            String quantity = extractTagValue(ticketXml, "quantity");
+            String status = extractTagValue(ticketXml, "status");
+            String createdAt = extractTagValue(ticketXml, "createdAt");
+            String drive = extractTagValue(ticketXml, "donationDrive");
+            String destination = extractTagValue(ticketXml, "deliveryDestination");
+            String photoBase64 = extractPhotoBase64(ticketXml);
+            String pickupDateTime = extractTagValue(ticketXml, "pickupDateTime");
+
+            String amountOrQty = "-";
+            if (type != null && type.toLowerCase().contains("monetary")) {
+                String notes = extractTagValue(ticketXml, "notes");
+                if (notes != null) {
+                    int amtIdx = notes.indexOf("Amount=");
+                    if (amtIdx >= 0) {
+                        int endIdx = notes.indexOf(";", amtIdx);
+                        if (endIdx < 0) endIdx = notes.length();
+                        amountOrQty = notes.substring(amtIdx + 7, endIdx).trim();
+                    } else {
+                        amtIdx = notes.indexOf("Amount:");
                         if (amtIdx >= 0) {
-                            int endIdx = notes.indexOf(";", amtIdx);
+                            int endIdx = notes.indexOf("|", amtIdx);
                             if (endIdx < 0) endIdx = notes.length();
                             amountOrQty = notes.substring(amtIdx + 7, endIdx).trim();
-                        } else {
-                            amtIdx = notes.indexOf("Amount:");
-                            if (amtIdx >= 0) {
-                                int endIdx = notes.indexOf("|", amtIdx);
-                                if (endIdx < 0) endIdx = notes.length();
-                                amountOrQty = notes.substring(amtIdx + 7, endIdx).trim();
-                            }
                         }
                     }
-                    if (!amountOrQty.startsWith("₱") && !amountOrQty.equals("-")) amountOrQty = "₱" + amountOrQty;
-                } else if (quantity != null && !quantity.isEmpty() && !quantity.equals("0")) {
-                    amountOrQty = quantity + " boxes";
                 }
-
-                String dest = "-";
-                if (drive != null && !drive.isEmpty() && destination != null && !destination.isEmpty()) {
-                    dest = drive + " → " + destination;
-                } else if (destination != null && !destination.isEmpty()) {
-                    dest = destination;
-                } else if (drive != null && !drive.isEmpty()) {
-                    dest = drive;
-                }
-
-                rows.add(new Object[] {
-                        id != null ? id : "-",
-                        type != null ? type : "Goods",
-                        donor != null ? donor : "-",
-                        amountOrQty,
-                        status != null ? status : "-",
-                        createdAt != null ? createdAt : "-",
-                        dest
-                });
-                photoBase64ByRow.add(photoBase64);
-                pickupDateTimeByRow.add(pickupDateTime != null ? pickupDateTime : "");
-
-                idx = end + "</ticket>".length();
+                if (!amountOrQty.startsWith("₱") && !amountOrQty.equals("-")) amountOrQty = "₱" + amountOrQty;
+            } else if (quantity != null && !quantity.isEmpty() && !quantity.equals("0")) {
+                amountOrQty = quantity + " boxes";
             }
-        } catch (Exception e) {
-            e.printStackTrace();
+
+            String dest = "-";
+            if (drive != null && !drive.isEmpty() && destination != null && !destination.isEmpty()) {
+                dest = drive + " → " + destination;
+            } else if (destination != null && !destination.isEmpty()) {
+                dest = destination;
+            } else if (drive != null && !drive.isEmpty()) {
+                dest = drive;
+            }
+
+            rows.add(new Object[] {
+                    id != null ? id : "-",
+                    type != null ? type : "Goods",
+                    donor != null ? donor : "-",
+                    amountOrQty,
+                    status != null ? status : "-",
+                    createdAt != null ? createdAt : "-",
+                    dest
+            });
+            photoTmp.add(photoBase64);
+            pickupTmp.add(pickupDateTime != null ? pickupDateTime : "");
+
+            idx = end + "</ticket>".length();
         }
+
+        // Swap in the metadata arrays only after a successful parse
+        photoBase64ByRow = photoTmp;
+        pickupDateTimeByRow = pickupTmp;
         return rows;
     }
 

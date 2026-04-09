@@ -107,9 +107,21 @@ public class Client {
             throw new IOException("Missing <action> in request.");
         }
 
-        DonationDriverService svc = getService(notifyOnFailure);
-        try {
-            switch (action) {
+        IOException last = null;
+        for (int attempt = 0; attempt < 2; attempt++) {
+            boolean isRetry = attempt > 0;
+            DonationDriverService svc;
+            try {
+                // On retry, don't spam dialogs; the second failure will surface.
+                svc = getService(notifyOnFailure && !isRetry);
+            } catch (IOException e) {
+                last = e;
+                clearCachedService();
+                continue;
+            }
+
+            try {
+                switch (action) {
                 case "LOGIN": {
                     String email = unescapeXml(extractTagValue(requestXml, "email"));
                     String password = unescapeXml(extractTagValue(requestXml, "password"));
@@ -302,15 +314,23 @@ public class Client {
                 default:
                     throw new IOException("Unsupported action: " + action);
             }
-        } catch (RemoteException e) {
-            clearCachedService();
-            if (notifyOnFailure) {
-                showErrorDialogWithCooldown(
-                        "Server connection lost. Please verify the server is running.",
-                        "Network Error");
+            } catch (RemoteException e) {
+                // Common after restarting server in IDE: stub is stale. Drop it and retry once.
+                last = new IOException("RMI call failed", e);
+                clearCachedService();
+                if (!isRetry) {
+                    continue;
+                }
+                if (notifyOnFailure) {
+                    showErrorDialogWithCooldown(
+                            "Server connection lost. Please verify the server is running.",
+                            "Network Error");
+                }
+                throw last;
             }
-            throw new IOException("RMI call failed", e);
         }
+        if (last != null) throw last;
+        throw new IOException("Request failed.");
     }
 
     /** Drop cached RMI stub so the next call performs a fresh registry lookup. */
