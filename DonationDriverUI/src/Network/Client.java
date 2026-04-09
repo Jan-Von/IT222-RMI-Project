@@ -107,7 +107,11 @@ public class Client {
             throw new IOException("Missing <action> in request.");
         }
 
-        DonationDriverService svc = getService(notifyOnFailure);
+        int attempts = 0;
+
+        while (attempts < 2) {
+            try {
+                DonationDriverService svc = getService(notifyOnFailure);
 
         try {
             switch (action) {
@@ -305,10 +309,12 @@ public class Client {
             }
         } catch (RemoteException e) {
             clearCachedService();
-            if (notifyOnFailure) {
-                showErrorDialogWithCooldown(
-                        "Server connection lost. Please verify the server is running.",
-                        "Network Error");
+            attempts++;
+            if (attempts >= 2) {
+                if (notifyOnFailure) {
+                    showErrorDialogWithCooldown(
+                            "Server connection lost. Please verify the server is running.",
+                            "Network Error");
             }
             throw new IOException("RMI call failed", e);
         }
