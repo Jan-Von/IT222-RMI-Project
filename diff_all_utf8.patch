@@ -1,0 +1,1218 @@
+diff --git a/DonationDriverUI/data/server_log.txt b/DonationDriverUI/data/server_log.txt
+index c5b0ae8..5f77588 100644
+--- a/DonationDriverUI/data/server_log.txt
++++ b/DonationDriverUI/data/server_log.txt
+@@ -3799,3 +3799,10 @@
+ [2026-04-02 21:37:15] [CRUD] user=SYSTEM | readDonationDrives | count=1
+ [2026-04-02 21:37:16] [CRUD] user=SYSTEM | readDonationDrives | count=1
+ [2026-04-02 21:37:17] [CRUD] user=novs@gmail.com | readTickets | status= count=0
++[2026-04-07 21:14:13] [INFO] user=SYSTEM | RMI Server started and bound on port 5267
++[2026-04-07 21:14:18] [AUTH] user=admin123456 | Login failed: invalid credentials.
++[2026-04-07 21:14:57] [AUTH] user=nov@gmail.com | Login failed: invalid credentials.
++[2026-04-07 21:15:00] [AUTH] user=nov@gmail.com | Login failed: invalid credentials.
++[2026-04-07 21:15:51] [AUTH] user=5012@gmail.com | Login failed: invalid credentials.
++[2026-04-07 21:18:20] [INFO] user=SYSTEM | RMI Server stopped.
++[2026-04-08 00:02:14] [INFO] user=SYSTEM | RMI Server started and bound on port 5267
+diff --git a/DonationDriverUI/src/Admin/AdminDonationsPanel.java b/DonationDriverUI/src/Admin/AdminDonationsPanel.java
+index 73658b7..4392cfb 100644
+--- a/DonationDriverUI/src/Admin/AdminDonationsPanel.java
++++ b/DonationDriverUI/src/Admin/AdminDonationsPanel.java
+@@ -184,7 +184,6 @@ public class AdminDonationsPanel extends JPanel {
+                 JOptionPane.showMessageDialog(this, msg, "Error", JOptionPane.ERROR_MESSAGE);
+             }
+         } catch (Exception ex) {
+-            ex.printStackTrace();
+             JOptionPane.showMessageDialog(this,
+                     "Unable to contact server.", "Error", JOptionPane.ERROR_MESSAGE);
+         }
+@@ -220,7 +219,6 @@ public class AdminDonationsPanel extends JPanel {
+                 JOptionPane.showMessageDialog(this, msg, "Error", JOptionPane.ERROR_MESSAGE);
+             }
+         } catch (Exception ex) {
+-            ex.printStackTrace();
+             JOptionPane.showMessageDialog(this,
+                     "Unable to contact server.", "Error", JOptionPane.ERROR_MESSAGE);
+         }
+@@ -293,7 +291,6 @@ public class AdminDonationsPanel extends JPanel {
+                     JOptionPane.showMessageDialog(this, msg, "Error", JOptionPane.ERROR_MESSAGE);
+                 }
+             } catch (Exception ex) {
+-                ex.printStackTrace();
+                 JOptionPane.showMessageDialog(this,
+                         "Unable to contact server.", "Error", JOptionPane.ERROR_MESSAGE);
+             }
+@@ -370,7 +367,6 @@ public class AdminDonationsPanel extends JPanel {
+                     JOptionPane.showMessageDialog(dialog, msg, "Error", JOptionPane.ERROR_MESSAGE);
+                 }
+             } catch (Exception ex) {
+-                ex.printStackTrace();
+                 JOptionPane.showMessageDialog(dialog, "Unable to contact server.", "Error", JOptionPane.ERROR_MESSAGE);
+             }
+         });
+@@ -488,7 +484,7 @@ public class AdminDonationsPanel extends JPanel {
+                 idx = end + "</ticket>".length();
+             }
+         } catch (Exception e) {
+-            e.printStackTrace();
++            // Keep UI responsive while server is offline.
+         }
+         return rows;
+     }
+@@ -598,7 +594,6 @@ public class AdminDonationsPanel extends JPanel {
+                     JOptionPane.showMessageDialog(this, msg, "Error", JOptionPane.ERROR_MESSAGE);
+                 }
+             } catch (Exception ex) {
+-                ex.printStackTrace();
+                 JOptionPane.showMessageDialog(this,
+                         "Unable to contact server.", "Error", JOptionPane.ERROR_MESSAGE);
+             }
+diff --git a/DonationDriverUI/src/Admin/AdminHomePanel.java b/DonationDriverUI/src/Admin/AdminHomePanel.java
+index 677e654..1687c30 100644
+--- a/DonationDriverUI/src/Admin/AdminHomePanel.java
++++ b/DonationDriverUI/src/Admin/AdminHomePanel.java
+@@ -257,7 +257,7 @@ public class AdminHomePanel extends JPanel {
+                 m.totalFunds += d.currentAmount;
+             }
+         } catch (Exception ex) {
+-            ex.printStackTrace();
++            // Keep dashboard polling quiet when server is down.
+         }
+         return m;
+     }
+@@ -362,7 +362,7 @@ public class AdminHomePanel extends JPanel {
+                 idx = end + "</drive>".length();
+             }
+         } catch (Exception e) {
+-            e.printStackTrace();
++            // Keep dashboard polling quiet when server is down.
+         }
+         return list;
+     }
+diff --git a/DonationDriverUI/src/Admin/AdminLoginController.java b/DonationDriverUI/src/Admin/AdminLoginController.java
+index d35373c..8dcb706 100644
+--- a/DonationDriverUI/src/Admin/AdminLoginController.java
++++ b/DonationDriverUI/src/Admin/AdminLoginController.java
+@@ -1,72 +1,20 @@
+ package Admin;
+ 
+ import Controller.LoginController;
+-import Network.Client;
+ import View.LoginView;
+ 
+-import javax.swing.*;
+-import java.io.IOException;
+-
+ public class AdminLoginController {
+ 
+     private final AdminLoginView view;
+     public AdminLoginController(AdminLoginView view) {
+         this.view = view;
+-        this.view.loginBtn.addActionListener(e -> handleLogin());
++        this.view.loginBtn.addActionListener(e -> openSharedLogin());
+         this.view.cancelBtn.addActionListener(e -> view.frame.dispose());
+     }
+ 
+-    private void handleLogin() {
+-        String email = view.emailField.getText();
+-        String password = new String(view.passField.getPassword());
+-
+-        // Check if placeholder text is still present
+-        if (email == null || email.trim().isEmpty() || email.equals("Admin Email")
+-                || password == null || password.trim().isEmpty() || password.equals("Password")) {
+-            JOptionPane.showMessageDialog(view.frame,
+-                    "Please enter both email and password.",
+-                    "Admin Login",
+-                    JOptionPane.WARNING_MESSAGE);
+-            return;
+-        }
+-        try {
+-            String responseXml = Client.getInstance().getService().login(email, password);
+-            Client.Response response = Client.parseResponse(responseXml);
+-            String status = response != null ? response.status : "";
+-            String message = response != null ? response.message : "";
+-
+-            if ("OK".equalsIgnoreCase(status)) {
+-                String role = response != null ? response.role : "";
+-                if (!"ADMIN".equalsIgnoreCase(role)) {
+-                    JOptionPane.showMessageDialog(view.frame,
+-                            "Access Denied: You do not have administrator privileges.",
+-                            "Admin Login",
+-                            JOptionPane.ERROR_MESSAGE);
+-                    return;
+-                }
+-
+-                JOptionPane.showMessageDialog(view.frame,
+-                        "Admin login successful!",
+-                        "Admin Login",
+-                        JOptionPane.INFORMATION_MESSAGE);
+-                view.frame.dispose();
+-
+-                AdminDashboardView adminDashboardView = new AdminDashboardView();
+-                adminDashboardView.logoutBtn.addActionListener(e -> {
+-                    adminDashboardView.frame.dispose();
+-                    LoginView loginView = new LoginView();
+-                    new LoginController(loginView);
+-                });
+-            } else {
+-                JOptionPane.showMessageDialog(view.frame,
+-                        (message != null && !message.isEmpty())
+-                                ? message
+-                                : "Invalid admin email or password.",
+-                        "Admin Login",
+-                        JOptionPane.ERROR_MESSAGE);
+-            }
+-        } catch (IOException e) {
+-            throw new RuntimeException(e);
+-        }
++    private void openSharedLogin() {
++        view.frame.dispose();
++        LoginView loginView = new LoginView();
++        new LoginController(loginView);
+     }
+ }
+diff --git a/DonationDriverUI/src/Admin/AdminLogsPanel.java b/DonationDriverUI/src/Admin/AdminLogsPanel.java
+index 32dca5b..f32533d 100644
+--- a/DonationDriverUI/src/Admin/AdminLogsPanel.java
++++ b/DonationDriverUI/src/Admin/AdminLogsPanel.java
+@@ -8,6 +8,12 @@ import java.awt.*;
+ public class AdminLogsPanel extends JPanel {
+ 
+     private JTextArea logsArea;
++    private JLabel runtimeStatusLabel;
++    private JButton startServerBtn;
++    private JButton stopServerBtn;
++    private JLabel accessStatusLabel;
++    private JLabel maintenanceStatusLabel;
++    private JToggleButton accessToggle;
+     private JToggleButton maintenanceToggle;
+     private Timer refreshTimer;
+ 
+@@ -36,39 +42,41 @@ public class AdminLogsPanel extends JPanel {
+ 
+         topPanel.add(titlePanel, BorderLayout.WEST);
+ 
+-        // Maintenance Toggle (Simulates Start/Stop)
+-        maintenanceToggle = new JToggleButton("Server is ONLINE");
+-        maintenanceToggle.setBackground(new Color(0, 150, 0));
+-        maintenanceToggle.setForeground(Color.WHITE);
++        JPanel controlsPanel = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
++        controlsPanel.setOpaque(false);
++
++        runtimeStatusLabel = new JLabel("Server: STOPPED");
++        runtimeStatusLabel.setFont(new Font("Arial", Font.BOLD, 12));
++        startServerBtn = new JButton("Start Server");
++        stopServerBtn = new JButton("Stop Server");
++        startServerBtn.setFocusPainted(false);
++        stopServerBtn.setFocusPainted(false);
++        startServerBtn.addActionListener(e -> toggleServerRuntime(true));
++        stopServerBtn.addActionListener(e -> toggleServerRuntime(false));
++
++        accessStatusLabel = new JLabel("Access: Unknown");
++        accessStatusLabel.setFont(new Font("Arial", Font.BOLD, 12));
++        accessToggle = new JToggleButton("Close Server Access");
++        accessToggle.setFocusPainted(false);
++        accessToggle.setForeground(Color.WHITE);
++        accessToggle.addActionListener(e -> toggleServerAccess());
++
++        maintenanceStatusLabel = new JLabel("Maintenance: Unknown");
++        maintenanceStatusLabel.setFont(new Font("Arial", Font.BOLD, 12));
++        maintenanceToggle = new JToggleButton("Enable Maintenance");
+         maintenanceToggle.setFocusPainted(false);
++        maintenanceToggle.setForeground(Color.WHITE);
++        maintenanceToggle.addActionListener(e -> toggleMaintenance());
+ 
+-        maintenanceToggle.addActionListener(e -> {
+-            boolean isMaintenance = maintenanceToggle.isSelected();
+-            try {
+-                Client client = Client.getDefault();
+-                String response = client.getService().setServerMaintenanceMode(isMaintenance);
+-                Client.Response resp = Client.parseResponse(response);
+-                if (resp != null && resp.isOk()) {
+-                    if (isMaintenance) {
+-                        maintenanceToggle.setText("Server is OFFLINE (Maintenance Mode)");
+-                        maintenanceToggle.setBackground(new Color(200, 0, 0));
+-                    } else {
+-                        maintenanceToggle.setText("Server is ONLINE");
+-                        maintenanceToggle.setBackground(new Color(0, 150, 0));
+-                    }
+-                } else {
+-                    maintenanceToggle.setSelected(!isMaintenance);
+-                    JOptionPane.showMessageDialog(this, "Failed to toggle server state.", "Error",
+-                            JOptionPane.ERROR_MESSAGE);
+-                }
+-            } catch (Exception ex) {
+-                maintenanceToggle.setSelected(!isMaintenance);
+-                JOptionPane.showMessageDialog(this, "Unable to contact server.", "Error", JOptionPane.ERROR_MESSAGE);
+-            }
+-            refreshData();
+-        });
++        controlsPanel.add(runtimeStatusLabel);
++        controlsPanel.add(startServerBtn);
++        controlsPanel.add(stopServerBtn);
++        controlsPanel.add(accessStatusLabel);
++        controlsPanel.add(accessToggle);
++        controlsPanel.add(maintenanceStatusLabel);
++        controlsPanel.add(maintenanceToggle);
+ 
+-        topPanel.add(maintenanceToggle, BorderLayout.EAST);
++        topPanel.add(controlsPanel, BorderLayout.EAST);
+         add(topPanel, BorderLayout.NORTH);
+ 
+         // Logs text area
+@@ -84,6 +92,7 @@ public class AdminLogsPanel extends JPanel {
+         // For updating real-time
+         refreshTimer = new Timer(3000, e -> refreshData());
+         refreshTimer.start();
++        refreshData();
+     }
+ 
+     public void stopTimer() {
+@@ -93,20 +102,125 @@ public class AdminLogsPanel extends JPanel {
+     }
+ 
+     public void refreshData() {
++        boolean runtimeRunning = ServerRuntimeManager.getInstance().isRunning();
++        applyRuntimeState(runtimeRunning);
+         try {
++            if (!runtimeRunning) {
++                logsArea.setText("Server runtime is stopped.");
++                accessStatusLabel.setText("Access: Stopped");
++                maintenanceStatusLabel.setText("Maintenance: Stopped");
++                accessToggle.setEnabled(false);
++                maintenanceToggle.setEnabled(false);
++                return;
++            }
++
+             Client client = Client.getDefault();
+             String response = client.getService().getServerLogs();
+             Client.Response resp = Client.parseResponse(response);
+             if (resp != null && resp.isOk() && resp.message != null) {
+                 logsArea.setText(resp.message);
+-
+-                // Adjust switch state if modified outside
+-                if (resp.message.contains("offline")) {
+-                    // Do nothing or sync state accurately
+-                }
+             }
++            boolean accessEnabled = client.getService().isServerAccessEnabled();
++            boolean maintenanceEnabled = client.getService().isServerMaintenanceMode();
++            applyControlState(accessEnabled, maintenanceEnabled);
+         } catch (Exception e) {
+             logsArea.setText("Failed to fetch logs: " + e.getMessage());
++            accessStatusLabel.setText("Access: Unreachable");
++            maintenanceStatusLabel.setText("Maintenance: Unreachable");
++            accessToggle.setEnabled(false);
++            maintenanceToggle.setEnabled(false);
++        }
++    }
++
++    private void toggleServerRuntime(boolean start) {
++        boolean ok = start
++                ? ServerRuntimeManager.getInstance().startServer()
++                : ServerRuntimeManager.getInstance().stopServer();
++        if (!ok) {
++            JOptionPane.showMessageDialog(this,
++                    (start ? "Unable to start server." : "Unable to stop server."),
++                    "Server Runtime Error",
++                    JOptionPane.ERROR_MESSAGE);
++        }
++        refreshData();
++    }
++
++    private void toggleServerAccess() {
++        boolean enableAccess = !accessToggle.isSelected();
++        try {
++            Client client = Client.getDefault();
++            String response = client.getService().setServerAccessEnabled(enableAccess);
++            Client.Response resp = Client.parseResponse(response);
++            if (resp == null || !resp.isOk()) {
++                throw new IllegalStateException(resp != null ? resp.message : "Unknown error");
++            }
++            refreshData();
++        } catch (Exception ex) {
++            JOptionPane.showMessageDialog(this, "Unable to change server access: " + ex.getMessage(), "Error",
++                    JOptionPane.ERROR_MESSAGE);
++            refreshData();
++        }
++    }
++
++    private void toggleMaintenance() {
++        boolean enableMaintenance = maintenanceToggle.isSelected();
++        try {
++            Client client = Client.getDefault();
++            String response = client.getService().setServerMaintenanceMode(enableMaintenance);
++            Client.Response resp = Client.parseResponse(response);
++            if (resp == null || !resp.isOk()) {
++                throw new IllegalStateException(resp != null ? resp.message : "Unknown error");
++            }
++            refreshData();
++        } catch (Exception ex) {
++            JOptionPane.showMessageDialog(this, "Unable to change maintenance mode: " + ex.getMessage(), "Error",
++                    JOptionPane.ERROR_MESSAGE);
++            refreshData();
++        }
++    }
++
++    private void applyControlState(boolean accessEnabled, boolean maintenanceEnabled) {
++        accessToggle.setEnabled(true);
++        maintenanceToggle.setEnabled(true);
++        accessToggle.setSelected(!accessEnabled);
++        maintenanceToggle.setSelected(maintenanceEnabled);
++
++        if (accessEnabled) {
++            accessStatusLabel.setText("Access: OPEN");
++            accessStatusLabel.setForeground(new Color(0, 120, 0));
++            accessToggle.setText("Close Server Access");
++            accessToggle.setBackground(new Color(180, 0, 0));
++        } else {
++            accessStatusLabel.setText("Access: CLOSED");
++            accessStatusLabel.setForeground(new Color(180, 0, 0));
++            accessToggle.setText("Open Server Access");
++            accessToggle.setBackground(new Color(0, 130, 0));
++        }
++
++        if (maintenanceEnabled) {
++            maintenanceStatusLabel.setText("Maintenance: ON");
++            maintenanceStatusLabel.setForeground(new Color(180, 0, 0));
++            maintenanceToggle.setText("Disable Maintenance");
++            maintenanceToggle.setBackground(new Color(180, 0, 0));
++        } else {
++            maintenanceStatusLabel.setText("Maintenance: OFF");
++            maintenanceStatusLabel.setForeground(new Color(0, 120, 0));
++            maintenanceToggle.setText("Enable Maintenance");
++            maintenanceToggle.setBackground(new Color(20, 35, 100));
++        }
++    }
++
++    private void applyRuntimeState(boolean running) {
++        if (running) {
++            runtimeStatusLabel.setText("Server: RUNNING");
++            runtimeStatusLabel.setForeground(new Color(0, 120, 0));
++            startServerBtn.setEnabled(false);
++            stopServerBtn.setEnabled(true);
++        } else {
++            runtimeStatusLabel.setText("Server: STOPPED");
++            runtimeStatusLabel.setForeground(new Color(180, 0, 0));
++            startServerBtn.setEnabled(true);
++            stopServerBtn.setEnabled(false);
+         }
+     }
+ }
+diff --git a/DonationDriverUI/src/Admin/AdminMain.java b/DonationDriverUI/src/Admin/AdminMain.java
+index 1f10d98..38f29c0 100644
+--- a/DonationDriverUI/src/Admin/AdminMain.java
++++ b/DonationDriverUI/src/Admin/AdminMain.java
+@@ -1,8 +1,11 @@
+ package Admin;
+ 
++import Controller.LoginController;
++import View.LoginView;
++
+ public class AdminMain {
+     public static void main(String[] args) {
+-        AdminLoginView adminLoginView = new AdminLoginView();
+-        new AdminLoginController(adminLoginView);
++        LoginView loginView = new LoginView();
++        new LoginController(loginView);
+     }
+ }
+diff --git a/DonationDriverUI/src/Admin/AdminNotificationsPanel.java b/DonationDriverUI/src/Admin/AdminNotificationsPanel.java
+index ebf0b90..6574834 100644
+--- a/DonationDriverUI/src/Admin/AdminNotificationsPanel.java
++++ b/DonationDriverUI/src/Admin/AdminNotificationsPanel.java
+@@ -212,7 +212,7 @@ public class AdminNotificationsPanel extends JPanel {
+                 idx = end + "</ticket>".length();
+             }
+         } catch (Exception e) {
+-            e.printStackTrace();
++            // Keep polling quiet while server is offline.
+         }
+         return list;
+     }
+diff --git a/DonationDriverUI/src/Controller/LoginController.java b/DonationDriverUI/src/Controller/LoginController.java
+index e0e3095..d5b24b6 100644
+--- a/DonationDriverUI/src/Controller/LoginController.java
++++ b/DonationDriverUI/src/Controller/LoginController.java
+@@ -1,12 +1,14 @@
+ package Controller;
+ 
++import Admin.AdminDashboardView;
++import Util.AdminCredentialsStore;
+ import View.LoginView;
+ import View.RegistrationView;
+ import View.DashboardView;
+ import Network.Client;
+ import javax.swing.*;
++import java.awt.Cursor;
+ import java.io.IOException;
+-import java.rmi.RemoteException;
+ 
+ public class LoginController {
+ 
+@@ -31,47 +33,103 @@ public class LoginController {
+     private void login() {
+         String email = view.emailField.getText();
+         String password = new String(view.passField.getPassword());
++        String emailNorm = email == null ? "" : email.trim();
++        String passwordNorm = password == null ? "" : password.trim();
+ 
+-        try {
+-            String responseXml = Client.getInstance().getService().login(email, password);
+-            Client.Response response = Client.parseResponse(responseXml);
+-            String status = response != null ? response.status : "";
+-            String role = response != null ? response.role : "";
+-            String message = response != null ? response.message : "";
+-
+-            if ("OK".equalsIgnoreCase(status)) {
+-                currentUserEmail = email;
+-                currentUserRole = role == null ? "" : role;
+-
+-                JOptionPane.showMessageDialog(view.frame, "Login Success!");
+-
+-                if ("RIDER".equalsIgnoreCase(currentUserRole)) {
+-                    View.RiderDashboard riderView = new View.RiderDashboard();
+-                    new RiderController(riderView);
+-                    riderView.frame.setVisible(true);
+-                } else {
+-                    DashboardView dashboardView = new DashboardView();
+-                    new DashboardController(dashboardView);
++        if (emailNorm.isEmpty() || "Email".equalsIgnoreCase(emailNorm)
++                || passwordNorm.isEmpty() || "Password".equals(passwordNorm)) {
++            JOptionPane.showMessageDialog(view.frame, "Please enter both email and password.");
++            return;
++        }
++
++        // Admin login uses XML-backed credentials and routes to admin UI.
++        if (AdminCredentialsStore.isAdminCredential(emailNorm, passwordNorm)) {
++            currentUserEmail = emailNorm;
++            currentUserRole = "ADMIN";
++            String adminMessage = AdminCredentialsStore.hasAnotherAdmin(emailNorm)
++                    ? "Admin login successful. Additional admin accounts are configured."
++                    : "Admin login successful.";
++            JOptionPane.showMessageDialog(view.frame, adminMessage);
++            AdminDashboardView adminDashboardView = new AdminDashboardView();
++            adminDashboardView.logoutBtn.addActionListener(e -> {
++                adminDashboardView.frame.dispose();
++                LoginView loginView = new LoginView();
++                new LoginController(loginView);
++            });
++            view.frame.dispose();
++            return;
++        }
++
++        setLoginBusy(true);
++        SwingWorker<Client.Response, Void> loginWorker = new SwingWorker<Client.Response, Void>() {
++            @Override
++            protected Client.Response doInBackground() throws Exception {
++                String responseXml = Client.getInstance().getService().login(emailNorm, passwordNorm);
++                return Client.parseResponse(responseXml);
++            }
++
++            @Override
++            protected void done() {
++                setLoginBusy(false);
++                try {
++                    Client.Response response = get();
++                    String status = response != null ? response.status : "";
++                    String role = response != null ? response.role : "";
++                    String message = response != null ? response.message : "";
++
++                    if ("OK".equalsIgnoreCase(status)) {
++                        currentUserEmail = emailNorm;
++                        currentUserRole = role == null ? "" : role;
++
++                        if ("ADMIN".equalsIgnoreCase(currentUserRole)) {
++                            JOptionPane.showMessageDialog(view.frame,
++                                    "Admin dashboard access requires credentials from admin_credentials.xml.",
++                                    "Admin Access Restricted",
++                                    JOptionPane.WARNING_MESSAGE);
++                            return;
++                        }
++
++                        JOptionPane.showMessageDialog(view.frame, "Login Success!");
++
++                        if ("RIDER".equalsIgnoreCase(currentUserRole)) {
++                            View.RiderDashboard riderView = new View.RiderDashboard();
++                            new RiderController(riderView);
++                            riderView.frame.setVisible(true);
++                        } else {
++                            DashboardView dashboardView = new DashboardView();
++                            new DashboardController(dashboardView);
++                        }
++                        view.frame.dispose();
++                    } else {
++                        String msg = (message != null && !message.isEmpty())
++                                ? message
++                                : "Invalid email or password!";
++                        JOptionPane.showMessageDialog(view.frame, msg);
++                    }
++                } catch (Exception ex) {
++                    Throwable cause = ex.getCause() != null ? ex.getCause() : ex;
++                    if (cause instanceof IOException) {
++                        JOptionPane.showMessageDialog(view.frame,
++                                "Cannot contact server. Make sure the DonationDriver server is running (port 5267).",
++                                "Connection Error",
++                                JOptionPane.ERROR_MESSAGE);
++                    } else {
++                        JOptionPane.showMessageDialog(view.frame,
++                                "Authentication failed due to server error.",
++                                "Server Error",
++                                JOptionPane.ERROR_MESSAGE);
++                    }
+                 }
+-                view.frame.dispose();
+-            } else {
+-                String msg = (message != null && !message.isEmpty())
+-                        ? message
+-                        : "Invalid email or password!";
+-                JOptionPane.showMessageDialog(view.frame, msg);
+             }
+-        } catch (RemoteException ex) {
+-            ex.printStackTrace();
+-            JOptionPane.showMessageDialog(view.frame,
+-                    "Authentication failed due to remote server error.",
+-                    "Server Error",
+-                    JOptionPane.ERROR_MESSAGE);
+-        } catch (IOException ex) {
+-            ex.printStackTrace();
+-            JOptionPane.showMessageDialog(view.frame,
+-                    "Cannot contact server. Make sure the DonationDriver server is running (port 5267).",
+-                    "Connection Error",
+-                    JOptionPane.ERROR_MESSAGE);
+-        }
++        };
++        loginWorker.execute();
++    }
++
++    private void setLoginBusy(boolean busy) {
++        view.loginBtn.setEnabled(!busy);
++        view.signupBtn.setEnabled(!busy);
++        view.frame.setCursor(busy
++                ? Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR)
++                : Cursor.getDefaultCursor());
+     }
+ }
+\ No newline at end of file
+diff --git a/DonationDriverUI/src/Network/Client.java b/DonationDriverUI/src/Network/Client.java
+index ba591fd..58ec5e0 100644
+--- a/DonationDriverUI/src/Network/Client.java
++++ b/DonationDriverUI/src/Network/Client.java
+@@ -14,6 +14,9 @@ public class Client {
+     private final int port;
+ 
+     private transient DonationDriverService service;
++    private static final Object DIALOG_LOCK = new Object();
++    private static long lastConnectionDialogAtMs = 0L;
++    private static final long CONNECTION_DIALOG_COOLDOWN_MS = 15000L;
+ 
+     private Client(String host, int port) {
+         this.host = host;
+@@ -224,6 +227,17 @@ public class Client {
+                     boolean enabled = enabledStr != null && enabledStr.equalsIgnoreCase("true");
+                     return svc.setServerMaintenanceMode(enabled);
+                 }
++                case "SET_SERVER_ACCESS_MODE": {
++                    String enabledStr = unescapeXml(extractTagValue(requestXml, "enabled"));
++                    boolean enabled = enabledStr != null && enabledStr.equalsIgnoreCase("true");
++                    return svc.setServerAccessEnabled(enabled);
++                }
++                case "GET_SERVER_MAINTENANCE_MODE": {
++                    return svc.isServerMaintenanceMode() ? "true" : "false";
++                }
++                case "GET_SERVER_ACCESS_MODE": {
++                    return svc.isServerAccessEnabled() ? "true" : "false";
++                }
+                 case "PING": {
+                     return svc.ping();
+                 }
+@@ -231,9 +245,11 @@ public class Client {
+                     throw new IOException("Unsupported action: " + action);
+             }
+         } catch (RemoteException e) {
+-            javax.swing.JOptionPane.showMessageDialog(null,
++            service = null;
++            showConnectionDialogWithCooldown(
+                     "Server connection lost. Please verify the server is running.",
+-                    "Network Error", javax.swing.JOptionPane.ERROR_MESSAGE);
++                    "Network Error"
++            );
+             throw new IOException("RMI call failed", e);
+         }
+     }
+@@ -245,13 +261,30 @@ public class Client {
+             service = (DonationDriverService) Naming.lookup(url);
+             return service;
+         } catch (Exception e) {
+-            javax.swing.JOptionPane.showMessageDialog(null,
++            showConnectionDialogWithCooldown(
+                     "Cannot contact RMI server at " + host + ":" + port + ".\nPlease make sure the server is started.",
+-                    "Connection Error", javax.swing.JOptionPane.ERROR_MESSAGE);
++                    "Connection Error"
++            );
+             throw new IOException("Cannot contact RMI server at " + host + ":" + port, e);
+         }
+     }
+ 
++    private static void showConnectionDialogWithCooldown(String message, String title) {
++        long now = System.currentTimeMillis();
++        synchronized (DIALOG_LOCK) {
++            if (now - lastConnectionDialogAtMs < CONNECTION_DIALOG_COOLDOWN_MS) {
++                return;
++            }
++            lastConnectionDialogAtMs = now;
++        }
++        javax.swing.JOptionPane.showMessageDialog(
++                null,
++                message,
++                title,
++                javax.swing.JOptionPane.ERROR_MESSAGE
++        );
++    }
++
+     public String login(String email, String password) throws IOException {
+         String request = "<request><action>LOGIN</action><userId></userId>"
+                 + "<email>" + escapeXml(email) + "</email>"
+@@ -578,6 +611,28 @@ public class Client {
+         return sendRequest(request);
+     }
+ 
++    public String setServerMaintenanceMode(boolean enabled) throws IOException {
++        String request = "<request><action>SET_SERVER_MAINTENANCE_MODE</action>"
++                + "<enabled>" + enabled + "</enabled></request>";
++        return sendRequest(request);
++    }
++
++    public String setServerAccessEnabled(boolean enabled) throws IOException {
++        String request = "<request><action>SET_SERVER_ACCESS_MODE</action>"
++                + "<enabled>" + enabled + "</enabled></request>";
++        return sendRequest(request);
++    }
++
++    public boolean isServerMaintenanceMode() throws IOException {
++        String response = sendRequest("<request><action>GET_SERVER_MAINTENANCE_MODE</action></request>");
++        return "true".equalsIgnoreCase(response);
++    }
++
++    public boolean isServerAccessEnabled() throws IOException {
++        String response = sendRequest("<request><action>GET_SERVER_ACCESS_MODE</action></request>");
++        return "true".equalsIgnoreCase(response);
++    }
++
+     public static class Response {
+         public final String status;
+         public final String message;
+diff --git a/DonationDriverUI/src/Network/DonationDriverService.java b/DonationDriverUI/src/Network/DonationDriverService.java
+index b399ab3..0ffb49c 100644
+--- a/DonationDriverUI/src/Network/DonationDriverService.java
++++ b/DonationDriverUI/src/Network/DonationDriverService.java
+@@ -51,4 +51,7 @@ public interface DonationDriverService extends Remote {
+     // Admin Methods
+     String getServerLogs() throws RemoteException;
+     String setServerMaintenanceMode(boolean enabled) throws RemoteException;
++    String setServerAccessEnabled(boolean enabled) throws RemoteException;
++    boolean isServerMaintenanceMode() throws RemoteException;
++    boolean isServerAccessEnabled() throws RemoteException;
+ }
+diff --git a/DonationDriverUI/src/Server.java b/DonationDriverUI/src/Server.java
+index df88b35..6a72511 100644
+--- a/DonationDriverUI/src/Server.java
++++ b/DonationDriverUI/src/Server.java
+@@ -31,6 +31,7 @@ public class Server extends JFrame implements DonationDriverService {
+ 
+     private final Set<String> activeSessions = new HashSet<>();
+     private volatile boolean maintenanceMode;
++    private volatile boolean serverRunning;
+ 
+     // Gson init (optional at runtime; we also support a Gson-free fallback).
+     private static final Object GSON = initGson();
+@@ -138,7 +139,8 @@ public class Server extends JFrame implements DonationDriverService {
+         ensureEmptyArrayFile(availableRidersFile());
+         ensureEmptyArrayFile(new File(DATA_DIR, "server_logs.json"));
+         ensureEmptyArrayFile(archivedTicketsFile());
+-        ensureEmptyObjectFile(new File(DATA_DIR, "server_settings.json"), "{\"maintenanceEnabled\":false}");
++        ensureEmptyObjectFile(new File(DATA_DIR, "server_settings.json"),
++                "{\"maintenanceEnabled\":false,\"accessEnabled\":true}");
+ 
+         synchronized (FILE_LOCK) {
+             try {
+@@ -162,7 +164,7 @@ public class Server extends JFrame implements DonationDriverService {
+             if (!f.exists() || f.length() == 0) {
+                 File parent = f.getParentFile();
+                 if (parent != null) parent.mkdirs();
+-                Files.writeString(f.toPath(), "[]", StandardCharsets.UTF_8);
++                writeTextFile(f, "[]");
+             }
+         } catch (Exception ignored) {
+         }
+@@ -173,12 +175,20 @@ public class Server extends JFrame implements DonationDriverService {
+             if (!f.exists() || f.length() == 0) {
+                 File parent = f.getParentFile();
+                 if (parent != null) parent.mkdirs();
+-                Files.writeString(f.toPath(), defaultJson, StandardCharsets.UTF_8);
++                writeTextFile(f, defaultJson);
+             }
+         } catch (Exception ignored) {
+         }
+     }
+ 
++    private static void writeTextFile(File file, String content) throws Exception {
++        Files.write(file.toPath(), (content == null ? "" : content).getBytes(StandardCharsets.UTF_8));
++    }
++
++    private static String readTextFile(File file) throws Exception {
++        return new String(Files.readAllBytes(file.toPath()), StandardCharsets.UTF_8);
++    }
++
+     private static <T> List<T> loadList(File file, Class<T> elementClass) {
+         synchronized (FILE_LOCK) {
+             if (file == null || !file.exists() || file.length() == 0) return new ArrayList<>();
+@@ -188,7 +198,7 @@ public class Server extends JFrame implements DonationDriverService {
+                     @SuppressWarnings("unchecked")
+                     List<Object> rawList = (List<Object>) gson.getClass()
+                             .getMethod("fromJson", String.class, Class.class)
+-                            .invoke(gson, Files.readString(file.toPath(), StandardCharsets.UTF_8), List.class);
++                            .invoke(gson, readTextFile(file), List.class);
+ 
+                     List<T> out = new ArrayList<>();
+                     for (Object rawEl : rawList) {
+@@ -221,7 +231,7 @@ public class Server extends JFrame implements DonationDriverService {
+                     String json = (String) GSON.getClass().getMethod("toJson", Object.class).invoke(GSON, list);
+                     File parent = file.getParentFile();
+                     if (parent != null) parent.mkdirs();
+-                    Files.writeString(file.toPath(), json, StandardCharsets.UTF_8);
++                    writeTextFile(file, json);
+                     return;
+                 }
+                 saveListFallback(file, list);
+@@ -232,7 +242,7 @@ public class Server extends JFrame implements DonationDriverService {
+     }
+ 
+     private static <T> List<T> loadListFallback(File file, Class<T> elementClass) throws Exception {
+-        String json = Files.readString(file.toPath(), StandardCharsets.UTF_8).trim();
++        String json = readTextFile(file).trim();
+         if (json.isEmpty() || "[]".equals(json)) return new ArrayList<>();
+ 
+         if (elementClass == String.class) {
+@@ -402,7 +412,7 @@ public class Server extends JFrame implements DonationDriverService {
+ 
+         File parent = file.getParentFile();
+         if (parent != null) parent.mkdirs();
+-        Files.writeString(file.toPath(), json, StandardCharsets.UTF_8);
++        writeTextFile(file, json);
+     }
+ 
+     private static List<String> parseJsonObjects(String jsonArray) {
+@@ -490,7 +500,7 @@ public class Server extends JFrame implements DonationDriverService {
+         // We only need Users for registration/login in this minimal fix.
+         if (file == null || !file.exists()) return new ArrayList<>();
+         try {
+-            String json = Files.readString(file.toPath(), StandardCharsets.UTF_8).trim();
++            String json = readTextFile(file).trim();
+             if (json.isEmpty() || "[]".equals(json)) return new ArrayList<>();
+ 
+             if (elementClass != User.class) {
+@@ -533,7 +543,7 @@ public class Server extends JFrame implements DonationDriverService {
+             sb.append("]");
+             File parent = file.getParentFile();
+             if (parent != null) parent.mkdirs();
+-            Files.writeString(file.toPath(), sb.toString(), StandardCharsets.UTF_8);
++            writeTextFile(file, sb.toString());
+         } catch (Exception ignored) {
+         }
+     }
+@@ -646,18 +656,55 @@ public class Server extends JFrame implements DonationDriverService {
+     private static boolean isMaintenanceEnabled() {
+         synchronized (FILE_LOCK) {
+             try {
+-                File f = serverSettingsFile();
+-                if (f == null || !f.exists() || f.length() == 0) return false;
+-                String json = Files.readString(f.toPath(), StandardCharsets.UTF_8);
+-                if (json == null) return false;
+-                String compact = json.replaceAll("\\s+", "");
+-                return compact.toLowerCase().contains("\"maintenanceenabled\":true");
++                return readServerSettingFlag("maintenanceEnabled", false);
+             } catch (Exception ignored) {
+                 return false;
+             }
+         }
+     }
+ 
++    private static boolean isServerAccessEnabledSetting() {
++        synchronized (FILE_LOCK) {
++            try {
++                return readServerSettingFlag("accessEnabled", true);
++            } catch (Exception ignored) {
++                return true;
++            }
++        }
++    }
++
++    private static boolean readServerSettingFlag(String key, boolean defaultValue) throws Exception {
++        File f = serverSettingsFile();
++        if (f == null || !f.exists() || f.length() == 0) return defaultValue;
++        String json = readTextFile(f);
++        if (json == null) return defaultValue;
++        String compact = json.replaceAll("\\s+", "").toLowerCase();
++        String lookup = "\"" + key.toLowerCase() + "\":";
++        int idx = compact.indexOf(lookup);
++        if (idx < 0) return defaultValue;
++        String after = compact.substring(idx + lookup.length());
++        if (after.startsWith("true")) return true;
++        if (after.startsWith("false")) return false;
++        return defaultValue;
++    }
++
++    private static void writeServerSettings(boolean maintenanceEnabled, boolean accessEnabled) throws Exception {
++        DATA_DIR.mkdirs();
++        String json = "{\"maintenanceEnabled\":" + (maintenanceEnabled ? "true" : "false")
++                + ",\"accessEnabled\":" + (accessEnabled ? "true" : "false") + "}";
++        writeTextFile(serverSettingsFile(), json);
++    }
++
++    private String getOperationBlockedMessage() {
++        if (!isServerAccessEnabledSetting()) {
++            return "Server access is currently closed by admin.";
++        }
++        if (isMaintenanceEnabled()) {
++            return "Server is in maintenance mode.";
++        }
++        return null;
++    }
++
+     private static void appendServerLog(String logLine) {
+         if (logLine == null) return;
+         try {
+@@ -762,8 +809,8 @@ public class Server extends JFrame implements DonationDriverService {
+         stopBtn = new JButton("Stop Server");
+         stopBtn.setEnabled(false);
+ 
+-        startBtn.addActionListener(e -> startServer());
+-        stopBtn.addActionListener(e -> stopServer());
++        startBtn.addActionListener(e -> startServerRuntime());
++        stopBtn.addActionListener(e -> stopServerRuntime());
+ 
+         btnPanel.add(startBtn);
+         btnPanel.add(stopBtn);
+@@ -775,7 +822,7 @@ public class Server extends JFrame implements DonationDriverService {
+ 
+     private void log(String type, String userId, String message) {
+         String timestamp = LocalDateTime.now().format(LOG_FMT);
+-        String line = "[" + timestamp + "] [" + (type == null ? "INFO" : type.toUpperCase()) + "] " + "user=" + (userId == null || userId.isBlank() ? "SYSTEM" : userId) + " | " + (message == null ? "" : message);
++        String line = "[" + timestamp + "] [" + (type == null ? "INFO" : type.toUpperCase()) + "] " + "user=" + (userId == null || userId.trim().isEmpty() ? "SYSTEM" : userId) + " | " + (message == null ? "" : message);
+ 
+         SwingUtilities.invokeLater(() -> logArea.append(message + "\n"));
+ 
+@@ -789,7 +836,11 @@ public class Server extends JFrame implements DonationDriverService {
+         }
+     }
+ 
+-    private void startServer() {
++    public synchronized boolean startServerRuntime() {
++        if (serverRunning) {
++            log("INFO", "SYSTEM", "Start requested while server already running.");
++            return true;
++        }
+         try {
+             initDataFiles();
+             maintenanceMode = isMaintenanceEnabled();
+@@ -798,32 +849,47 @@ public class Server extends JFrame implements DonationDriverService {
+             UnicastRemoteObject.exportObject(this, 0);
+             Naming.rebind("rmi://localhost:" + PORT + "/DonationDriverService", this);
+             log("INFO", "SYSTEM", "RMI Server started and bound on port " + PORT);
++            serverRunning = true;
+             startBtn.setEnabled(false);
+             stopBtn.setEnabled(true);
++            return true;
+         } catch (Exception e) {
+             log("ERROR", "SYSTEM", "Failed to start server: " + e.getMessage());
++            serverRunning = false;
++            return false;
+         }
+     }
+ 
+-    private void stopServer() {
++    public synchronized boolean stopServerRuntime() {
++        if (!serverRunning) {
++            log("INFO", "SYSTEM", "Stop requested while server already stopped.");
++            return true;
++        }
+         try {
+             Naming.unbind("rmi://localhost:" + PORT + "/DonationDriverService");
+             UnicastRemoteObject.unexportObject(this, true);
+             if (registry != null) UnicastRemoteObject.unexportObject(registry, true);
++            registry = null;
+             log("INFO", "SYSTEM", "RMI Server stopped.");
++            serverRunning = false;
+             startBtn.setEnabled(true);
+             stopBtn.setEnabled(false);
++            return true;
+         } catch (Exception e) {
+             log("ERROR", "SYSTEM", "Error stopping server: " + e.getMessage());
++            return false;
+         }
+     }
+ 
++    public synchronized boolean isServerRunningRuntime() {
++        return serverRunning;
++    }
++
+     @Override
+     public String login(String email, String password) throws RemoteException {
+         synchronized (FILE_LOCK) {
+             if (email == null || password == null) return error("Missing email or password.");
+             maintenanceMode = isMaintenanceEnabled();
+-            if (maintenanceMode) return error("Server is in maintenance mode.");
+             String emailNorm = email.trim().toLowerCase();
+ 
+             List<User> users = loadUsers();
+@@ -831,6 +897,12 @@ public class Server extends JFrame implements DonationDriverService {
+                 if (u == null || u.email == null) continue;
+                 if (u.email.trim().toLowerCase().equals(emailNorm) && password.equals(u.password)) {
+                     String role = (u.role == null || u.role.isEmpty()) ? "DONOR" : u.role;
++                    if (!isServerAccessEnabledSetting() && !"ADMIN".equalsIgnoreCase(role)) {
++                        return error("Server access is currently closed by admin.");
++                    }
++                    if (maintenanceMode && !"ADMIN".equalsIgnoreCase(role)) {
++                        return error("Server is in maintenance mode.");
++                    }
+                     synchronized (activeSessions) {
+                         if (activeSessions.contains(emailNorm)) {
+                             log("AUTH", emailNorm, "Login failed: user already logged in.");
+@@ -857,8 +929,8 @@ public class Server extends JFrame implements DonationDriverService {
+                            String address, String phone, String email, String password, String role) throws RemoteException {
+         synchronized (FILE_LOCK) {
+             if (email == null || password == null) return error("Missing email or password.");
+-            maintenanceMode = isMaintenanceEnabled();
+-            if (maintenanceMode) return error("Server is in maintenance mode.");
++            String blockedMessage = getOperationBlockedMessage();
++            if (blockedMessage != null) return error(blockedMessage);
+ 
+             String emailNorm = email.trim().toLowerCase();
+             String roleNorm = (role == null || role.trim().isEmpty()) ? "DONOR" : role.trim().toUpperCase();
+@@ -900,7 +972,8 @@ public class Server extends JFrame implements DonationDriverService {
+     public String updateUserRole(String email, String newRole) throws RemoteException {
+         synchronized (FILE_LOCK) {
+             try {
+-                if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
++                String blockedMessage = getOperationBlockedMessage();
++                if (blockedMessage != null) return error(blockedMessage);
+                 if (email == null || newRole == null) return error("Missing email or role.");
+ 
+                 String emailNorm = email.trim().toLowerCase();
+@@ -945,7 +1018,8 @@ public class Server extends JFrame implements DonationDriverService {
+                                String deliveryDestination, String photoBase64) throws RemoteException {
+         synchronized (FILE_LOCK) {
+             try {
+-                if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
++                String blockedMessage = getOperationBlockedMessage();
++                if (blockedMessage != null) return error(blockedMessage);
+                 if (userId == null) return error("Missing userId.");
+ 
+                 Ticket t = new Ticket();
+@@ -989,7 +1063,8 @@ public class Server extends JFrame implements DonationDriverService {
+     public String readTickets(String userId, String status) throws RemoteException {
+         synchronized (FILE_LOCK) {
+             try {
+-                if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
++                String blockedMessage = getOperationBlockedMessage();
++                if (blockedMessage != null) return error(blockedMessage);
+ 
+                 String userNorm = (userId == null) ? "" : userId.trim();
+                 boolean riderQuery = "rider".equalsIgnoreCase(userNorm);
+@@ -1052,7 +1127,8 @@ public class Server extends JFrame implements DonationDriverService {
+     public String updateTicket(String userId, String ticketId, String status, String qualityStatus, String qualityReason) throws RemoteException {
+         synchronized (FILE_LOCK) {
+             try {
+-                if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
++                String blockedMessage = getOperationBlockedMessage();
++                if (blockedMessage != null) return error(blockedMessage);
+                 if (ticketId == null) return error("Missing ticketId.");
+ 
+                 String riderEmail = userId == null ? "" : userId.trim();
+@@ -1101,7 +1177,8 @@ public class Server extends JFrame implements DonationDriverService {
+     public String updateTicketPickupTime(String userId, String ticketId, String pickupDateTime) throws RemoteException {
+         synchronized (FILE_LOCK) {
+             try {
+-                if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
++                String blockedMessage = getOperationBlockedMessage();
++                if (blockedMessage != null) return error(blockedMessage);
+                 if (ticketId == null) return error("Missing ticketId.");
+ 
+                 List<Ticket> tickets = loadList(ticketsFile(), Ticket.class);
+@@ -1131,7 +1208,8 @@ public class Server extends JFrame implements DonationDriverService {
+     public String deleteTicket(String userId, String ticketId, String reason) throws RemoteException {
+         synchronized (FILE_LOCK) {
+             try {
+-                if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
++                String blockedMessage = getOperationBlockedMessage();
++                if (blockedMessage != null) return error(blockedMessage);
+                 if (ticketId == null) return error("Missing ticketId.");
+ 
+                 List<Ticket> tickets = loadList(ticketsFile(), Ticket.class);
+@@ -1195,7 +1273,8 @@ public class Server extends JFrame implements DonationDriverService {
+     public String createDonationDrive(String userId, String title, String description, String targetAmount, String photoBase64) throws RemoteException {
+         synchronized (FILE_LOCK) {
+             try {
+-                if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
++                String blockedMessage = getOperationBlockedMessage();
++                if (blockedMessage != null) return error(blockedMessage);
+                 if (title == null) return error("Missing title.");
+ 
+                 double target = 0.0;
+@@ -1248,7 +1327,8 @@ public class Server extends JFrame implements DonationDriverService {
+     public String readDonationDrives() throws RemoteException {
+         synchronized (FILE_LOCK) {
+             try {
+-                if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
++                String blockedMessage = getOperationBlockedMessage();
++                if (blockedMessage != null) return error(blockedMessage);
+ 
+                 List<Drive> drives = loadList(drivesFile(), Drive.class);
+                 StringBuilder xml = new StringBuilder();
+@@ -1266,7 +1346,8 @@ public class Server extends JFrame implements DonationDriverService {
+     public String deleteDonationDrive(String userId, String driveTitle) throws RemoteException {
+         synchronized (FILE_LOCK) {
+             try {
+-                if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
++                String blockedMessage = getOperationBlockedMessage();
++                if (blockedMessage != null) return error(blockedMessage);
+                 if (driveTitle == null) return error("Missing driveTitle.");
+ 
+                 List<Drive> drives = loadList(drivesFile(), Drive.class);
+@@ -1295,7 +1376,8 @@ public class Server extends JFrame implements DonationDriverService {
+     public String updateDriveAmount(String driveTitle, double amount) throws RemoteException {
+         synchronized (FILE_LOCK) {
+             try {
+-                if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
++                String blockedMessage = getOperationBlockedMessage();
++                if (blockedMessage != null) return error(blockedMessage);
+                 if (driveTitle == null) return error("Missing driveTitle.");
+ 
+                 String titleNorm = driveTitle.trim();
+@@ -1334,7 +1416,8 @@ public class Server extends JFrame implements DonationDriverService {
+     public String searchTickets(String keyword) throws RemoteException {
+         synchronized (FILE_LOCK) {
+             try {
+-                if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
++                String blockedMessage = getOperationBlockedMessage();
++                if (blockedMessage != null) return error(blockedMessage);
+                 String kw = keyword == null ? "" : keyword.trim().toLowerCase();
+ 
+                 List<Ticket> tickets = loadList(ticketsFile(), Ticket.class);
+@@ -1365,7 +1448,8 @@ public class Server extends JFrame implements DonationDriverService {
+     public String searchDonationDrives(String keyword) throws RemoteException {
+         synchronized (FILE_LOCK) {
+             try {
+-                if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
++                String blockedMessage = getOperationBlockedMessage();
++                if (blockedMessage != null) return error(blockedMessage);
+                 String kw = keyword == null ? "" : keyword.trim().toLowerCase();
+ 
+                 List<Drive> drives = loadList(drivesFile(), Drive.class);
+@@ -1393,7 +1477,8 @@ public class Server extends JFrame implements DonationDriverService {
+     public String setRiderAvailable(String userId) throws RemoteException {
+         synchronized (FILE_LOCK) {
+             try {
+-                if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
++                String blockedMessage = getOperationBlockedMessage();
++                if (blockedMessage != null) return error(blockedMessage);
+                 if (userId == null || userId.trim().isEmpty()) return error("Missing userId.");
+ 
+                 List<String> riders = loadList(availableRidersFile(), String.class);
+@@ -1420,7 +1505,8 @@ public class Server extends JFrame implements DonationDriverService {
+     public String setRiderUnavailable(String userId) throws RemoteException {
+         synchronized (FILE_LOCK) {
+             try {
+-                if (isMaintenanceEnabled()) return error("Server is in maintenance mode.");
++                String blockedMessage = getOperationBlockedMessage();
++                if (blockedMessage != null) return error(blockedMessage);
+                 if (userId == null || userId.trim().isEmpty()) return error("Missing userId.");
+ 
+                 String rider = userId.trim();
+@@ -1460,9 +1546,7 @@ public class Server extends JFrame implements DonationDriverService {
+     public String setServerMaintenanceMode(boolean enabled) throws RemoteException {
+         synchronized (FILE_LOCK) {
+             try {
+-                DATA_DIR.mkdirs();
+-                String json = "{\"maintenanceEnabled\":" + (enabled ? "true" : "false") + "}";
+-                Files.writeString(new File(DATA_DIR, "server_settings.json").toPath(), json, StandardCharsets.UTF_8);
++                writeServerSettings(enabled, isServerAccessEnabledSetting());
+                 maintenanceMode = enabled;
+                 appendServerLog("MAINTENANCE_MODE | enabled=" + enabled);
+                 log("MAINTENANCE", "SYSTEM", "setServerMaintenanceMode | enabled=" + enabled);
+@@ -1473,6 +1557,30 @@ public class Server extends JFrame implements DonationDriverService {
+         }
+     }
+ 
++    @Override
++    public String setServerAccessEnabled(boolean enabled) throws RemoteException {
++        synchronized (FILE_LOCK) {
++            try {
++                writeServerSettings(isMaintenanceEnabled(), enabled);
++                appendServerLog("ACCESS_MODE | enabled=" + enabled);
++                log("ACCESS", "SYSTEM", "setServerAccessEnabled | enabled=" + enabled);
++                return ok("Server access mode updated.", "");
++            } catch (Exception e) {
++                return error("setServerAccessEnabled failed: " + e.getMessage());
++            }
++        }
++    }
++
++    @Override
++    public boolean isServerMaintenanceMode() throws RemoteException {
++        return isMaintenanceEnabled();
++    }
++
++    @Override
++    public boolean isServerAccessEnabled() throws RemoteException {
++        return isServerAccessEnabledSetting();
++    }
++
+     public static void main(String[] args) {
+         SwingUtilities.invokeLater(() -> {
+             try {
+diff --git a/out/production/Updated-DonationDriver/Controller/BoxDonationController.class b/out/production/Updated-DonationDriver/Controller/BoxDonationController.class
+index e7fd996..26731fe 100644
+Binary files a/out/production/Updated-DonationDriver/Controller/BoxDonationController.class and b/out/production/Updated-DonationDriver/Controller/BoxDonationController.class differ
+diff --git a/out/production/Updated-DonationDriver/Controller/DashboardController.class b/out/production/Updated-DonationDriver/Controller/DashboardController.class
+index 7b807ec..624ecf3 100644
+Binary files a/out/production/Updated-DonationDriver/Controller/DashboardController.class and b/out/production/Updated-DonationDriver/Controller/DashboardController.class differ
+diff --git a/out/production/Updated-DonationDriver/Controller/DonationsActiveController.class b/out/production/Updated-DonationDriver/Controller/DonationsActiveController.class
+index 0c1bab5..d556ba2 100644
+Binary files a/out/production/Updated-DonationDriver/Controller/DonationsActiveController.class and b/out/production/Updated-DonationDriver/Controller/DonationsActiveController.class differ
+diff --git a/out/production/Updated-DonationDriver/Controller/DonationsPendingController.class b/out/production/Updated-DonationDriver/Controller/DonationsPendingController.class
+index 299346d..22bb4b5 100644
+Binary files a/out/production/Updated-DonationDriver/Controller/DonationsPendingController.class and b/out/production/Updated-DonationDriver/Controller/DonationsPendingController.class differ
+diff --git a/out/production/Updated-DonationDriver/Controller/LoginController.class b/out/production/Updated-DonationDriver/Controller/LoginController.class
+index babe9cd..3219c2f 100644
+Binary files a/out/production/Updated-DonationDriver/Controller/LoginController.class and b/out/production/Updated-DonationDriver/Controller/LoginController.class differ
+diff --git a/out/production/Updated-DonationDriver/Controller/RiderAcceptedController.class b/out/production/Updated-DonationDriver/Controller/RiderAcceptedController.class
+index 6fe7267..317f823 100644
+Binary files a/out/production/Updated-DonationDriver/Controller/RiderAcceptedController.class and b/out/production/Updated-DonationDriver/Controller/RiderAcceptedController.class differ
+diff --git a/out/production/Updated-DonationDriver/Controller/RiderController.class b/out/production/Updated-DonationDriver/Controller/RiderController.class
+index a5fbd23..84ac19c 100644
+Binary files a/out/production/Updated-DonationDriver/Controller/RiderController.class and b/out/production/Updated-DonationDriver/Controller/RiderController.class differ
+diff --git a/out/production/Updated-DonationDriver/Controller/RiderDeliveredController.class b/out/production/Updated-DonationDriver/Controller/RiderDeliveredController.class
+index b6a99ea..c4db25e 100644
+Binary files a/out/production/Updated-DonationDriver/Controller/RiderDeliveredController.class and b/out/production/Updated-DonationDriver/Controller/RiderDeliveredController.class differ
+diff --git a/out/production/Updated-DonationDriver/Controller/RiderDriveDetailsController.class b/out/production/Updated-DonationDriver/Controller/RiderDriveDetailsController.class
+index f1b5133..c40c122 100644
+Binary files a/out/production/Updated-DonationDriver/Controller/RiderDriveDetailsController.class and b/out/production/Updated-DonationDriver/Controller/RiderDriveDetailsController.class differ
+diff --git a/out/production/Updated-DonationDriver/Controller/RiderNotificationController.class b/out/production/Updated-DonationDriver/Controller/RiderNotificationController.class
+index 2944813..bf9833b 100644
+Binary files a/out/production/Updated-DonationDriver/Controller/RiderNotificationController.class and b/out/production/Updated-DonationDriver/Controller/RiderNotificationController.class differ
+diff --git a/out/production/Updated-DonationDriver/Network/Client$Response.class b/out/production/Updated-DonationDriver/Network/Client$Response.class
+index 60c8ddc..bb3b65c 100644
+Binary files a/out/production/Updated-DonationDriver/Network/Client$Response.class and b/out/production/Updated-DonationDriver/Network/Client$Response.class differ
+diff --git a/out/production/Updated-DonationDriver/Network/Client.class b/out/production/Updated-DonationDriver/Network/Client.class
+index 9f8f08c..7567335 100644
+Binary files a/out/production/Updated-DonationDriver/Network/Client.class and b/out/production/Updated-DonationDriver/Network/Client.class differ
+diff --git a/out/production/Updated-DonationDriver/Network/DonationDriverService.class b/out/production/Updated-DonationDriver/Network/DonationDriverService.class
+index 7666b32..2ad2e18 100644
+Binary files a/out/production/Updated-DonationDriver/Network/DonationDriverService.class and b/out/production/Updated-DonationDriver/Network/DonationDriverService.class differ
+diff --git a/out/production/Updated-DonationDriver/Server.class b/out/production/Updated-DonationDriver/Server.class
+index 30de6ed..9630186 100644
+Binary files a/out/production/Updated-DonationDriver/Server.class and b/out/production/Updated-DonationDriver/Server.class differ
+diff --git a/out/production/Updated-DonationDriver/View/RiderNotificationView.class b/out/production/Updated-DonationDriver/View/RiderNotificationView.class
+index d64f0de..2ff31c6 100644
+Binary files a/out/production/Updated-DonationDriver/View/RiderNotificationView.class and b/out/production/Updated-DonationDriver/View/RiderNotificationView.class differ
